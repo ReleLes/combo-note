@@ -48,6 +48,7 @@ export default async function MyNotePage() {
     <MyNoteClient
       characters={characters}
       allCombos={allCombos}
+      allMoves={allMoves}
       moveMap={moveMap}
       allSituations={SEED_SITUATIONS}
       versions={versions}

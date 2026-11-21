@@ -50,6 +50,7 @@ interface BackupPayload {
 interface MyNoteClientProps {
   characters: Character[];
   allCombos: Combo[];
+  allMoves: Move[];
   moveMap: Record<string, Move>;
   allSituations: SituationDefinition[];
   versions: GameVersion[];
@@ -58,6 +59,7 @@ interface MyNoteClientProps {
 export function MyNoteClient({
   characters,
   allCombos,
+  allMoves,
   moveMap,
   allSituations,
   versions,
@@ -563,40 +565,38 @@ export function MyNoteClient({
           </button>
         </div>
 
-        {/* 保存コンボ表示時の3表記切替 */}
-        {activeSection === "saved" && (
-          <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
-            <span className="text-xs font-semibold text-slate-500">表記</span>
-            <div
-              role="tablist"
-              aria-label="マイノートの表記切替"
-              className="grid flex-1 grid-cols-3 rounded-lg bg-slate-200/75 p-0.5 sm:flex-initial"
-            >
-              {(
-                [
-                  { value: "numpad", label: "テンキー" },
-                  { value: "command", label: "コマンド" },
-                  { value: "name", label: "技名" },
-                ] as const
-              ).map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  role="tab"
-                  aria-selected={notationMode === item.value}
-                  onClick={() => setNotationMode(item.value)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all sm:px-3 ${
-                    notationMode === item.value
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
+        {/* 3表記切替（保存コンボ・技ボタン作成の非公開メモ共通） */}
+        <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
+          <span className="text-xs font-semibold text-slate-500">表記</span>
+          <div
+            role="tablist"
+            aria-label="マイノートの表記切替"
+            className="grid flex-1 grid-cols-3 rounded-lg bg-slate-200/75 p-0.5 sm:flex-initial"
+          >
+            {(
+              [
+                { value: "numpad", label: "テンキー" },
+                { value: "command", label: "コマンド" },
+                { value: "name", label: "技名" },
+              ] as const
+            ).map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                role="tab"
+                aria-selected={notationMode === item.value}
+                onClick={() => setNotationMode(item.value)}
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all sm:px-3 ${
+                  notationMode === item.value
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
       </div>
 
       {/* セクション1: 保存した公開コンボ */}
@@ -750,6 +750,8 @@ export function MyNoteClient({
                 key={note.id}
                 note={note}
                 situations={currentSituations}
+                moveMap={moveMap}
+                notationMode={notationMode}
                 onEdit={handleOpenEditNote}
                 onDelete={handleDeletePrivateNote}
               />
@@ -847,8 +849,11 @@ export function MyNoteClient({
         }
         isOpen={isNoteModalOpen}
         characters={characters}
+        allMoves={allMoves}
         situationsByCharacter={situationsByCharacter}
         defaultCharacterId={selectedCharacterId}
+        notationMode={notationMode}
+        onChangeNotationMode={setNotationMode}
         editingNote={editingNote}
         onSave={handleSavePrivateNote}
         onClose={() => {

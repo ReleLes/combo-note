@@ -120,6 +120,8 @@ export interface PrivateNote {
   controlType?: ControlType;
   situation: string;
   recipeText: string;
+  /** 技ボタン選択で組み立てた場合の技ID配列（任意・3表記切替に対応） */
+  moveIds?: string[];
   note: string;
   createdAt: string;
   updatedAt: string;

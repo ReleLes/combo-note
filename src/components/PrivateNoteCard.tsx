@@ -1,12 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Pencil, Trash2 } from "lucide-react";
-import type { PrivateNote, SituationDefinition } from "@/types/combo";
+import { ChevronRight, Lock, Pencil, Trash2 } from "lucide-react";
+import type {
+  Move,
+  NotationMode,
+  PrivateNote,
+  SituationDefinition,
+} from "@/types/combo";
+import { MoveNotation } from "@/components/CommandNotation";
 
 interface PrivateNoteCardProps {
   note: PrivateNote;
   situations: SituationDefinition[];
+  moveMap: Record<string, Move>;
+  notationMode: NotationMode;
   onEdit: (note: PrivateNote) => void;
   onDelete: (id: string) => void;
 }
@@ -21,6 +29,19 @@ function resolveSituationStyle(
   return matched?.badgeClassName ?? "bg-indigo-100 text-indigo-700";
 }
 
+function getMoveChipStyle(move: Move): string {
+  switch (move.category) {
+    case "system":
+      return "border-slate-200 bg-slate-100 text-slate-700";
+    case "super":
+      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
+    case "special":
+      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+    default:
+      return "border-slate-200 bg-white text-slate-900 font-medium";
+  }
+}
+
 function formatUpdatedAt(isoString: string): string {
   const d = new Date(isoString);
   if (Number.isNaN(d.getTime())) return "";
@@ -33,12 +54,18 @@ function formatUpdatedAt(isoString: string): string {
 export function PrivateNoteCard({
   note,
   situations,
+  moveMap,
+  notationMode,
   onEdit,
   onDelete,
 }: PrivateNoteCardProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const badgeStyle = resolveSituationStyle(note.situation, situations);
+  const resolvedMoves = (note.moveIds ?? [])
+    .map((id) => moveMap[id])
+    .filter((m): m is Move => Boolean(m));
+  const hasBuilderRecipe = resolvedMoves.length > 0;
 
   return (
     <article className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4">
@@ -106,11 +133,36 @@ export function PrivateNoteCard({
         </div>
       </div>
 
-      {/* レシピ表示エリア */}
+      {/* レシピ表示エリア：技ボタン組立てなら3表記切替対応チップ、自由入力ならテキスト */}
       <div className="mb-3 rounded-lg border border-slate-100 bg-slate-50/80 p-2.5 sm:p-3">
-        <p className="break-words whitespace-pre-wrap font-mono text-xs font-semibold leading-relaxed text-slate-900 sm:text-sm">
-          {note.recipeText}
-        </p>
+        {hasBuilderRecipe ? (
+          <div className="flex flex-wrap items-center gap-x-1 gap-y-1.5">
+            {resolvedMoves.map((move, index) => (
+              <div
+                key={`${move.id}-${index}`}
+                className="inline-flex max-w-full items-center gap-1"
+              >
+                <span
+                  className={`inline-flex max-w-full items-center break-words rounded-md border px-2 py-0.5 text-xs leading-snug sm:text-sm ${getMoveChipStyle(
+                    move
+                  )}`}
+                >
+                  <MoveNotation move={move} notationMode={notationMode} />
+                </span>
+                {index < resolvedMoves.length - 1 && (
+                  <ChevronRight
+                    className="h-3.5 w-3.5 shrink-0 text-slate-400"
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="break-words whitespace-pre-wrap font-mono text-xs font-semibold leading-relaxed text-slate-900 sm:text-sm">
+            {note.recipeText}
+          </p>
+        )}
       </div>
 
       {/* 補足メモ全文 */}

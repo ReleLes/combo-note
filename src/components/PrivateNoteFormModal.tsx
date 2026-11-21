@@ -1,34 +1,77 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronRight, Trash2, Undo2, X } from "lucide-react";
 import type {
   Character,
   ControlType,
+  Move,
+  MoveCategory,
+  NotationMode,
   PrivateNote,
   SituationDefinition,
 } from "@/types/combo";
 import type { CreatePrivateNoteInput } from "@/hooks/useComboNoteStorage";
+import { MoveNotation } from "@/components/CommandNotation";
+
+type RecipeInputMode = "builder" | "text";
 
 interface PrivateNoteFormModalProps {
   isOpen: boolean;
   characters: Character[];
+  allMoves: Move[];
   situationsByCharacter: Record<string, SituationDefinition[]>;
   defaultCharacterId: string;
+  notationMode: NotationMode;
+  onChangeNotationMode: (mode: NotationMode) => void;
   editingNote: PrivateNote | null;
   onSave: (data: CreatePrivateNoteInput, editingId?: string) => void;
   onClose: () => void;
 }
 
+const MOVE_CATEGORY_TABS: { key: MoveCategory; label: string }[] = [
+  { key: "normal", label: "通常技" },
+  { key: "unique", label: "特殊技" },
+  { key: "special", label: "必殺技" },
+  { key: "super", label: "SA" },
+  { key: "system", label: "システム" },
+];
+
+const NOTATION_TABS: { mode: NotationMode; label: string }[] = [
+  { mode: "numpad", label: "テンキー" },
+  { mode: "command", label: "コマンド" },
+  { mode: "name", label: "技名" },
+];
+
+function getMoveChipStyle(move: Move): string {
+  switch (move.category) {
+    case "system":
+      return "border-slate-200 bg-slate-100 text-slate-700";
+    case "super":
+      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
+    case "special":
+      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+    default:
+      return "border-slate-200 bg-white text-slate-900 font-medium";
+  }
+}
+
 export function PrivateNoteFormModal({
   isOpen,
   characters,
+  allMoves,
   situationsByCharacter,
   defaultCharacterId,
+  notationMode,
+  onChangeNotationMode,
   editingNote,
   onSave,
   onClose,
 }: PrivateNoteFormModalProps) {
+  const initialHasMoveIds = Boolean(
+    editingNote?.moveIds && editingNote.moveIds.length > 0
+  );
+
   const [characterId, setCharacterId] = useState(
     editingNote?.characterId ?? defaultCharacterId
   );
@@ -36,6 +79,14 @@ export function PrivateNoteFormModal({
     editingNote?.controlType ?? ""
   );
   const [situation, setSituation] = useState(editingNote?.situation ?? "");
+  const [recipeInputMode, setRecipeInputMode] = useState<RecipeInputMode>(
+    editingNote ? (initialHasMoveIds ? "builder" : "text") : "builder"
+  );
+  const [activeMoveCategory, setActiveMoveCategory] =
+    useState<MoveCategory>("normal");
+  const [recipeMoveIds, setRecipeMoveIds] = useState<string[]>(
+    editingNote?.moveIds ?? []
+  );
   const [recipeText, setRecipeText] = useState(editingNote?.recipeText ?? "");
   const [note, setNote] = useState(editingNote?.note ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -49,24 +100,102 @@ export function PrivateNoteFormModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  const moveMap = useMemo(() => {
+    const map: Record<string, Move> = {};
+    for (const m of allMoves) {
+      map[m.id] = m;
+    }
+    return map;
+  }, [allMoves]);
+
+  const availableMoves = useMemo(() => {
+    return allMoves
+      .filter((move) => {
+        const matchChar =
+          move.characterId === characterId || move.characterId === null;
+        if (!matchChar) return false;
+        if (!controlType) return true;
+        return move.controlType === "both" || move.controlType === controlType;
+      })
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+  }, [allMoves, characterId, controlType]);
+
+  const movesByCategory = useMemo(() => {
+    const grouped: Record<MoveCategory, Move[]> = {
+      normal: [],
+      unique: [],
+      special: [],
+      super: [],
+      system: [],
+    };
+    for (const m of availableMoves) {
+      grouped[m.category].push(m);
+    }
+    return grouped;
+  }, [availableMoves]);
+
+  const recipeMoves = useMemo(
+    () =>
+      recipeMoveIds
+        .map((id) => moveMap[id])
+        .filter((m): m is Move => Boolean(m)),
+    [recipeMoveIds, moveMap]
+  );
+
   if (!isOpen) return null;
 
   const quickSituations = situationsByCharacter[characterId] ?? [];
+  const currentCategoryMoves = movesByCategory[activeMoveCategory];
+
+  const handleChangeCharacter = (nextCharId: string) => {
+    if (nextCharId === characterId) return;
+    if (recipeMoveIds.length > 0) {
+      setRecipeMoveIds([]);
+    }
+    setCharacterId(nextCharId);
+    setActiveMoveCategory("normal");
+  };
+
+  const handleSwitchRecipeMode = (nextMode: RecipeInputMode) => {
+    if (nextMode === recipeInputMode) return;
+    // 技ボタンで組み立てていた内容を自由入力へ引き継ぐ
+    if (nextMode === "text" && recipeMoves.length > 0 && !recipeText.trim()) {
+      setRecipeText(recipeMoves.map((m) => m.notationNumpad).join(" > "));
+    }
+    setRecipeInputMode(nextMode);
+    setError(null);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedSituation = situation.trim();
-    const trimmedRecipe = recipeText.trim();
     const trimmedNote = note.trim();
 
     if (!trimmedSituation) {
       setError("状況を入力または選択してください。");
       return;
     }
-    if (!trimmedRecipe) {
-      setError("コンボレシピを入力してください。");
-      return;
+
+    let finalRecipeText = "";
+    let finalMoveIds: string[] | undefined = undefined;
+
+    if (recipeInputMode === "builder") {
+      if (recipeMoves.length === 0) {
+        setError("コンボレシピの技を選択してください。");
+        return;
+      }
+      finalMoveIds = recipeMoveIds;
+      finalRecipeText = recipeMoves.map((m) => m.notationNumpad).join(" > ");
+    } else {
+      const trimmedRecipe = recipeText.trim();
+      if (!trimmedRecipe) {
+        setError("コンボレシピを入力してください。");
+        return;
+      }
+      finalRecipeText = trimmedRecipe;
+      finalMoveIds = undefined;
     }
+
     if (!trimmedNote) {
       setError("補足メモを入力してください。");
       return;
@@ -77,7 +206,8 @@ export function PrivateNoteFormModal({
         characterId,
         controlType: controlType || undefined,
         situation: trimmedSituation,
-        recipeText: trimmedRecipe,
+        recipeText: finalRecipeText,
+        moveIds: finalMoveIds,
         note: trimmedNote,
       },
       editingNote?.id
@@ -93,7 +223,7 @@ export function PrivateNoteFormModal({
       aria-label={editingNote ? "非公開メモを編集" : "非公開メモを作成"}
     >
       <div
-        className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-xl sm:max-w-lg sm:rounded-2xl"
+        className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-xl sm:max-w-2xl sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3.5 sm:px-6">
@@ -126,7 +256,7 @@ export function PrivateNoteFormModal({
               <span>キャラクター</span>
               <select
                 value={characterId}
-                onChange={(e) => setCharacterId(e.target.value)}
+                onChange={(e) => handleChangeCharacter(e.target.value)}
                 className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-500 focus:outline-none"
               >
                 {characters.map((c) => (
@@ -200,25 +330,209 @@ export function PrivateNoteFormModal({
             </div>
           </div>
 
-          {/* コンボレシピ（自由テキスト入力） */}
-          <div className="space-y-1">
-            <label
-              htmlFor="private-note-recipe"
-              className="block text-xs font-semibold text-slate-700"
-            >
-              コンボレシピ（自由入力） <span className="text-rose-500">*</span>
-            </label>
-            <textarea
-              id="private-note-recipe"
-              rows={2}
-              value={recipeText}
-              onChange={(e) => {
-                setRecipeText(e.target.value);
-                setError(null);
-              }}
-              placeholder="例: 2中K > DR > 5大P > 236中K"
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
-            />
+          {/* コンボレシピ（技ボタン選択 / 自由入力 切替） */}
+          <div className="space-y-2.5 rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-700">
+                コンボレシピ <span className="text-rose-500">*</span>
+              </span>
+              <div
+                role="tablist"
+                aria-label="レシピ入力方式切替"
+                className="inline-grid grid-cols-2 rounded-lg bg-slate-200/75 p-0.5"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={recipeInputMode === "builder"}
+                  onClick={() => handleSwitchRecipeMode("builder")}
+                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+                    recipeInputMode === "builder"
+                      ? "bg-white text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  技ボタンで選択
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={recipeInputMode === "text"}
+                  onClick={() => handleSwitchRecipeMode("text")}
+                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+                    recipeInputMode === "text"
+                      ? "bg-white text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  自由入力
+                </button>
+              </div>
+            </div>
+
+            {recipeInputMode === "builder" ? (
+              <div className="space-y-2.5">
+                {/* 表記切替 + カテゴリタブ */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap gap-1">
+                    {MOVE_CATEGORY_TABS.map((tab) => {
+                      const count = movesByCategory[tab.key].length;
+                      const isActive = activeMoveCategory === tab.key;
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => setActiveMoveCategory(tab.key)}
+                          className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
+                            isActive
+                              ? "bg-blue-600 text-white"
+                              : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          <span>{tab.label}</span>
+                          <span className="text-[10px] opacity-80">{count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="inline-grid grid-cols-3 rounded-md bg-slate-200/75 p-0.5">
+                    {NOTATION_TABS.map((item) => (
+                      <button
+                        key={item.mode}
+                        type="button"
+                        onClick={() => onChangeNotationMode(item.mode)}
+                        className={`rounded px-2 py-0.5 text-[11px] font-semibold transition-colors ${
+                          notationMode === item.mode
+                            ? "bg-blue-600 text-white"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 技ボタングリッド */}
+                {currentCategoryMoves.length > 0 ? (
+                  <div className="grid max-h-44 grid-cols-2 gap-1.5 overflow-y-auto pr-0.5 sm:grid-cols-3">
+                    {currentCategoryMoves.map((move) => (
+                      <button
+                        key={move.id}
+                        type="button"
+                        onClick={() => {
+                          setRecipeMoveIds((prev) => [...prev, move.id]);
+                          setError(null);
+                        }}
+                        title={`${move.notationName} (${move.notationNumpad})`}
+                        className="flex min-h-[38px] items-center justify-center rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
+                      >
+                        <span className="inline-flex max-w-full items-center truncate text-xs font-bold text-slate-900">
+                          <MoveNotation
+                            move={move}
+                            notationMode={notationMode}
+                          />
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="py-4 text-center text-xs text-slate-500">
+                    このカテゴリの技はありません。
+                  </p>
+                )}
+
+                {/* 組み立て中レシピ */}
+                <div className="rounded-lg border border-slate-200 bg-white p-2.5">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      組み立て中 ({recipeMoves.length} パーツ)
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setRecipeMoveIds((prev) => prev.slice(0, -1))
+                        }
+                        disabled={recipeMoves.length === 0}
+                        className="inline-flex items-center gap-1 rounded border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                      >
+                        <Undo2 className="h-3 w-3" aria-hidden="true" />
+                        戻す
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRecipeMoveIds([])}
+                        disabled={recipeMoves.length === 0}
+                        className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50/60 px-2 py-0.5 text-[11px] font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-40"
+                      >
+                        <Trash2 className="h-3 w-3" aria-hidden="true" />
+                        消去
+                      </button>
+                    </div>
+                  </div>
+
+                  {recipeMoves.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-x-1 gap-y-1.5">
+                      {recipeMoves.map((move, index) => (
+                        <div
+                          key={`${move.id}-${index}`}
+                          className="inline-flex max-w-full items-center gap-1"
+                        >
+                          <span
+                            className={`inline-flex max-w-full items-center gap-1 rounded-md border py-0.5 pr-1 pl-2 text-xs ${getMoveChipStyle(
+                              move
+                            )}`}
+                          >
+                            <span className="inline-flex items-center break-words">
+                              <MoveNotation
+                                move={move}
+                                notationMode={notationMode}
+                              />
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRecipeMoveIds((prev) =>
+                                  prev.filter((_, i) => i !== index)
+                                )
+                              }
+                              aria-label={`${move.notationName} を削除`}
+                              className="rounded p-0.5 text-slate-400 hover:bg-slate-200/80 hover:text-slate-700"
+                            >
+                              <X className="h-3 w-3" aria-hidden="true" />
+                            </button>
+                          </span>
+                          {index < recipeMoves.length - 1 && (
+                            <ChevronRight
+                              className="h-3.5 w-3.5 shrink-0 text-slate-400"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="py-2 text-center text-xs text-slate-400">
+                      上の技ボタンをタップして組み立ててください
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <textarea
+                id="private-note-recipe"
+                rows={2}
+                value={recipeText}
+                onChange={(e) => {
+                  setRecipeText(e.target.value);
+                  setError(null);
+                }}
+                placeholder="例: 2中K > CDR > 5大P > 236中K"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              />
+            )}
           </div>
 
           {/* 補足メモ（必須） */}
@@ -231,7 +545,7 @@ export function PrivateNoteFormModal({
             </label>
             <textarea
               id="private-note-body"
-              rows={4}
+              rows={3}
               value={note}
               onChange={(e) => {
                 setNote(e.target.value);

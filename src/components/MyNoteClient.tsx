@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BookMarked,
   Download,
@@ -28,6 +29,8 @@ import {
   usePrivateNotes,
   useSavedCombos,
 } from "@/hooks/useComboNoteStorage";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 import { useComboLikes } from "@/hooks/useComboLikes";
 import { ComboCard } from "./ComboCard";
 import { ComboDetailModal } from "./ComboDetailModal";
@@ -59,6 +62,8 @@ export function MyNoteClient({
   allSituations,
   versions,
 }: MyNoteClientProps) {
+  const router = useRouter();
+  const { user } = useAuth();
   const {
     preferences,
     notationMode,
@@ -69,6 +74,7 @@ export function MyNoteClient({
     savedComboIds,
     isSaved,
     toggleSavedCombo,
+    removeSavedCombo,
     replaceSavedCombos,
   } = useSavedCombos();
   const {
@@ -79,6 +85,8 @@ export function MyNoteClient({
     replacePrivateNotes,
   } = usePrivateNotes();
   const { isLiked, getLikesCount, toggleLike } = useComboLikes(allCombos);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>(
     characters[0]?.id ?? "akuma"
@@ -154,12 +162,16 @@ export function MyNoteClient({
       map[c.id] = [];
     }
     for (const combo of allCombos) {
-      if (idSet.has(combo.id) && map[combo.characterId]) {
+      if (
+        !deletedIds.has(combo.id) &&
+        idSet.has(combo.id) &&
+        map[combo.characterId]
+      ) {
         map[combo.characterId].push(combo);
       }
     }
     return map;
-  }, [allCombos, characters, savedComboIds]);
+  }, [allCombos, characters, savedComboIds, deletedIds]);
 
   const privateNotesByChar = useMemo(() => {
     const map: Record<string, PrivateNote[]> = {};
@@ -265,6 +277,35 @@ export function MyNoteClient({
     }
     if (result.error) {
       setNotice({ message: result.error });
+    }
+  };
+
+  const handleDeleteCombo = async (combo: Combo) => {
+    if (!user || user.id !== combo.authorId || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("combos")
+        .delete()
+        .eq("id", combo.id)
+        .eq("author_id", user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setDeletedIds((prev) => new Set(prev).add(combo.id));
+      removeSavedCombo(combo.id);
+      setActiveCombo(null);
+      setNotice({ message: "コンボを削除しました。" });
+      router.refresh();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "コンボの削除に失敗しました。";
+      setNotice({ message });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -788,8 +829,11 @@ export function MyNoteClient({
         isSaved={activeCombo ? isSaved(activeCombo.id) : false}
         isLiked={activeCombo ? isLiked(activeCombo.id) : false}
         likesCount={activeCombo ? getLikesCount(activeCombo) : 0}
+        canDelete={Boolean(user && activeCombo && user.id === activeCombo.authorId)}
+        isDeleting={isDeleting}
         onToggleSave={handleToggleSave}
         onToggleLike={handleToggleLike}
+        onDelete={handleDeleteCombo}
         onChangeNotationMode={setNotationMode}
         onClose={() => setActiveCombo(null)}
       />

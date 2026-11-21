@@ -10,6 +10,7 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import { MoveNotation } from "@/components/CommandNotation";
 
 interface ComboCardProps {
   combo: Combo;
@@ -24,17 +25,6 @@ interface ComboCardProps {
   onToggleSave: (comboId: string) => void;
   onToggleLike: (combo: Combo) => void;
   onSelect: (combo: Combo) => void;
-}
-
-function getMoveLabel(move: Move, notationMode: NotationMode): string {
-  switch (notationMode) {
-    case "numpad":
-      return move.notationNumpad;
-    case "command":
-      return move.notationCommand;
-    case "name":
-      return move.notationName;
-  }
 }
 
 function getMoveChipStyle(move: Move): string {
@@ -142,11 +132,11 @@ export function ComboCard({
               className="inline-flex max-w-full items-center gap-1"
             >
               <span
-                className={`inline-block max-w-full break-words rounded-md border px-2 py-0.5 text-xs leading-snug sm:text-sm ${getMoveChipStyle(
+                className={`inline-flex max-w-full items-center break-words rounded-md border px-2 py-0.5 text-xs leading-snug sm:text-sm ${getMoveChipStyle(
                   move
                 )}`}
               >
-                {getMoveLabel(move, notationMode)}
+                <MoveNotation move={move} notationMode={notationMode} />
               </span>
               {index < moves.length - 1 && (
                 <ChevronRight

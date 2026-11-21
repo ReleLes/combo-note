@@ -20,6 +20,8 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
 import { useComboLikes } from "@/hooks/useComboLikes";
 import { ComboCard } from "./ComboCard";
@@ -45,12 +47,15 @@ export function CharacterComboListClient({
   versions,
 }: CharacterComboListClientProps) {
   const router = useRouter();
+  const { user } = useAuth();
 
   // 上部コントロール状態（LocalStorage永続化）
   const { controlType, notationMode, setControlType, setNotationMode } =
     usePreferences();
-  const { isSaved, toggleSavedCombo } = useSavedCombos();
+  const { isSaved, toggleSavedCombo, removeSavedCombo } = useSavedCombos();
   const { isLiked, getLikesCount, toggleLike } = useComboLikes(combos);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 絞り込み・並び替え状態
   const [selectedSituations, setSelectedSituations] = useState<string[]>([]);
@@ -132,6 +137,7 @@ export function CharacterComboListClient({
 
   const filteredCombos = useMemo(() => {
     const filtered = combos.filter((combo) => {
+      if (deletedIds.has(combo.id)) return false;
       if (combo.controlType !== controlType) return false;
 
       if (
@@ -185,6 +191,7 @@ export function CharacterComboListClient({
     });
   }, [
     combos,
+    deletedIds,
     controlType,
     selectedSituations,
     onlyStockGain,
@@ -217,6 +224,35 @@ export function CharacterComboListClient({
     }
     if (result.error) {
       setNotice({ message: result.error });
+    }
+  };
+
+  const handleDeleteCombo = async (combo: Combo) => {
+    if (!user || user.id !== combo.authorId || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("combos")
+        .delete()
+        .eq("id", combo.id)
+        .eq("author_id", user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setDeletedIds((prev) => new Set(prev).add(combo.id));
+      removeSavedCombo(combo.id);
+      setActiveCombo(null);
+      setNotice({ message: "コンボを削除しました。" });
+      router.refresh();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "コンボの削除に失敗しました。";
+      setNotice({ message });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -616,8 +652,11 @@ export function CharacterComboListClient({
         isSaved={activeCombo ? isSaved(activeCombo.id) : false}
         isLiked={activeCombo ? isLiked(activeCombo.id) : false}
         likesCount={activeCombo ? getLikesCount(activeCombo) : 0}
+        canDelete={Boolean(user && activeCombo && user.id === activeCombo.authorId)}
+        isDeleting={isDeleting}
         onToggleSave={handleToggleSave}
         onToggleLike={handleToggleLike}
+        onDelete={handleDeleteCombo}
         onChangeNotationMode={setNotationMode}
         onClose={() => setActiveCombo(null)}
       />

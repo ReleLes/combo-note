@@ -1,7 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
-import { ChevronRight, Flame, Heart, ShieldCheck, Star, User, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ChevronRight,
+  Flame,
+  Heart,
+  ShieldCheck,
+  Star,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
 import type {
   CharacterStockMeta,
   Combo,
@@ -11,6 +20,7 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import { MoveNotation } from "@/components/CommandNotation";
 
 interface ComboDetailModalProps {
   combo: Combo | null;
@@ -22,8 +32,11 @@ interface ComboDetailModalProps {
   isSaved: boolean;
   isLiked: boolean;
   likesCount: number;
+  canDelete?: boolean;
+  isDeleting?: boolean;
   onToggleSave: (comboId: string) => void;
   onToggleLike: (combo: Combo) => void;
+  onDelete?: (combo: Combo) => Promise<void> | void;
   onChangeNotationMode: (mode: NotationMode) => void;
   onClose: () => void;
 }
@@ -33,17 +46,6 @@ const NOTATION_MODES: { mode: NotationMode; label: string }[] = [
   { mode: "command", label: "コマンド" },
   { mode: "name", label: "技名" },
 ];
-
-function getMoveLabel(move: Move, mode: NotationMode): string {
-  switch (mode) {
-    case "numpad":
-      return move.notationNumpad;
-    case "command":
-      return move.notationCommand;
-    case "name":
-      return move.notationName;
-  }
-}
 
 function getMoveChipStyle(move: Move): string {
   switch (move.category) {
@@ -68,11 +70,18 @@ export function ComboDetailModal({
   isSaved,
   isLiked,
   likesCount,
+  canDelete = false,
+  isDeleting = false,
   onToggleSave,
   onToggleLike,
+  onDelete,
   onChangeNotationMode,
   onClose,
 }: ComboDetailModalProps) {
+  const [confirmingComboId, setConfirmingComboId] = useState<string | null>(
+    null
+  );
+
   useEffect(() => {
     if (!combo) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -83,6 +92,8 @@ export function ComboDetailModal({
   }, [combo, onClose]);
 
   if (!combo) return null;
+
+  const isConfirmingDelete = confirmingComboId === combo.id;
 
   const moves = combo.moveIds
     .map((id) => moveMap[id])
@@ -199,11 +210,11 @@ export function ComboDetailModal({
                     className="inline-flex max-w-full items-center gap-1"
                   >
                     <span
-                      className={`inline-block max-w-full break-words rounded-md border px-2 py-0.5 text-xs leading-snug sm:text-sm ${getMoveChipStyle(
+                      className={`inline-flex max-w-full items-center break-words rounded-md border px-2 py-0.5 text-xs leading-snug sm:text-sm ${getMoveChipStyle(
                         move
                       )}`}
                     >
-                      {getMoveLabel(move, notationMode)}
+                      <MoveNotation move={move} notationMode={notationMode} />
                     </span>
                     {index < moves.length - 1 && (
                       <ChevronRight
@@ -304,24 +315,64 @@ export function ComboDetailModal({
                 {combo.authorName ?? "投稿者"}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => onToggleLike(combo)}
-              aria-pressed={isLiked}
-              className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
-                isLiked
-                  ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600"
-              }`}
-            >
-              <Heart
-                className={`h-3.5 w-3.5 ${
-                  isLiked ? "fill-rose-500 text-rose-500" : ""
+
+            <div className="flex flex-wrap items-center gap-2">
+              {canDelete && onDelete && (
+                <>
+                  {isConfirmingDelete ? (
+                    <div className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1">
+                      <span className="text-[11px] font-semibold text-rose-700">
+                        削除しますか？
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={() => onDelete(combo)}
+                        className="rounded bg-rose-600 px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
+                      >
+                        {isDeleting ? "削除中..." : "削除する"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isDeleting}
+                        onClick={() => setConfirmingComboId(null)}
+                        className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        中止
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingComboId(combo.id)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>削除</span>
+                    </button>
+                  )}
+                </>
+              )}
+
+              <button
+                type="button"
+                onClick={() => onToggleLike(combo)}
+                aria-pressed={isLiked}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                  isLiked
+                    ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600"
                 }`}
-                aria-hidden="true"
-              />
-              <span>{likesCount} いいね</span>
-            </button>
+              >
+                <Heart
+                  className={`h-3.5 w-3.5 ${
+                    isLiked ? "fill-rose-500 text-rose-500" : ""
+                  }`}
+                  aria-hidden="true"
+                />
+                <span>{likesCount} いいね</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

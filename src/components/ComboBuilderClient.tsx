@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronRight,
   ExternalLink,
+  Info,
   Lock,
   LogIn,
   PlusCircle,
@@ -38,6 +39,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
 import { ComboDetailModal } from "@/components/ComboDetailModal";
+import { MoveNotation } from "@/components/CommandNotation";
 
 interface ComboBuilderClientProps {
   characters: Character[];
@@ -76,22 +78,11 @@ const MOVE_CATEGORY_TABS: { key: MoveCategory; label: string }[] = [
   { key: "system", label: "システム" },
 ];
 
-const PREVIEW_MODES: { mode: NotationMode; label: string }[] = [
-  { mode: "numpad", label: "テンキー表記" },
-  { mode: "command", label: "コマンド表記" },
-  { mode: "name", label: "技名表記" },
+const NOTATION_TABS: { mode: NotationMode; label: string }[] = [
+  { mode: "numpad", label: "テンキー" },
+  { mode: "command", label: "コマンド" },
+  { mode: "name", label: "技名" },
 ];
-
-function getMoveNotation(move: Move, mode: NotationMode): string {
-  switch (mode) {
-    case "numpad":
-      return move.notationNumpad;
-    case "command":
-      return move.notationCommand;
-    case "name":
-      return move.notationName;
-  }
-}
 
 function getMoveChipStyle(move: Move): string {
   switch (move.category) {
@@ -535,12 +526,12 @@ export function ComboBuilderClient({
         </p>
       </div>
 
-      {/* 1. キャラクター & 操作タイプ選択 */}
+      {/* 1. キャラクター & 操作タイプ & 表記モード選択 */}
       <section
-        aria-label="キャラクターと操作タイプ選択"
+        aria-label="キャラクター・操作タイプ・表記選択"
         className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4"
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
             <span>対象キャラクター</span>
             <select
@@ -578,6 +569,32 @@ export function ComboBuilderClient({
                   className={`rounded-md py-1.5 text-xs font-semibold transition-all sm:text-sm ${
                     controlType === item.value
                       ? "bg-white text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+            <span>表記モード</span>
+            <div
+              role="tablist"
+              aria-label="表記モード選択"
+              className="grid grid-cols-3 rounded-lg bg-slate-100 p-1"
+            >
+              {NOTATION_TABS.map((item) => (
+                <button
+                  key={item.mode}
+                  type="button"
+                  role="tab"
+                  aria-selected={notationMode === item.mode}
+                  onClick={() => setNotationMode(item.mode)}
+                  className={`rounded-md py-1.5 text-xs font-semibold transition-all sm:text-sm ${
+                    notationMode === item.mode
+                      ? "bg-blue-600 text-white shadow-xs"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -640,7 +657,7 @@ export function ComboBuilderClient({
           })}
         </div>
 
-        {/* 技ボタングリッド */}
+        {/* 技ボタングリッド（選択中の表記モードのみ表示・CDR/DR/DIは常にアイコン統一） */}
         {currentCategoryMoves.length > 0 ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {currentCategoryMoves.map((move) => (
@@ -648,13 +665,11 @@ export function ComboBuilderClient({
                 key={move.id}
                 type="button"
                 onClick={() => handleAppendMove(move.id)}
-                className="flex flex-col items-start rounded-lg border border-slate-200 bg-slate-50/60 px-2.5 py-2 text-left transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
+                title={`${move.notationName} (${move.notationNumpad})`}
+                className="flex min-h-[42px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50/60 px-2.5 py-2 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
               >
-                <span className="text-xs font-bold text-slate-900 sm:text-sm">
-                  {move.notationNumpad}
-                </span>
-                <span className="mt-0.5 line-clamp-1 text-[11px] text-slate-500">
-                  {move.notationName}
+                <span className="inline-flex max-w-full items-center truncate text-xs font-bold text-slate-900 sm:text-sm">
+                  <MoveNotation move={move} notationMode={notationMode} />
                 </span>
               </button>
             ))}
@@ -666,7 +681,7 @@ export function ComboBuilderClient({
         )}
       </section>
 
-      {/* 3. 組み立て中のレシピ */}
+      {/* 3. 組み立て中のレシピ（選択中の表記モードでリアルタイム表示） */}
       <section
         aria-label="組み立て中のレシピ"
         className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4"
@@ -721,11 +736,13 @@ export function ComboBuilderClient({
                       move
                     )}`}
                   >
-                    <span className="break-words">{move.notationNumpad}</span>
+                    <span className="inline-flex items-center break-words">
+                      <MoveNotation move={move} notationMode={notationMode} />
+                    </span>
                     <button
                       type="button"
                       onClick={() => handleRemoveAt(index)}
-                      aria-label={`${move.notationNumpad} を削除`}
+                      aria-label={`${move.notationName} を削除`}
                       className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200/80 hover:text-slate-700"
                     >
                       <X className="h-3 w-3" aria-hidden="true" />
@@ -746,57 +763,6 @@ export function ComboBuilderClient({
             上の技ボタンをタップして、コンボの始動技から順番に組み立ててください。
           </div>
         )}
-      </section>
-
-      {/* 4. 3表記リアルタイムプレビュー */}
-      <section
-        aria-label="3表記リアルタイムプレビュー"
-        className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4"
-      >
-        <h2 className="mb-3 text-sm font-bold text-slate-900">
-          3表記リアルタイムプレビュー
-        </h2>
-
-        <div className="space-y-2.5">
-          {PREVIEW_MODES.map(({ mode, label }) => (
-            <div
-              key={mode}
-              className="rounded-lg border border-slate-200 bg-slate-50/70 p-2.5 sm:p-3"
-            >
-              <div className="mb-1.5 text-[11px] font-semibold text-slate-500">
-                {label}
-              </div>
-              {recipeMoves.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-x-1 gap-y-1.5">
-                  {recipeMoves.map((move, index) => (
-                    <div
-                      key={`${mode}-${move.id}-${index}`}
-                      className="inline-flex max-w-full items-center gap-1"
-                    >
-                      <span
-                        className={`inline-block max-w-full break-words rounded-md border px-2 py-0.5 text-xs leading-snug sm:text-sm ${getMoveChipStyle(
-                          move
-                        )}`}
-                      >
-                        {getMoveNotation(move, mode)}
-                      </span>
-                      {index < recipeMoves.length - 1 && (
-                        <ChevronRight
-                          className="h-3.5 w-3.5 shrink-0 text-slate-400"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400">
-                  技を追加するとここに表示されます
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* 5. 状況・カテゴリ・数値・補足メモ入力 */}
@@ -1030,13 +996,22 @@ export function ComboBuilderClient({
         )}
 
         {/* 補足メモ欄（必須） */}
-        <div className="space-y-1.5 border-t border-slate-100 pt-4">
+        <div className="space-y-2 border-t border-slate-100 pt-4">
           <label
             htmlFor="combo-note-textarea"
             className="block text-sm font-bold text-slate-900"
           >
             補足メモ・コツ <span className="text-rose-500">*</span>
           </label>
+          {recipeMoveIds.includes("sys_delay") && (
+            <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-800">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
+              <span>
+                レシピに「ディレイ」が含まれています。タイミングの目安（少し遅め／着地ギリギリ／○F
+                など）を補足メモに書いておくと再現しやすくなります。
+              </span>
+            </div>
+          )}
           <textarea
             id="combo-note-textarea"
             rows={4}

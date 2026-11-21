@@ -24,15 +24,15 @@ on conflict (id) do nothing;
 -- 3. 技マスタ（システム共通パーツ: character_id = null）
 insert into public.moves (id, character_id, control_type, category, notation_numpad, notation_command, notation_name, sort_order, startup_frames, hit_advantage, cancel_types)
 values
-  ('sys_dr', null, 'both', 'system', 'DR', 'キャンセルラッシュ', 'キャンセルドライブラッシュ', 1, null, null, null),
-  ('sys_raw_dr', null, 'both', 'system', '生DR', '生ラッシュ', '生ドライブラッシュ', 2, null, null, null),
+  ('sys_dr', null, 'both', 'system', 'CDR', 'CDR', 'キャンセルドライブラッシュ', 1, null, null, null),
+  ('sys_raw_dr', null, 'both', 'system', 'DR', 'DR', 'ドライブラッシュ', 2, null, null, null),
   ('sys_di', null, 'both', 'system', 'DI', 'DI', 'ドライブインパクト', 3, null, null, null),
   ('sys_micro_walk', null, 'both', 'system', '微歩き', '微歩き', '微歩き', 4, null, null, null),
-  ('sys_dash', null, 'both', 'system', '66', '→→', '前ステップ', 5, null, null, null),
+  ('sys_dash', null, 'both', 'system', '前ステップ', '前ステップ', '前ステップ', 5, null, null, null),
   ('sys_delay', null, 'both', 'system', 'ディレイ', 'ディレイ', 'ディレイ', 6, null, null, null),
   ('sys_jump', null, 'both', 'system', 'J', '↑', 'ジャンプ', 7, null, null, null),
   ('sys_f_jump', null, 'both', 'system', '前J', '↗', '前ジャンプ', 8, null, null, null),
-  ('sys_jc', null, 'both', 'system', 'jc', 'jc', 'ジャンプキャンセル', 9, null, null, null)
+  ('sys_jc', null, 'both', 'system', 'Jキャン', 'Jキャン', 'ジャンプキャンセル', 9, null, null, null)
 on conflict (id) do nothing;
 
 -- 3-1. 技マスタ（豪鬼 / akuma）

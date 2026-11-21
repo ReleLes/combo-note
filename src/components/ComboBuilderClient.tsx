@@ -666,7 +666,7 @@ export function ComboBuilderClient({
                 type="button"
                 onClick={() => handleAppendMove(move.id)}
                 title={`${move.notationName} (${move.notationNumpad})`}
-                className="flex min-h-[42px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50/60 px-2.5 py-2 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
+                className="flex min-h-[44px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50/60 px-2.5 py-2 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
               >
                 <span className="inline-flex max-w-full items-center truncate text-xs font-bold text-slate-900 sm:text-sm">
                   <MoveNotation move={move} notationMode={notationMode} />
@@ -843,7 +843,7 @@ export function ComboBuilderClient({
               value={damageInput}
               onChange={(e) => setDamageInput(e.target.value)}
               placeholder="例: 2740"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
             />
           </label>
 
@@ -1022,7 +1022,7 @@ export function ComboBuilderClient({
               setFormError(null);
             }}
             placeholder="タイミングのコツ、距離限定、キャラ限定、起き攻めのフレーム状況などを記入してください。"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
           />
         </div>
       </section>

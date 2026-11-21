@@ -44,7 +44,7 @@ export function Header() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
               <Swords className="h-4 w-4" aria-hidden="true" />
             </span>
-            <span className="text-base font-bold tracking-tight sm:text-lg">
+            <span className="text-sm font-bold tracking-tight sm:text-lg">
               コンボノート
             </span>
           </Link>

@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { SEED_SITUATIONS } from "@/data/seed";
+
+export const metadata: Metadata = {
+  title: "マイノート",
+};
 import {
   buildMoveMap,
   fetchActiveCharacters,

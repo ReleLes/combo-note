@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import {
   fetchActiveCharacters,
   fetchAllMoves,
   fetchGameVersions,
 } from "@/lib/supabase/queries";
+
+export const metadata: Metadata = {
+  title: "公開コンボを投稿",
+};
 import type { Character, GameVersion, Move } from "@/types/combo";
 import { DataErrorBanner } from "@/components/DataErrorBanner";
 import { ComboBuilderClient } from "@/components/ComboBuilderClient";

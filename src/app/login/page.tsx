@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LoginFormClient } from "@/components/LoginFormClient";
+
+export const metadata: Metadata = {
+  title: "ログイン / 新規登録",
+};
 
 export default function LoginPage() {
   return (

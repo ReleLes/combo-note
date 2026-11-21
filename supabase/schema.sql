@@ -21,7 +21,7 @@ create table if not exists public.moves (
   id text primary key,
   character_id text references public.characters(id) on delete cascade,
   control_type text check (control_type in ('classic', 'modern', 'both')),
-  category text check (category in ('normal', 'unique', 'special', 'super', 'system')),
+  category text check (category in ('normal', 'unique', 'special', 'super', 'throw', 'system')),
   notation_numpad text not null,
   notation_command text not null,
   notation_name text not null,

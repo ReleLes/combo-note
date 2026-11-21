@@ -7,6 +7,7 @@ export type MoveCategory =
   | "unique"
   | "special"
   | "super"
+  | "throw"
   | "system";
 
 export type NotationMode = "numpad" | "command" | "name";

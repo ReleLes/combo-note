@@ -75,6 +75,7 @@ const MOVE_CATEGORY_TABS: { key: MoveCategory; label: string }[] = [
   { key: "unique", label: "特殊技" },
   { key: "special", label: "必殺技" },
   { key: "super", label: "SA" },
+  { key: "throw", label: "投げ" },
   { key: "system", label: "システム" },
 ];
 
@@ -92,6 +93,8 @@ function getMoveChipStyle(move: Move): string {
       return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
     case "special":
       return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+    case "throw":
+      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium";
     default:
       return "border-slate-200 bg-white text-slate-900 font-medium";
   }
@@ -230,6 +233,7 @@ export function ComboBuilderClient({
       unique: [],
       special: [],
       super: [],
+      throw: [],
       system: [],
     };
     for (const move of availableMoves) {
@@ -624,7 +628,7 @@ export function ComboBuilderClient({
         <div
           role="tablist"
           aria-label="技カテゴリ切替"
-          className="mb-3 flex flex-wrap gap-1.5 border-b border-slate-100 pb-3"
+          className="mb-2.5 grid grid-cols-3 gap-1.5 border-b border-slate-100 pb-2.5 sm:flex sm:flex-wrap"
         >
           {MOVE_CATEGORY_TABS.map((tab) => {
             const count = movesByCategory[tab.key].length;
@@ -636,15 +640,15 @@ export function ComboBuilderClient({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setActiveMoveCategory(tab.key)}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors sm:px-3 ${
+                className={`inline-flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors sm:px-3 ${
                   isActive
                     ? "bg-blue-600 text-white shadow-xs"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
-                <span>{tab.label}</span>
+                <span className="truncate">{tab.label}</span>
                 <span
-                  className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                  className={`shrink-0 rounded-full px-1.5 py-0.2 text-[10px] ${
                     isActive
                       ? "bg-white/20 text-white"
                       : "bg-white text-slate-500"
@@ -659,20 +663,34 @@ export function ComboBuilderClient({
 
         {/* 技ボタングリッド（選択中の表記モードのみ表示・CDR/DR/DIは常にアイコン統一） */}
         {currentCategoryMoves.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-            {currentCategoryMoves.map((move) => (
-              <button
-                key={move.id}
-                type="button"
-                onClick={() => handleAppendMove(move.id)}
-                title={`${move.notationName} (${move.notationNumpad})`}
-                className="flex min-h-[44px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50/60 px-2.5 py-2 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
-              >
-                <span className="inline-flex max-w-full items-center truncate text-xs font-bold text-slate-900 sm:text-sm">
-                  <MoveNotation move={move} notationMode={notationMode} />
-                </span>
-              </button>
-            ))}
+          <div className="max-h-60 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-1.5 sm:max-h-72 sm:p-2">
+            <div
+              className={`grid gap-1.5 ${
+                notationMode === "name"
+                  ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
+                  : "grid-cols-3 sm:grid-cols-4 md:grid-cols-5"
+              }`}
+            >
+              {currentCategoryMoves.map((move) => (
+                <button
+                  key={move.id}
+                  type="button"
+                  onClick={() => handleAppendMove(move.id)}
+                  title={`${move.notationName} (${move.notationNumpad})`}
+                  className="flex min-h-[40px] items-center justify-center rounded-lg border border-slate-200 bg-white px-1.5 py-1.5 text-center shadow-2xs transition-all hover:border-blue-400 hover:bg-blue-50/60 active:scale-[0.97] sm:px-2"
+                >
+                  <span
+                    className={`inline-flex max-w-full items-center justify-center text-xs font-bold text-slate-900 sm:text-[13px] ${
+                      notationMode === "command"
+                        ? "leading-tight"
+                        : "truncate"
+                    }`}
+                  >
+                    <MoveNotation move={move} notationMode={notationMode} />
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <p className="py-6 text-center text-xs text-slate-500">

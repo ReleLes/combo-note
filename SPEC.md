@@ -100,7 +100,7 @@
   - 対象キャラクター選択
   - 操作タイプ選択（クラシック / モダン）
   - **技ボタン選択式コンボビルダー**:
-    - 選んだキャラ＆操作タイプに応じた技マスタをカテゴリ別タブ（通常技／特殊技／必殺技／SA／システム〔DR・生ラッシュ・キャンセルラッシュ・DI・前ステ・ディレイ等〕）でボタン表示。
+    - 選んだキャラ＆操作タイプに応じた技マスタをカテゴリ別タブ（通常技／特殊技／必殺技／SA／投げ／システム〔DR・生ラッシュ・キャンセルラッシュ・DI・前ステ・ディレイ等〕）でボタン表示。
     - ボタンを押すとレシピ列の末尾に追加。1つ戻す・全消去・並び替え（または個別削除）が可能。
     - リアルタイムプレビュー（テンキー／コマンド／技名の3表記すべてを確認できる）。
   - **重複コンボ自動チェック**:
@@ -149,7 +149,7 @@ create table public.moves (
   id text primary key,
   character_id text references public.characters(id) on delete cascade,
   control_type text check (control_type in ('classic', 'modern', 'both')),
-  category text check (category in ('normal', 'unique', 'special', 'super', 'system')),
+  category text check (category in ('normal', 'unique', 'special', 'super', 'throw', 'system')),
   notation_numpad text not null,
   notation_command text not null,
   notation_name text not null,

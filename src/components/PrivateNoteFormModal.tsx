@@ -34,6 +34,7 @@ const MOVE_CATEGORY_TABS: { key: MoveCategory; label: string }[] = [
   { key: "unique", label: "特殊技" },
   { key: "special", label: "必殺技" },
   { key: "super", label: "SA" },
+  { key: "throw", label: "投げ" },
   { key: "system", label: "システム" },
 ];
 
@@ -51,6 +52,8 @@ function getMoveChipStyle(move: Move): string {
       return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
     case "special":
       return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+    case "throw":
+      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium";
     default:
       return "border-slate-200 bg-white text-slate-900 font-medium";
   }
@@ -126,6 +129,7 @@ export function PrivateNoteFormModal({
       unique: [],
       special: [],
       super: [],
+      throw: [],
       system: [],
     };
     for (const m of availableMoves) {
@@ -416,7 +420,13 @@ export function PrivateNoteFormModal({
 
                 {/* 技ボタングリッド */}
                 {currentCategoryMoves.length > 0 ? (
-                  <div className="grid max-h-44 grid-cols-2 gap-1.5 overflow-y-auto pr-0.5 sm:grid-cols-3">
+                  <div
+                    className={`grid max-h-48 gap-1.5 overflow-y-auto overscroll-contain pr-0.5 ${
+                      notationMode === "name"
+                        ? "grid-cols-2 sm:grid-cols-3"
+                        : "grid-cols-3 sm:grid-cols-4"
+                    }`}
+                  >
                     {currentCategoryMoves.map((move) => (
                       <button
                         key={move.id}
@@ -426,9 +436,15 @@ export function PrivateNoteFormModal({
                           setError(null);
                         }}
                         title={`${move.notationName} (${move.notationNumpad})`}
-                        className="flex min-h-[38px] items-center justify-center rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
+                        className="flex min-h-[38px] items-center justify-center rounded-lg border border-slate-200 bg-white px-1.5 py-1.5 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
                       >
-                        <span className="inline-flex max-w-full items-center truncate text-xs font-bold text-slate-900">
+                        <span
+                          className={`inline-flex max-w-full items-center justify-center text-xs font-bold text-slate-900 ${
+                            notationMode === "command"
+                              ? "leading-tight"
+                              : "truncate"
+                          }`}
+                        >
                           <MoveNotation
                             move={move}
                             notationMode={notationMode}

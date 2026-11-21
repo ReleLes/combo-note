@@ -132,6 +132,17 @@ function AttackBadge({
   );
 }
 
+function AssistBadge() {
+  return (
+    <span
+      title="アシスト (A)"
+      className="inline-flex h-[20px] items-center rounded bg-slate-700 px-1 text-[10px] font-bold text-white"
+    >
+      A
+    </span>
+  );
+}
+
 function ModernStrengthBadge({
   strength,
   isAssist = false,
@@ -145,11 +156,7 @@ function ModernStrengthBadge({
       className="inline-flex items-center gap-0.5"
       title={isAssist ? `アシスト${label}` : label}
     >
-      {isAssist && (
-        <span className="inline-flex h-[20px] items-center rounded bg-slate-700 px-1 text-[10px] font-bold text-white">
-          A
-        </span>
-      )}
+      {isAssist && <AssistBadge />}
       <span
         className={`inline-flex h-[22px] w-[22px] items-center justify-center rounded-full text-[11px] font-bold shadow-2xs ${STRENGTH_CIRCLE_CLASS[strength]}`}
       >
@@ -159,8 +166,26 @@ function ModernStrengthBadge({
   );
 }
 
+function ModernAnyAttackBadge({ count = 1 }: { count?: number }) {
+  const aria = count > 1 ? `攻撃ボタン×${count}` : "攻撃ボタン";
+  return (
+    <span
+      className="inline-flex items-center gap-0.5"
+      aria-label={aria}
+      title={aria}
+    >
+      {Array.from({ length: count }).map((_, idx) => (
+        <span
+          key={idx}
+          className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-slate-100 shadow-2xs ring-[1.5px] ring-slate-500"
+        />
+      ))}
+    </span>
+  );
+}
+
 const TOKEN_REGEX =
-  /(アシスト弱|アシスト中|アシスト強|弱P|中P|強P|弱K|中K|強K|PPP|PP|KKK|KK|CDR|DR|DI|DP|SP|空中|立|屈|J(?=[弱中強])|[↑↓←→↗↘↙↖]|[+>]|\b[PK]\b|(?<![ぁ-んァ-ヶ一-龠A-Za-z])[PK](?![A-Za-z])|[弱中強])/g;
+  /(\[[^\]]+\]|(?:前|垂直|後)J中|アシスト弱|アシスト中|アシスト強|攻撃×3|攻撃×2|攻撃|弱P|中P|強P|弱K|中K|強K|PPP|PP|KKK|KK|CDR|DR|DI|DP|SP|空中|立|屈|(?<![一-龠A-Za-z])J(?=[弱中強])|(?<![A-Za-z])A(?=\+)|[↑↓←→↗↘↙↖]|[+>]|\b[PK]\b|(?<![ぁ-んァ-ヶ一-龠A-Za-z])[PK](?![A-Za-z])|(?<![一-龠A-Za-z])[弱中強](?![一-龠ぁ-んァ-ヶ]))/g;
 
 function renderToken(token: string, key: number): React.ReactNode {
   if (token in ARROW_ROTATION) {
@@ -218,6 +243,14 @@ function renderToken(token: string, key: number): React.ReactNode {
       return <ModernStrengthBadge key={key} strength="medium" />;
     case "強":
       return <ModernStrengthBadge key={key} strength="heavy" />;
+    case "攻撃":
+      return <ModernAnyAttackBadge key={key} count={1} />;
+    case "攻撃×2":
+      return <ModernAnyAttackBadge key={key} count={2} />;
+    case "攻撃×3":
+      return <ModernAnyAttackBadge key={key} count={3} />;
+    case "A":
+      return <AssistBadge key={key} />;
     case "SP":
       return (
         <span

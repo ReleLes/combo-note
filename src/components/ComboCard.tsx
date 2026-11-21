@@ -35,6 +35,8 @@ function getMoveChipStyle(move: Move): string {
       return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
     case "special":
       return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+    case "throw":
+      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium";
     default:
       return "border-slate-200 bg-white text-slate-900 font-medium";
   }

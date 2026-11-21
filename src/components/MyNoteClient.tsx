@@ -28,6 +28,7 @@ import {
   usePrivateNotes,
   useSavedCombos,
 } from "@/hooks/useComboNoteStorage";
+import { useComboLikes } from "@/hooks/useComboLikes";
 import { ComboCard } from "./ComboCard";
 import { ComboDetailModal } from "./ComboDetailModal";
 import { PrivateNoteCard } from "./PrivateNoteCard";
@@ -77,6 +78,7 @@ export function MyNoteClient({
     deletePrivateNote,
     replacePrivateNotes,
   } = usePrivateNotes();
+  const { isLiked, getLikesCount, toggleLike } = useComboLikes(allCombos);
 
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>(
     characters[0]?.id ?? "akuma"
@@ -92,12 +94,18 @@ export function MyNoteClient({
   const [activeCombo, setActiveCombo] = useState<Combo | null>(null);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<PrivateNote | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{
+    message: string;
+    showLoginLink?: boolean;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!notice) return;
-    const timer = window.setTimeout(() => setNotice(null), 3000);
+    const timer = window.setTimeout(
+      () => setNotice(null),
+      notice.showLoginLink ? 5000 : 3000
+    );
     return () => window.clearTimeout(timer);
   }, [notice]);
 
@@ -236,11 +244,27 @@ export function MyNoteClient({
 
   const handleToggleSave = (comboId: string) => {
     const added = toggleSavedCombo(comboId);
-    setNotice(
-      added ? "マイノートに保存しました。" : "マイノートから解除しました。"
-    );
+    setNotice({
+      message: added
+        ? "マイノートに保存しました。"
+        : "マイノートから解除しました。",
+    });
     if (!added && activeCombo?.id === comboId) {
       setActiveCombo(null);
+    }
+  };
+
+  const handleToggleLike = async (combo: Combo) => {
+    const result = await toggleLike(combo);
+    if (result.requiresAuth) {
+      setNotice({
+        message: "いいねするにはログインが必要です。",
+        showLoginLink: true,
+      });
+      return;
+    }
+    if (result.error) {
+      setNotice({ message: result.error });
     }
   };
 
@@ -260,10 +284,10 @@ export function MyNoteClient({
   ) => {
     if (editingId) {
       updatePrivateNote(editingId, data);
-      setNotice("非公開メモを更新しました。");
+      setNotice({ message: "非公開メモを更新しました。" });
     } else {
       addPrivateNote(data);
-      setNotice("非公開メモを保存しました。");
+      setNotice({ message: "非公開メモを保存しました。" });
     }
     setSelectedCharacterId(data.characterId);
     setActiveSection("private");
@@ -273,7 +297,7 @@ export function MyNoteClient({
 
   const handleDeletePrivateNote = (id: string) => {
     deletePrivateNote(id);
-    setNotice("非公開メモを削除しました。");
+    setNotice({ message: "非公開メモを削除しました。" });
   };
 
   const handleExportJson = () => {
@@ -294,7 +318,7 @@ export function MyNoteClient({
     a.download = `combonote-backup-${today}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setNotice("バックアップJSONをエクスポートしました。");
+    setNotice({ message: "バックアップJSONをエクスポートしました。" });
   };
 
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -372,13 +396,14 @@ export function MyNoteClient({
         }
       }
 
-      setNotice(
-        `インポート完了（保存コンボ ${importedSaved.length}件・非公開メモ ${importedNotes.length}件を取り込みました）`
-      );
+      setNotice({
+        message: `インポート完了（保存コンボ ${importedSaved.length}件・非公開メモ ${importedNotes.length}件を取り込みました）`,
+      });
     } catch {
-      setNotice(
-        "JSONファイルの読み込みに失敗しました。コンボノートのバックアップファイルを選択してください。"
-      );
+      setNotice({
+        message:
+          "JSONファイルの読み込みに失敗しました。コンボノートのバックアップファイルを選択してください。",
+      });
     }
   };
 
@@ -631,13 +656,11 @@ export function MyNoteClient({
                   stockMeta={activeCharacter?.stockMeta}
                   notationMode={notationMode}
                   isSaved={isSaved(combo.id)}
+                  isLiked={isLiked(combo.id)}
+                  likesCount={getLikesCount(combo)}
                   onToggleSave={handleToggleSave}
+                  onToggleLike={handleToggleLike}
                   onSelect={setActiveCombo}
-                  onPlaceholderAction={(name) =>
-                    setNotice(
-                      `「${name}」機能は準備中です。今後のフェーズで実装予定です。`
-                    )
-                  }
                 />
               ))}
             </div>
@@ -763,7 +786,10 @@ export function MyNoteClient({
         stockMeta={activeCharacter?.stockMeta}
         notationMode={notationMode}
         isSaved={activeCombo ? isSaved(activeCombo.id) : false}
+        isLiked={activeCombo ? isLiked(activeCombo.id) : false}
+        likesCount={activeCombo ? getLikesCount(activeCombo) : 0}
         onToggleSave={handleToggleSave}
+        onToggleLike={handleToggleLike}
         onChangeNotationMode={setNotationMode}
         onClose={() => setActiveCombo(null)}
       />
@@ -793,15 +819,25 @@ export function MyNoteClient({
           role="status"
           className="fixed right-3 bottom-4 left-3 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-900 px-4 py-3 text-sm text-white shadow-lg sm:right-6 sm:left-auto"
         >
-          <span>{notice}</span>
-          <button
-            type="button"
-            onClick={() => setNotice(null)}
-            aria-label="通知を閉じる"
-            className="shrink-0 rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <span>{notice.message}</span>
+          <div className="flex shrink-0 items-center gap-2">
+            {notice.showLoginLink && (
+              <Link
+                href="/login?next=%2Fmy-note"
+                className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
+              >
+                ログイン
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => setNotice(null)}
+              aria-label="通知を閉じる"
+              className="rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       )}
     </div>

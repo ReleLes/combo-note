@@ -19,9 +19,11 @@ interface ComboCardProps {
   stockMeta?: CharacterStockMeta;
   notationMode: NotationMode;
   isSaved: boolean;
+  isLiked: boolean;
+  likesCount: number;
   onToggleSave: (comboId: string) => void;
+  onToggleLike: (combo: Combo) => void;
   onSelect: (combo: Combo) => void;
-  onPlaceholderAction: (featureName: string) => void;
 }
 
 function getMoveLabel(move: Move, notationMode: NotationMode): string {
@@ -62,9 +64,11 @@ export function ComboCard({
   stockMeta,
   notationMode,
   isSaved,
+  isLiked,
+  likesCount,
   onToggleSave,
+  onToggleLike,
   onSelect,
-  onPlaceholderAction,
 }: ComboCardProps) {
   const moves = combo.moveIds
     .map((id) => moveMap[id])
@@ -231,13 +235,25 @@ export function ComboCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onPlaceholderAction("いいね");
+              onToggleLike(combo);
             }}
-            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
-            aria-label={`いいね ${combo.likesCount}件（準備中）`}
+            aria-pressed={isLiked}
+            aria-label={
+              isLiked
+                ? `いいねを解除（現在 ${likesCount}件）`
+                : `いいねする（現在 ${likesCount}件）`
+            }
+            className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors ${
+              isLiked
+                ? "bg-rose-50 text-rose-600 hover:bg-rose-100"
+                : "text-slate-500 hover:bg-rose-50 hover:text-rose-600"
+            }`}
           >
-            <Heart className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="font-medium">{combo.likesCount}</span>
+            <Heart
+              className={`h-3.5 w-3.5 ${isLiked ? "fill-rose-500 text-rose-500" : ""}`}
+              aria-hidden="true"
+            />
+            <span className="font-medium">{likesCount}</span>
           </button>
         </div>
       </div>

@@ -1,13 +1,41 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { getSituationsForCharacter } from "@/data/seed";
 import {
-  getAllCharacters,
-  getCombosByCharacter,
-  getSituationsForCharacter,
-} from "@/data/seed";
+  type CharacterComboCounts,
+  fetchActiveCharacters,
+  fetchComboCountsByCharacter,
+} from "@/lib/supabase/queries";
+import type { Character } from "@/types/combo";
+import { DataErrorBanner } from "@/components/DataErrorBanner";
 
-export default function HomePage() {
-  const characters = getAllCharacters();
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  let characters: Character[] = [];
+  let comboCounts: Record<string, CharacterComboCounts> = {};
+  let errorMessage: string | null = null;
+
+  try {
+    [characters, comboCounts] = await Promise.all([
+      fetchActiveCharacters(),
+      fetchComboCountsByCharacter(),
+    ]);
+  } catch (error) {
+    errorMessage =
+      error instanceof Error
+        ? error.message
+        : "データベースからの読み込み中にエラーが発生しました。";
+  }
+
+  if (errorMessage) {
+    return (
+      <DataErrorBanner
+        title="キャラクター一覧を読み込めませんでした"
+        message={errorMessage}
+      />
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-10">
@@ -25,13 +53,11 @@ export default function HomePage() {
         className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
       >
         {characters.map((character) => {
-          const allCombos = getCombosByCharacter(character.id);
-          const classicCount = allCombos.filter(
-            (c) => c.controlType === "classic"
-          ).length;
-          const modernCount = allCombos.filter(
-            (c) => c.controlType === "modern"
-          ).length;
+          const counts = comboCounts[character.id] ?? {
+            total: 0,
+            classic: 0,
+            modern: 0,
+          };
           const uniqueSituations = getSituationsForCharacter(
             character.id
           ).filter((s) => s.characterId === character.id);
@@ -80,12 +106,12 @@ export default function HomePage() {
                 <span>
                   登録{" "}
                   <strong className="font-semibold text-slate-800">
-                    {allCombos.length}
+                    {counts.total}
                   </strong>{" "}
                   件
                 </span>
                 <span className="text-[11px]">
-                  C: {classicCount} / M: {modernCount}
+                  C: {counts.classic} / M: {counts.modern}
                 </span>
               </div>
             </Link>

@@ -21,6 +21,7 @@ import type {
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
+import { useComboLikes } from "@/hooks/useComboLikes";
 import { ComboCard } from "./ComboCard";
 import { ComboDetailModal } from "./ComboDetailModal";
 
@@ -49,6 +50,7 @@ export function CharacterComboListClient({
   const { controlType, notationMode, setControlType, setNotationMode } =
     usePreferences();
   const { isSaved, toggleSavedCombo } = useSavedCombos();
+  const { isLiked, getLikesCount, toggleLike } = useComboLikes(combos);
 
   // 絞り込み・並び替え状態
   const [selectedSituations, setSelectedSituations] = useState<string[]>([]);
@@ -65,11 +67,17 @@ export function CharacterComboListClient({
 
   // 詳細モーダル・通知トースト
   const [activeCombo, setActiveCombo] = useState<Combo | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{
+    message: string;
+    showLoginLink?: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!notice) return;
-    const timer = window.setTimeout(() => setNotice(null), 2600);
+    const timer = window.setTimeout(
+      () => setNotice(null),
+      notice.showLoginLink ? 5000 : 2600
+    );
     return () => window.clearTimeout(timer);
   }, [notice]);
 
@@ -166,7 +174,7 @@ export function CharacterComboListClient({
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case "popular":
-          return b.likesCount - a.likesCount;
+          return getLikesCount(b) - getLikesCount(a);
         case "newest":
           return (
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -186,17 +194,30 @@ export function CharacterComboListClient({
     saCostFilter,
     onlyOki,
     sortBy,
+    getLikesCount,
   ]);
 
   const handleToggleSave = (comboId: string) => {
     const added = toggleSavedCombo(comboId);
-    setNotice(
-      added ? "マイノートに保存しました。" : "マイノートから解除しました。"
-    );
+    setNotice({
+      message: added
+        ? "マイノートに保存しました。"
+        : "マイノートから解除しました。",
+    });
   };
 
-  const handlePlaceholderAction = (featureName: string) => {
-    setNotice(`「${featureName}」機能は準備中です。今後のフェーズで実装予定です。`);
+  const handleToggleLike = async (combo: Combo) => {
+    const result = await toggleLike(combo);
+    if (result.requiresAuth) {
+      setNotice({
+        message: "いいねするにはログインが必要です。",
+        showLoginLink: true,
+      });
+      return;
+    }
+    if (result.error) {
+      setNotice({ message: result.error });
+    }
   };
 
   return (
@@ -555,9 +576,11 @@ export function CharacterComboListClient({
               stockMeta={character.stockMeta}
               notationMode={notationMode}
               isSaved={isSaved(combo.id)}
+              isLiked={isLiked(combo.id)}
+              likesCount={getLikesCount(combo)}
               onToggleSave={handleToggleSave}
+              onToggleLike={handleToggleLike}
               onSelect={setActiveCombo}
-              onPlaceholderAction={handlePlaceholderAction}
             />
           ))}
         </div>
@@ -591,26 +614,39 @@ export function CharacterComboListClient({
         stockMeta={character.stockMeta}
         notationMode={notationMode}
         isSaved={activeCombo ? isSaved(activeCombo.id) : false}
+        isLiked={activeCombo ? isLiked(activeCombo.id) : false}
+        likesCount={activeCombo ? getLikesCount(activeCombo) : 0}
         onToggleSave={handleToggleSave}
+        onToggleLike={handleToggleLike}
         onChangeNotationMode={setNotationMode}
         onClose={() => setActiveCombo(null)}
       />
 
-      {/* 準備中トースト */}
+      {/* 通知トースト */}
       {notice && (
         <div
           role="status"
           className="fixed right-3 bottom-4 left-3 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-900 px-4 py-3 text-sm text-white shadow-lg sm:right-6 sm:left-auto"
         >
-          <span>{notice}</span>
-          <button
-            type="button"
-            onClick={() => setNotice(null)}
-            aria-label="通知を閉じる"
-            className="shrink-0 rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <span>{notice.message}</span>
+          <div className="flex shrink-0 items-center gap-2">
+            {notice.showLoginLink && (
+              <Link
+                href={`/login?next=${encodeURIComponent(`/characters/${character.slug}`)}`}
+                className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
+              >
+                ログイン
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => setNotice(null)}
+              aria-label="通知を閉じる"
+              className="rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       )}
     </div>

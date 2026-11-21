@@ -1,16 +1,48 @@
+import { SEED_SITUATIONS } from "@/data/seed";
 import {
-  SEED_GAME_VERSIONS,
-  SEED_SITUATIONS,
-  getAllCharacters,
-  getAllCombos,
-  getMoveMap,
-} from "@/data/seed";
+  buildMoveMap,
+  fetchActiveCharacters,
+  fetchAllCombos,
+  fetchAllMoves,
+  fetchGameVersions,
+} from "@/lib/supabase/queries";
+import type { Character, Combo, GameVersion, Move } from "@/types/combo";
 import { MyNoteClient } from "@/components/MyNoteClient";
+import { DataErrorBanner } from "@/components/DataErrorBanner";
 
-export default function MyNotePage() {
-  const characters = getAllCharacters();
-  const allCombos = getAllCombos();
-  const moveMap = getMoveMap();
+export const dynamic = "force-dynamic";
+
+export default async function MyNotePage() {
+  let characters: Character[] = [];
+  let allCombos: Combo[] = [];
+  let allMoves: Move[] = [];
+  let versions: GameVersion[] = [];
+  let errorMessage: string | null = null;
+
+  try {
+    [characters, allCombos, allMoves, versions] = await Promise.all([
+      fetchActiveCharacters(),
+      fetchAllCombos(),
+      fetchAllMoves(),
+      fetchGameVersions(),
+    ]);
+  } catch (error) {
+    errorMessage =
+      error instanceof Error
+        ? error.message
+        : "データベースからの読み込み中にエラーが発生しました。";
+  }
+
+  if (errorMessage) {
+    return (
+      <DataErrorBanner
+        title="マイノートを読み込めませんでした"
+        message={errorMessage}
+      />
+    );
+  }
+
+  const moveMap = buildMoveMap(allMoves);
 
   return (
     <MyNoteClient
@@ -18,7 +50,7 @@ export default function MyNotePage() {
       allCombos={allCombos}
       moveMap={moveMap}
       allSituations={SEED_SITUATIONS}
-      versions={SEED_GAME_VERSIONS}
+      versions={versions}
     />
   );
 }

@@ -20,7 +20,10 @@ interface ComboDetailModalProps {
   stockMeta?: CharacterStockMeta;
   notationMode: NotationMode;
   isSaved: boolean;
+  isLiked: boolean;
+  likesCount: number;
   onToggleSave: (comboId: string) => void;
+  onToggleLike: (combo: Combo) => void;
   onChangeNotationMode: (mode: NotationMode) => void;
   onClose: () => void;
 }
@@ -63,7 +66,10 @@ export function ComboDetailModal({
   stockMeta,
   notationMode,
   isSaved,
+  isLiked,
+  likesCount,
   onToggleSave,
+  onToggleLike,
   onChangeNotationMode,
   onClose,
 }: ComboDetailModalProps) {
@@ -298,10 +304,24 @@ export function ComboDetailModal({
                 {combo.authorName ?? "投稿者"}
               </span>
             </div>
-            <span className="inline-flex items-center gap-1 font-medium text-slate-600">
-              <Heart className="h-3.5 w-3.5 text-rose-500" aria-hidden="true" />
-              {combo.likesCount} いいね
-            </span>
+            <button
+              type="button"
+              onClick={() => onToggleLike(combo)}
+              aria-pressed={isLiked}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                isLiked
+                  ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600"
+              }`}
+            >
+              <Heart
+                className={`h-3.5 w-3.5 ${
+                  isLiked ? "fill-rose-500 text-rose-500" : ""
+                }`}
+                aria-hidden="true"
+              />
+              <span>{likesCount} いいね</span>
+            </button>
           </div>
         </div>
       </div>

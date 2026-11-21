@@ -27,10 +27,6 @@ export function Header() {
     return () => window.clearTimeout(timer);
   }, [notice]);
 
-  const showComingSoon = (featureName: string) => {
-    setNotice(`「${featureName}」機能は準備中です。今後のフェーズで実装予定です。`);
-  };
-
   const handleLogout = async () => {
     await signOut();
     setNotice("ログアウトしました。");
@@ -81,15 +77,18 @@ export function Header() {
               <span>マイノート</span>
             </Link>
 
-            <button
-              type="button"
-              onClick={() => showComingSoon("公開コンボ投稿")}
-              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:px-3 sm:text-sm"
+            <Link
+              href="/combos/new"
+              className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
+                pathname.startsWith("/combos/new")
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
             >
               <PlusCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="hidden sm:inline">公開コンボ投稿</span>
               <span className="sm:hidden">投稿</span>
-            </button>
+            </Link>
 
             {!isLoading && user ? (
               <div className="flex items-center gap-1.5 pl-1">

@@ -18,6 +18,8 @@ interface ComboCardProps {
   version?: GameVersion;
   stockMeta?: CharacterStockMeta;
   notationMode: NotationMode;
+  isSaved: boolean;
+  onToggleSave: (comboId: string) => void;
   onSelect: (combo: Combo) => void;
   onPlaceholderAction: (featureName: string) => void;
 }
@@ -59,6 +61,8 @@ export function ComboCard({
   version,
   stockMeta,
   notationMode,
+  isSaved,
+  onToggleSave,
   onSelect,
   onPlaceholderAction,
 }: ComboCardProps) {
@@ -110,12 +114,18 @@ export function ComboCard({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            onPlaceholderAction("マイノート保存");
+            onToggleSave(combo.id);
           }}
-          aria-label="マイノートに保存（準備中）"
-          className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500"
+          aria-pressed={isSaved}
+          aria-label={isSaved ? "マイノートから解除" : "マイノートに保存"}
+          title={isSaved ? "マイノートから解除" : "マイノートに保存"}
+          className={`shrink-0 rounded-lg p-1.5 transition-colors ${
+            isSaved
+              ? "bg-amber-50 text-amber-500 hover:bg-amber-100"
+              : "text-slate-400 hover:bg-amber-50 hover:text-amber-500"
+          }`}
         >
-          <Star className="h-4 w-4" />
+          <Star className={`h-4 w-4 ${isSaved ? "fill-amber-400" : ""}`} />
         </button>
       </div>
 

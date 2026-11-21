@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,13 +15,12 @@ import type {
   Character,
   Combo,
   ComboCategory,
-  ControlType,
   GameVersion,
   Move,
-  NotationMode,
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
 import { ComboCard } from "./ComboCard";
 import { ComboDetailModal } from "./ComboDetailModal";
 
@@ -46,9 +45,10 @@ export function CharacterComboListClient({
 }: CharacterComboListClientProps) {
   const router = useRouter();
 
-  // 上部コントロール状態（Phase 2でLocalStorage永続化予定）
-  const [controlType, setControlType] = useState<ControlType>("classic");
-  const [notationMode, setNotationMode] = useState<NotationMode>("numpad");
+  // 上部コントロール状態（LocalStorage永続化）
+  const { controlType, notationMode, setControlType, setNotationMode } =
+    usePreferences();
+  const { isSaved, toggleSavedCombo } = useSavedCombos();
 
   // 絞り込み・並び替え状態
   const [selectedSituations, setSelectedSituations] = useState<string[]>([]);
@@ -63,9 +63,15 @@ export function CharacterComboListClient({
   const [onlyOki, setOnlyOki] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>("popular");
 
-  // 詳細モーダル・準備中通知
+  // 詳細モーダル・通知トースト
   const [activeCombo, setActiveCombo] = useState<Combo | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(null), 2600);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
 
   const situationMap = useMemo(() => {
     const map: Record<string, SituationDefinition> = {};
@@ -181,6 +187,13 @@ export function CharacterComboListClient({
     onlyOki,
     sortBy,
   ]);
+
+  const handleToggleSave = (comboId: string) => {
+    const added = toggleSavedCombo(comboId);
+    setNotice(
+      added ? "マイノートに保存しました。" : "マイノートから解除しました。"
+    );
+  };
 
   const handlePlaceholderAction = (featureName: string) => {
     setNotice(`「${featureName}」機能は準備中です。今後のフェーズで実装予定です。`);
@@ -541,6 +554,8 @@ export function CharacterComboListClient({
               version={versionMap[combo.versionId]}
               stockMeta={character.stockMeta}
               notationMode={notationMode}
+              isSaved={isSaved(combo.id)}
+              onToggleSave={handleToggleSave}
               onSelect={setActiveCombo}
               onPlaceholderAction={handlePlaceholderAction}
             />
@@ -575,6 +590,8 @@ export function CharacterComboListClient({
         version={activeCombo ? versionMap[activeCombo.versionId] : undefined}
         stockMeta={character.stockMeta}
         notationMode={notationMode}
+        isSaved={activeCombo ? isSaved(activeCombo.id) : false}
+        onToggleSave={handleToggleSave}
         onChangeNotationMode={setNotationMode}
         onClose={() => setActiveCombo(null)}
       />

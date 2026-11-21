@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { ChevronRight, Flame, Heart, ShieldCheck, User, X } from "lucide-react";
+import { ChevronRight, Flame, Heart, ShieldCheck, Star, User, X } from "lucide-react";
 import type {
   CharacterStockMeta,
   Combo,
@@ -19,6 +19,8 @@ interface ComboDetailModalProps {
   version?: GameVersion;
   stockMeta?: CharacterStockMeta;
   notationMode: NotationMode;
+  isSaved: boolean;
+  onToggleSave: (comboId: string) => void;
   onChangeNotationMode: (mode: NotationMode) => void;
   onClose: () => void;
 }
@@ -60,6 +62,8 @@ export function ComboDetailModal({
   version,
   stockMeta,
   notationMode,
+  isSaved,
+  onToggleSave,
   onChangeNotationMode,
   onClose,
 }: ComboDetailModalProps) {
@@ -118,14 +122,35 @@ export function ComboDetailModal({
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="モーダルを閉じる"
-            className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onToggleSave(combo.id)}
+              aria-pressed={isSaved}
+              className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                isSaved
+                  ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-amber-50 hover:text-amber-600"
+              }`}
+            >
+              <Star
+                className={`h-3.5 w-3.5 ${
+                  isSaved ? "fill-amber-400 text-amber-500" : ""
+                }`}
+                aria-hidden="true"
+              />
+              <span>{isSaved ? "保存済み" : "保存"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="モーダルを閉じる"
+              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* 本文 */}

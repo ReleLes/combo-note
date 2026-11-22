@@ -699,6 +699,7 @@ export function MyNoteClient({
                   isSaved={isSaved(combo.id)}
                   isLiked={isLiked(combo.id)}
                   likesCount={getLikesCount(combo)}
+                  characterSlug={activeCharacter?.slug}
                   onToggleSave={handleToggleSave}
                   onToggleLike={handleToggleLike}
                   onSelect={setActiveCombo}
@@ -833,6 +834,7 @@ export function MyNoteClient({
         likesCount={activeCombo ? getLikesCount(activeCombo) : 0}
         canDelete={Boolean(user && activeCombo && user.id === activeCombo.authorId)}
         isDeleting={isDeleting}
+        characterSlug={activeCharacter?.slug}
         onToggleSave={handleToggleSave}
         onToggleLike={handleToggleLike}
         onDelete={handleDeleteCombo}

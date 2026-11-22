@@ -408,19 +408,33 @@ export function ComboForm({
     ? insertIndex
     : recipeMoveIds.length;
 
-  // ストック消費技が追加されて requiredStart > 0 になったとき、対象状況タグを自動でONにする
+  // ストック消費技・(CH)・(PC)がレシピに含まれたとき、対応する状況タグを自動でONにする
   // （ユーザーが手動で外した場合は dismissedAutoSituations で記憶し勝手に付け直さない）
-  const autoStockSituationKey = autoStock?.situationKey ?? null;
-  const autoStockRequiredStart = autoStock?.requiredStart ?? 0;
+  const autoSituationKeys = useMemo(() => {
+    const keys: string[] = [];
+    if (autoStock?.situationKey && autoStock.requiredStart > 0) {
+      keys.push(autoStock.situationKey);
+    }
+    if (recipeMoveIds.includes("sys_ch")) {
+      keys.push("counter");
+    }
+    if (recipeMoveIds.includes("sys_pc")) {
+      keys.push("punish_counter");
+    }
+    return keys;
+  }, [autoStock, recipeMoveIds]);
+
   useEffect(() => {
-    if (!autoStockSituationKey || autoStockRequiredStart <= 0) return;
-    if (dismissedAutoSituations.includes(autoStockSituationKey)) return;
-    setSelectedSituations((prev) =>
-      prev.includes(autoStockSituationKey)
-        ? prev
-        : [...prev, autoStockSituationKey]
+    if (autoSituationKeys.length === 0) return;
+    const keysToAdd = autoSituationKeys.filter(
+      (key) => !dismissedAutoSituations.includes(key)
     );
-  }, [autoStockSituationKey, autoStockRequiredStart, dismissedAutoSituations]);
+    if (keysToAdd.length === 0) return;
+    setSelectedSituations((prev) => {
+      const missing = keysToAdd.filter((key) => !prev.includes(key));
+      return missing.length > 0 ? [...prev, ...missing] : prev;
+    });
+  }, [autoSituationKeys, dismissedAutoSituations]);
 
   const recipeSignature = useMemo(() => {
     if (recipeMoveIds.length < 2) return "";
@@ -648,8 +662,12 @@ export function ComboForm({
     const isCurrentlySelected = selectedSituations.includes(key);
     if (isCurrentlySelected) {
       setSelectedSituations((prev) => prev.filter((item) => item !== key));
-      // 自動連携タグをユーザーが手動で外したことを記憶
-      if (autoStock?.situationKey === key) {
+      // 自動連携対象タグ（ストック・カウンター・パニカン）をユーザーが手動で外したことを記憶
+      if (
+        key === "counter" ||
+        key === "punish_counter" ||
+        autoStock?.situationKey === key
+      ) {
         setDismissedAutoSituations((prev) =>
           prev.includes(key) ? prev : [...prev, key]
         );

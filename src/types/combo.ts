@@ -19,6 +19,7 @@ export type CommonSituationKey =
   | "corner"
   | "di_hit"
   | "di_wall_splat"
+  | "counter"
   | "punish_counter"
   | "anti_air"
   | "stun";

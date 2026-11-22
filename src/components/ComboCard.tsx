@@ -1,10 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  Check,
   ChevronRight,
+  Copy,
   Flame,
   Heart,
+  Link2,
   Pencil,
   ShieldCheck,
   Star,
@@ -18,6 +22,10 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import {
+  copyTextToClipboard,
+  formatComboRecipeText,
+} from "@/lib/comboUtils";
 import { calculateRecipeStock } from "@/lib/stockCalculator";
 import { MoveNotation } from "@/components/CommandNotation";
 
@@ -33,6 +41,8 @@ interface ComboCardProps {
   likesCount: number;
   /** 投稿者本人のコンボにのみ渡される編集リンク */
   editHref?: string;
+  /** 共有リンク生成用のキャラクターslug */
+  characterSlug?: string;
   onToggleSave: (comboId: string) => void;
   onToggleLike: (combo: Combo) => void;
   onSelect: (combo: Combo) => void;
@@ -70,13 +80,46 @@ export function ComboCard({
   isLiked,
   likesCount,
   editHref,
+  characterSlug,
   onToggleSave,
   onToggleLike,
   onSelect,
 }: ComboCardProps) {
+  const [copiedTarget, setCopiedTarget] = useState<"recipe" | "link" | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (!copiedTarget) return;
+    const timer = window.setTimeout(() => setCopiedTarget(null), 1800);
+    return () => window.clearTimeout(timer);
+  }, [copiedTarget]);
+
   const moves = combo.moveIds
     .map((id) => moveMap[id])
     .filter((m): m is Move => Boolean(m));
+
+  const handleCopyRecipe = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const text = formatComboRecipeText(moves, notationMode);
+    if (!text) return;
+    const ok = await copyTextToClipboard(text);
+    if (ok) {
+      setCopiedTarget("recipe");
+    }
+  };
+
+  const handleCopyShareLink = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const slug = characterSlug ?? combo.characterId;
+    const url = `${window.location.origin}/characters/${slug}?combo=${encodeURIComponent(
+      combo.id
+    )}`;
+    const ok = await copyTextToClipboard(url);
+    if (ok) {
+      setCopiedTarget("link");
+    }
+  };
 
   const autoStock = calculateRecipeStock(combo.characterId, moves);
   const driveBlocks = Math.min(6, Math.max(0, Math.round(combo.driveCost)));
@@ -297,6 +340,57 @@ export function ComboCard({
       <p className="line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
         {combo.note}
       </p>
+
+      {/* クイックアクション（レシピコピー・共有リンク） */}
+      <div className="mt-2.5 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-2">
+        <button
+          type="button"
+          onClick={handleCopyRecipe}
+          aria-label="レシピをコピー"
+          title="表示中の表記モードでレシピをコピー"
+          className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold transition-colors ${
+            copiedTarget === "recipe"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+          }`}
+        >
+          {copiedTarget === "recipe" ? (
+            <>
+              <Check className="h-3 w-3" aria-hidden="true" />
+              <span>コピー済</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" aria-hidden="true" />
+              <span>レシピコピー</span>
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleCopyShareLink}
+          aria-label="共有リンクをコピー"
+          title="このコンボを直接開くURLをコピー"
+          className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold transition-colors ${
+            copiedTarget === "link"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+          }`}
+        >
+          {copiedTarget === "link" ? (
+            <>
+              <Check className="h-3 w-3" aria-hidden="true" />
+              <span>コピー済</span>
+            </>
+          ) : (
+            <>
+              <Link2 className="h-3 w-3" aria-hidden="true" />
+              <span>共有リンク</span>
+            </>
+          )}
+        </button>
+      </div>
     </article>
   );
 }

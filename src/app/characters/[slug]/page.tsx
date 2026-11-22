@@ -16,10 +16,21 @@ export const dynamic = "force-dynamic";
 
 interface CharacterPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ combo?: string | string[] }>;
 }
 
-export default async function CharacterPage({ params }: CharacterPageProps) {
-  const { slug } = await params;
+export default async function CharacterPage({
+  params,
+  searchParams,
+}: CharacterPageProps) {
+  const [{ slug }, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams,
+  ]);
+  const initialComboId =
+    typeof resolvedSearchParams.combo === "string"
+      ? resolvedSearchParams.combo
+      : undefined;
 
   let character: Character | null = null;
   let errorMessage: string | null = null;
@@ -85,6 +96,7 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
       moveMap={moveMap}
       situations={situations}
       versions={versions}
+      initialComboId={initialComboId}
     />
   );
 }

@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  Check,
   ChevronRight,
+  Copy,
   Flame,
   Heart,
+  Link2,
   Pencil,
   ShieldCheck,
   Star,
@@ -22,6 +25,10 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import {
+  copyTextToClipboard,
+  formatComboRecipeText,
+} from "@/lib/comboUtils";
 import { calculateRecipeStock } from "@/lib/stockCalculator";
 import { MoveNotation } from "@/components/CommandNotation";
 
@@ -39,6 +46,8 @@ interface ComboDetailModalProps {
   isDeleting?: boolean;
   /** 投稿者本人のコンボにのみ渡される編集リンク */
   editHref?: string;
+  /** 共有リンク生成用のキャラクターslug */
+  characterSlug?: string;
   onToggleSave: (comboId: string) => void;
   onToggleLike: (combo: Combo) => void;
   onDelete?: (combo: Combo) => Promise<void> | void;
@@ -80,6 +89,7 @@ export function ComboDetailModal({
   canDelete = false,
   isDeleting = false,
   editHref,
+  characterSlug,
   onToggleSave,
   onToggleLike,
   onDelete,
@@ -89,6 +99,15 @@ export function ComboDetailModal({
   const [confirmingComboId, setConfirmingComboId] = useState<string | null>(
     null
   );
+  const [copiedTarget, setCopiedTarget] = useState<"recipe" | "link" | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (!copiedTarget) return;
+    const timer = window.setTimeout(() => setCopiedTarget(null), 1800);
+    return () => window.clearTimeout(timer);
+  }, [copiedTarget]);
 
   useEffect(() => {
     if (!combo) return;
@@ -242,6 +261,65 @@ export function ComboDetailModal({
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* レシピコピー・共有リンクアクション */}
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  const text = formatComboRecipeText(moves, notationMode);
+                  if (!text) return;
+                  const ok = await copyTextToClipboard(text);
+                  if (ok) setCopiedTarget("recipe");
+                }}
+                className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                  copiedTarget === "recipe"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                }`}
+              >
+                {copiedTarget === "recipe" ? (
+                  <>
+                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>コピー済</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>レシピをコピー</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  const slug = characterSlug ?? combo.characterId;
+                  const url = `${window.location.origin}/characters/${slug}?combo=${encodeURIComponent(
+                    combo.id
+                  )}`;
+                  const ok = await copyTextToClipboard(url);
+                  if (ok) setCopiedTarget("link");
+                }}
+                className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                  copiedTarget === "link"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                }`}
+              >
+                {copiedTarget === "link" ? (
+                  <>
+                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>コピー済</span>
+                  </>
+                ) : (
+                  <>
+                    <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>共有リンクをコピー</span>
+                  </>
+                )}
+              </button>
             </div>
           </section>
 

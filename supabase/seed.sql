@@ -33,7 +33,9 @@ values
   ('sys_delay', null, 'both', 'system', 'ディレイ', 'ディレイ', 'ディレイ', 6, null, null, null),
   ('sys_jump', null, 'both', 'system', 'J', '↑', 'ジャンプ', 7, null, null, null),
   ('sys_f_jump', null, 'both', 'system', '前J', '↗', '前ジャンプ', 8, null, null, null),
-  ('sys_jc', null, 'both', 'system', 'Jキャン', 'Jキャン', 'ジャンプキャンセル', 9, null, null, null)
+  ('sys_jc', null, 'both', 'system', 'Jキャン', 'Jキャン', 'ジャンプキャンセル', 9, null, null, null),
+  ('sys_ch', null, 'both', 'system', '(CH)', '(CH)', 'カウンターヒット', 10, null, null, null),
+  ('sys_pc', null, 'both', 'system', '(PC)', '(PC)', 'パニッシュカウンター', 11, null, null, null)
 on conflict (id) do nothing;
 
 -- 3-1. 技マスタ（豪鬼 / akuma）

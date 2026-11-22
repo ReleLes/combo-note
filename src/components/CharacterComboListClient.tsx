@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -20,6 +20,7 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import { formatMoveText, getStarterMoveId } from "@/lib/comboUtils";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
@@ -36,6 +37,8 @@ interface CharacterComboListClientProps {
   moveMap: Record<string, Move>;
   situations: SituationDefinition[];
   versions: GameVersion[];
+  /** 共有URL (?combo=ID) で直接指定されたコンボID */
+  initialComboId?: string;
 }
 
 export function CharacterComboListClient({
@@ -45,6 +48,7 @@ export function CharacterComboListClient({
   moveMap,
   situations,
   versions,
+  initialComboId,
 }: CharacterComboListClientProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -64,6 +68,9 @@ export function CharacterComboListClient({
   const [selectedCategory, setSelectedCategory] = useState<
     ComboCategory | "all"
   >("all");
+  const [selectedStarterMoveId, setSelectedStarterMoveId] = useState<
+    string | "all"
+  >("all");
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [maxDriveCost, setMaxDriveCost] = useState<number | "all">("all");
   const [saCostFilter, setSaCostFilter] = useState<number | "all">("all");
@@ -72,10 +79,28 @@ export function CharacterComboListClient({
 
   // 詳細モーダル・通知トースト
   const [activeCombo, setActiveCombo] = useState<Combo | null>(null);
+  const handledInitialComboIdRef = useRef<string | null>(null);
   const [notice, setNotice] = useState<{
     message: string;
     showLoginLink?: boolean;
   } | null>(null);
+
+  // 共有URL (?combo=ID) でアクセスされた場合、該当コンボを自動で詳細モーダル表示＆操作タイプ合わせ
+  useEffect(() => {
+    if (!initialComboId) return;
+    if (handledInitialComboIdRef.current === initialComboId) return;
+
+    const target = combos.find(
+      (c) => c.id === initialComboId && !deletedIds.has(c.id)
+    );
+    handledInitialComboIdRef.current = initialComboId;
+    if (!target) return;
+
+    if (target.controlType !== controlType) {
+      setControlType(target.controlType);
+    }
+    setActiveCombo(target);
+  }, [initialComboId, combos, deletedIds, controlType, setControlType]);
 
   useEffect(() => {
     if (!notice) return;
@@ -121,16 +146,46 @@ export function CharacterComboListClient({
     setOnlyStockGain(false);
     setSelectedStockCosts([]);
     setSelectedCategory("all");
+    setSelectedStarterMoveId("all");
     setMaxDriveCost("all");
     setSaCostFilter("all");
     setOnlyOki(false);
   };
+
+  // 現在のキャラ・操作タイプの公開コンボに登場する始動技一覧（件数付き・重複なし）
+  const starterMoveOptions = useMemo(() => {
+    const countMap = new Map<string, number>();
+    for (const combo of combos) {
+      if (deletedIds.has(combo.id)) continue;
+      if (combo.controlType !== controlType) continue;
+      const starterId = getStarterMoveId(combo.moveIds, moveMap);
+      if (!starterId || !moveMap[starterId]) continue;
+      countMap.set(starterId, (countMap.get(starterId) ?? 0) + 1);
+    }
+
+    return Array.from(countMap.entries())
+      .map(([moveId, count]) => ({
+        moveId,
+        move: moveMap[moveId],
+        count,
+      }))
+      .sort((a, b) => a.move.sortOrder - b.move.sortOrder);
+  }, [combos, deletedIds, controlType, moveMap]);
+
+  // 操作タイプ変更などで選択肢から外れた始動技フィルタは自動的に "all" 扱いとする
+  const effectiveStarterMoveId = useMemo(() => {
+    if (selectedStarterMoveId === "all") return "all";
+    return starterMoveOptions.some((opt) => opt.moveId === selectedStarterMoveId)
+      ? selectedStarterMoveId
+      : "all";
+  }, [selectedStarterMoveId, starterMoveOptions]);
 
   const hasActiveFilters =
     selectedSituations.length > 0 ||
     onlyStockGain ||
     selectedStockCosts.length > 0 ||
     selectedCategory !== "all" ||
+    effectiveStarterMoveId !== "all" ||
     maxDriveCost !== "all" ||
     saCostFilter !== "all" ||
     onlyOki;
@@ -160,6 +215,13 @@ export function CharacterComboListClient({
 
       if (selectedCategory !== "all" && combo.category !== selectedCategory) {
         return false;
+      }
+
+      if (effectiveStarterMoveId !== "all") {
+        const starterId = getStarterMoveId(combo.moveIds, moveMap);
+        if (starterId !== effectiveStarterMoveId) {
+          return false;
+        }
       }
 
       if (maxDriveCost !== "all" && combo.driveCost > maxDriveCost) {
@@ -197,6 +259,8 @@ export function CharacterComboListClient({
     onlyStockGain,
     selectedStockCosts,
     selectedCategory,
+    effectiveStarterMoveId,
+    moveMap,
     maxDriveCost,
     saCostFilter,
     onlyOki,
@@ -320,7 +384,10 @@ export function CharacterComboListClient({
                   type="button"
                   role="tab"
                   aria-selected={controlType === item.value}
-                  onClick={() => setControlType(item.value)}
+                  onClick={() => {
+                    setControlType(item.value);
+                    setSelectedStarterMoveId("all");
+                  }}
                   className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all sm:px-4 ${
                     controlType === item.value
                       ? "bg-white text-blue-700 shadow-xs"
@@ -460,6 +527,43 @@ export function CharacterComboListClient({
             )}
           </div>
         </div>
+
+        {/* 始動技逆引きフィルタ */}
+        {starterMoveOptions.length > 0 && (
+          <div className="flex flex-col gap-1.5 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <label
+              htmlFor="starter-move-filter"
+              className="shrink-0 text-xs font-bold text-slate-700"
+            >
+              始動技で絞る
+            </label>
+            <div className="flex items-center gap-2 sm:min-w-[260px]">
+              <select
+                id="starter-move-filter"
+                value={effectiveStarterMoveId}
+                onChange={(e) => setSelectedStarterMoveId(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-900 focus:border-blue-500 focus:outline-none sm:text-sm"
+              >
+                <option value="all">すべての始動技</option>
+                {starterMoveOptions.map(({ moveId, move, count }) => (
+                  <option key={moveId} value={moveId}>
+                    {formatMoveText(move, notationMode)} ({count}件)
+                  </option>
+                ))}
+              </select>
+              {effectiveStarterMoveId !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedStarterMoveId("all")}
+                  aria-label="始動技フィルタをクリア"
+                  className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100"
+                >
+                  解除
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* カテゴリフィルタ + 詳細条件トグル */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
@@ -619,6 +723,7 @@ export function CharacterComboListClient({
                   ? `/combos/${combo.id}/edit`
                   : undefined
               }
+              characterSlug={character.slug}
               onToggleSave={handleToggleSave}
               onToggleLike={handleToggleLike}
               onSelect={setActiveCombo}
@@ -664,11 +769,22 @@ export function CharacterComboListClient({
             ? `/combos/${activeCombo.id}/edit`
             : undefined
         }
+        characterSlug={character.slug}
         onToggleSave={handleToggleSave}
         onToggleLike={handleToggleLike}
         onDelete={handleDeleteCombo}
         onChangeNotationMode={setNotationMode}
-        onClose={() => setActiveCombo(null)}
+        onClose={() => {
+          setActiveCombo(null);
+          if (
+            typeof window !== "undefined" &&
+            window.location.search.includes("combo=")
+          ) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("combo");
+            window.history.replaceState(null, "", url.pathname + url.search);
+          }
+        }}
       />
 
       {/* 通知トースト */}

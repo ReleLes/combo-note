@@ -123,25 +123,32 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     sortOrder: 4,
   },
   {
+    key: "counter",
+    label: "カウンター",
+    badgeClassName: "bg-red-100 text-red-700",
+    characterId: null,
+    sortOrder: 5,
+  },
+  {
     key: "punish_counter",
     label: "パニカン",
     badgeClassName: "bg-rose-100 text-rose-700",
     characterId: null,
-    sortOrder: 5,
+    sortOrder: 6,
   },
   {
     key: "anti_air",
     label: "対空",
     badgeClassName: "bg-emerald-100 text-emerald-700",
     characterId: null,
-    sortOrder: 6,
+    sortOrder: 7,
   },
   {
     key: "stun",
     label: "スタン",
     badgeClassName: "bg-yellow-100 text-yellow-800",
     characterId: null,
-    sortOrder: 7,
+    sortOrder: 8,
   },
 
   // キャラ固有状況
@@ -266,6 +273,26 @@ export const SYSTEM_MOVES: Move[] = [
     notationCommand: "Jキャン",
     notationName: "ジャンプキャンセル",
     sortOrder: 9,
+  },
+  {
+    id: "sys_ch",
+    characterId: null,
+    controlType: "both",
+    category: "system",
+    notationNumpad: "(CH)",
+    notationCommand: "(CH)",
+    notationName: "カウンターヒット",
+    sortOrder: 10,
+  },
+  {
+    id: "sys_pc",
+    characterId: null,
+    controlType: "both",
+    category: "system",
+    notationNumpad: "(PC)",
+    notationCommand: "(PC)",
+    notationName: "パニッシュカウンター",
+    sortOrder: 11,
   },
 ];
 

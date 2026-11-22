@@ -10,12 +10,18 @@ export const metadata: Metadata = {
   },
   description:
     "ストリートファイター6（SF6）向けコンボ管理・共有Webアプリ。状況別フィルタ・3表記切替・マイノートで、練習中や対戦の合間にすぐコンボを確認できます。",
+  applicationName: "コンボノート",
+  appleWebApp: {
+    capable: true,
+    title: "コンボノート",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f8fafc",
+  themeColor: "#0B162C",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

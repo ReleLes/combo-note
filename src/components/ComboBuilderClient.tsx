@@ -70,6 +70,7 @@ export function ComboBuilderClient({
         author_name: authorName,
         character_id: payload.characterId,
         control_type: payload.controlType,
+        title: payload.title,
         move_ids: payload.moveIds,
         recipe_signature: payload.recipeSignature,
         situations: payload.situations,

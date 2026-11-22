@@ -18,6 +18,7 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import { calculateRecipeStock } from "@/lib/stockCalculator";
 import { MoveNotation } from "@/components/CommandNotation";
 
 interface ComboCardProps {
@@ -77,6 +78,7 @@ export function ComboCard({
     .map((id) => moveMap[id])
     .filter((m): m is Move => Boolean(m));
 
+  const autoStock = calculateRecipeStock(combo.characterId, moves);
   const driveBlocks = Math.min(6, Math.max(0, Math.round(combo.driveCost)));
   const stockShortLabel = stockMeta?.shortLabel ?? "ストック";
   const stockCost = combo.stockCost ?? 0;
@@ -150,6 +152,13 @@ export function ComboCard({
         </div>
       </div>
 
+      {/* コンボタイトル（設定時のみ表示） */}
+      {combo.title?.trim() && (
+        <h3 className="mb-2 text-sm font-bold leading-snug text-slate-900 sm:text-[15px]">
+          {combo.title.trim()}
+        </h3>
+      )}
+
       {/* レシピ表示エリア：長尺コンボでも390px幅で崩れず折り返される */}
       <div className="mb-3 rounded-lg border border-slate-100 bg-slate-50/70 p-2.5 sm:p-3">
         <div className="flex flex-wrap items-center gap-x-1 gap-y-1.5">
@@ -211,26 +220,35 @@ export function ComboCard({
             SA {combo.saCost}
           </span>
 
-          {/* キャラ固有ストック消費 */}
-          {stockCost > 0 && (
+          {/* キャラ固有ストック増減（レシピ自動計算優先・未対応キャラ等はDB値をフォールバック表示） */}
+          {autoStock?.hasActivity ? (
             <span
-              className="inline-flex items-center gap-0.5 rounded border border-pink-200 bg-pink-50 px-1.5 py-0.5 text-[11px] font-semibold text-pink-700"
-              title={`${stockMeta?.label ?? "ストック"}を${stockCost}消費`}
+              className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-semibold ${autoStock.badgeClassName}`}
+              title={`${autoStock.label}: 必要${autoStock.requiredStart} / 消費${autoStock.consumedTotal} / 獲得+${autoStock.gainedTotal}`}
             >
-              <span>{stockShortLabel}</span>
-              <span className="font-mono">-{stockCost}</span>
+              {autoStock.summaryLabel}
             </span>
-          )}
-
-          {/* キャラ固有ストック獲得 */}
-          {stockGain > 0 && (
-            <span
-              className="inline-flex items-center gap-0.5 rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[11px] font-semibold text-cyan-700"
-              title={`${stockMeta?.label ?? "ストック"}を${stockGain}獲得`}
-            >
-              <span>{stockShortLabel}</span>
-              <span className="font-mono">+{stockGain}</span>
-            </span>
+          ) : (
+            <>
+              {stockCost > 0 && (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded border border-pink-200 bg-pink-50 px-1.5 py-0.5 text-[11px] font-semibold text-pink-700"
+                  title={`${stockMeta?.label ?? "ストック"}を${stockCost}消費`}
+                >
+                  <span>{stockShortLabel}</span>
+                  <span className="font-mono">-{stockCost}</span>
+                </span>
+              )}
+              {stockGain > 0 && (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[11px] font-semibold text-cyan-700"
+                  title={`${stockMeta?.label ?? "ストック"}を${stockGain}獲得`}
+                >
+                  <span>{stockShortLabel}</span>
+                  <span className="font-mono">+{stockGain}</span>
+                </span>
+              )}
+            </>
           )}
 
           {/* 起き攻め */}

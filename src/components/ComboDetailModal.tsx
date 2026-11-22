@@ -22,6 +22,7 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import { calculateRecipeStock } from "@/lib/stockCalculator";
 import { MoveNotation } from "@/components/CommandNotation";
 
 interface ComboDetailModalProps {
@@ -106,6 +107,8 @@ export function ComboDetailModal({
     .map((id) => moveMap[id])
     .filter((m): m is Move => Boolean(m));
 
+  const autoStock = calculateRecipeStock(combo.characterId, moves);
+
   const categoryLabel =
     COMBO_CATEGORIES.find((c) => c.key === combo.category)?.label ??
     combo.category;
@@ -179,6 +182,13 @@ export function ComboDetailModal({
 
         {/* 本文 */}
         <div className="space-y-5 p-4 sm:p-6">
+          {/* コンボタイトル（設定時のみ表示） */}
+          {combo.title?.trim() && (
+            <h2 className="text-base font-bold leading-snug text-slate-900 sm:text-lg">
+              {combo.title.trim()}
+            </h2>
+          )}
+
           {/* コンボレシピ（選択中の表記＋モーダル内切替） */}
           <section className="space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -277,21 +287,40 @@ export function ComboDetailModal({
             </div>
           </section>
 
-          {/* キャラ固有ストック増減（該当する場合のみ表示） */}
-          {((combo.stockCost ?? 0) > 0 || (combo.stockGain ?? 0) > 0) && (
+          {/* キャラ固有ストック増減（レシピ自動計算優先・未対応キャラ等はDB値をフォールバック表示） */}
+          {(autoStock?.hasActivity ||
+            (combo.stockCost ?? 0) > 0 ||
+            (combo.stockGain ?? 0) > 0) && (
             <section className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2.5 text-xs">
               <span className="font-semibold text-slate-600">
-                {stockMeta?.label ?? "固有ストック"}:
+                {autoStock?.label ?? stockMeta?.label ?? "固有ストック"}:
               </span>
-              {(combo.stockCost ?? 0) > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-md border border-pink-200 bg-pink-50 px-2 py-0.5 font-semibold text-pink-700">
-                  消費 -{combo.stockCost}
-                </span>
-              )}
-              {(combo.stockGain ?? 0) > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-0.5 font-semibold text-cyan-700">
-                  獲得 +{combo.stockGain}
-                </span>
+              {autoStock?.hasActivity ? (
+                <>
+                  <span
+                    className={`inline-flex items-center rounded-md border px-2 py-0.5 font-semibold ${autoStock.badgeClassName}`}
+                  >
+                    {autoStock.summaryLabel}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    （必要 {autoStock.requiredStart} / 消費{" "}
+                    {autoStock.consumedTotal} / 獲得 +{autoStock.gainedTotal} /
+                    終了時 {autoStock.endStock}）
+                  </span>
+                </>
+              ) : (
+                <>
+                  {(combo.stockCost ?? 0) > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-pink-200 bg-pink-50 px-2 py-0.5 font-semibold text-pink-700">
+                      消費 -{combo.stockCost}
+                    </span>
+                  )}
+                  {(combo.stockGain ?? 0) > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-0.5 font-semibold text-cyan-700">
+                      獲得 +{combo.stockGain}
+                    </span>
+                  )}
+                </>
               )}
             </section>
           )}

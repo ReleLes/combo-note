@@ -5,12 +5,16 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
+  CornerDownRight,
   ExternalLink,
   Info,
+  Plus,
   RotateCcw,
   Send,
   ShieldCheck,
+  Sparkles,
   Trash2,
   Undo2,
   X,
@@ -33,6 +37,10 @@ import {
 import { getSituationsForCharacter } from "@/data/seed";
 import { createClient } from "@/lib/supabase/client";
 import { calculateRecipeGaugeCost } from "@/lib/gaugeCalculator";
+import {
+  calculateRecipeStock,
+  hasStockCalculator,
+} from "@/lib/stockCalculator";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
 import { ComboDetailModal } from "@/components/ComboDetailModal";
 import { MoveNotation } from "@/components/CommandNotation";
@@ -40,6 +48,7 @@ import { MoveNotation } from "@/components/CommandNotation";
 export interface ComboFormSubmitPayload {
   characterId: string;
   controlType: ControlType;
+  title: string | null;
   moveIds: string[];
   recipeSignature: string;
   situations: string[];
@@ -77,6 +86,7 @@ interface DuplicateComboRow {
   author_name: string | null;
   character_id: string;
   control_type: ControlType;
+  title?: string | null;
   move_ids: unknown;
   recipe_signature: string;
   situations: string[] | null;
@@ -138,6 +148,7 @@ function mapRowToCombo(row: DuplicateComboRow): Combo {
     authorName: row.author_name ?? undefined,
     characterId: row.character_id,
     controlType: row.control_type,
+    title: row.title ?? null,
     moveIds,
     recipeSignature: row.recipe_signature,
     situations: row.situations ?? [],
@@ -185,13 +196,21 @@ export function ComboForm({
     return map;
   }, [allMoves]);
 
-  // 初期ゲージ計算（編集モード時に手動調整済みか判定するため）
+  // 初期ゲージ・ストック計算（編集モード時に手動調整済みか判定するため）
   const initialAutoGauge = useMemo(() => {
     if (!initialCombo) return null;
     const moves = initialCombo.moveIds
       .map((id) => moveMap[id])
       .filter((m): m is Move => Boolean(m));
     return calculateRecipeGaugeCost(moves);
+  }, [initialCombo, moveMap]);
+
+  const initialAutoStock = useMemo(() => {
+    if (!initialCombo) return null;
+    const moves = initialCombo.moveIds
+      .map((id) => moveMap[id])
+      .filter((m): m is Move => Boolean(m));
+    return calculateRecipeStock(initialCombo.characterId, moves);
   }, [initialCombo, moveMap]);
 
   // Step 1: ビルダー状態
@@ -206,11 +225,18 @@ export function ComboForm({
   const [recipeMoveIds, setRecipeMoveIds] = useState<string[]>(
     initialCombo?.moveIds ?? []
   );
+  /** 挿入位置（null = 末尾に追加、0..length-1 = 該当インデックスの直前に挿入） */
+  const [insertIndex, setInsertIndex] = useState<number | null>(null);
 
   // Step 2: メタ情報フォーム状態
+  const [title, setTitle] = useState<string>(initialCombo?.title ?? "");
   const [selectedSituations, setSelectedSituations] = useState<string[]>(
     initialCombo?.situations ?? []
   );
+  /** ユーザーが手動でOFFにした自動連携状況タグ（勝手に再ONしないため） */
+  const [dismissedAutoSituations, setDismissedAutoSituations] = useState<
+    string[]
+  >([]);
   const [category, setCategory] = useState<ComboCategory>(
     initialCombo?.category ?? "standard"
   );
@@ -238,10 +264,27 @@ export function ComboForm({
     initialCombo?.saCost ?? 0
   );
 
-  const [stockCost, setStockCost] = useState<number>(
+  // ストック消費・獲得（自動計算対応キャラでは自動／手動モードを持つ）
+  const [stockCostMode, setStockCostMode] = useState<"auto" | "manual">(() => {
+    if (!initialCombo || !initialAutoStock) return "auto";
+    const expectedCost = Math.min(
+      initialAutoStock.maxCount,
+      initialAutoStock.requiredStart
+    );
+    return (initialCombo.stockCost ?? 0) === expectedCost ? "auto" : "manual";
+  });
+  const [manualStockCost, setManualStockCost] = useState<number>(
     initialCombo?.stockCost ?? 0
   );
-  const [stockGain, setStockGain] = useState<number>(
+  const [stockGainMode, setStockGainMode] = useState<"auto" | "manual">(() => {
+    if (!initialCombo || !initialAutoStock) return "auto";
+    const expectedGain = Math.min(
+      initialAutoStock.maxCount,
+      initialAutoStock.gainedTotal
+    );
+    return (initialCombo.stockGain ?? 0) === expectedGain ? "auto" : "manual";
+  });
+  const [manualStockGain, setManualStockGain] = useState<number>(
     initialCombo?.stockGain ?? 0
   );
   const [hasOki, setHasOki] = useState<boolean>(initialCombo?.hasOki ?? false);
@@ -318,15 +361,66 @@ export function ComboForm({
     [recipeMoveIds, moveMap]
   );
 
-  // レシピからリアルタイム自動計算
+  // レシピからリアルタイム自動計算（D/SAゲージ・固有ストック）
   const autoGauge = useMemo(
     () => calculateRecipeGaugeCost(recipeMoves),
     [recipeMoves]
   );
+  const autoStock = useMemo(
+    () => calculateRecipeStock(selectedCharacterId, recipeMoves),
+    [selectedCharacterId, recipeMoves]
+  );
+  const supportsAutoStock = hasStockCalculator(selectedCharacterId);
+
   const driveCost =
     driveCostMode === "auto" ? autoGauge.driveCost : manualDriveCost;
   const saCost: 0 | 1 | 2 | 3 =
     saCostMode === "auto" ? autoGauge.saCost : manualSaCost;
+
+  const autoStockCostValue = autoStock
+    ? Math.min(autoStock.maxCount, autoStock.requiredStart)
+    : 0;
+  const autoStockGainValue = useMemo(() => {
+    if (!autoStock) return 0;
+    const gainOptions = selectedCharacter?.stockMeta?.gainOptions;
+    if (gainOptions && gainOptions.length > 0) {
+      if (autoStock.gainedTotal <= 0) return 0;
+      const nonZeroMax = Math.max(...gainOptions);
+      return gainOptions.includes(autoStock.gainedTotal)
+        ? autoStock.gainedTotal
+        : nonZeroMax;
+    }
+    return Math.min(autoStock.maxCount, autoStock.gainedTotal);
+  }, [autoStock, selectedCharacter]);
+
+  const stockCost =
+    supportsAutoStock && stockCostMode === "auto"
+      ? autoStockCostValue
+      : manualStockCost;
+  const stockGain =
+    supportsAutoStock && stockGainMode === "auto"
+      ? autoStockGainValue
+      : manualStockGain;
+
+  const isInsertingMidway =
+    insertIndex !== null && insertIndex < recipeMoveIds.length;
+  const effectiveInsertIndex = isInsertingMidway
+    ? insertIndex
+    : recipeMoveIds.length;
+
+  // ストック消費技が追加されて requiredStart > 0 になったとき、対象状況タグを自動でONにする
+  // （ユーザーが手動で外した場合は dismissedAutoSituations で記憶し勝手に付け直さない）
+  const autoStockSituationKey = autoStock?.situationKey ?? null;
+  const autoStockRequiredStart = autoStock?.requiredStart ?? 0;
+  useEffect(() => {
+    if (!autoStockSituationKey || autoStockRequiredStart <= 0) return;
+    if (dismissedAutoSituations.includes(autoStockSituationKey)) return;
+    setSelectedSituations((prev) =>
+      prev.includes(autoStockSituationKey)
+        ? prev
+        : [...prev, autoStockSituationKey]
+    );
+  }, [autoStockSituationKey, autoStockRequiredStart, dismissedAutoSituations]);
 
   const recipeSignature = useMemo(() => {
     if (recipeMoveIds.length < 2) return "";
@@ -409,10 +503,14 @@ export function ComboForm({
     }
     setSelectedCharacterId(nextCharId);
     setActiveMoveCategory("normal");
-    setStockCost(0);
-    setStockGain(0);
+    setInsertIndex(null);
+    setManualStockCost(0);
+    setManualStockGain(0);
+    setStockCostMode("auto");
+    setStockGainMode("auto");
     setDriveCostMode("auto");
     setSaCostMode("auto");
+    setDismissedAutoSituations([]);
     // 別キャラ固有の状況キーを除外
     const nextAllowed = new Set(
       getSituationsForCharacter(nextCharId).map((s) => s.key)
@@ -428,26 +526,74 @@ export function ComboForm({
       );
       if (!ok) return;
       setRecipeMoveIds([]);
+      setInsertIndex(null);
     }
     setControlType(nextControl);
     setActiveMoveCategory("normal");
   };
 
   const handleAppendMove = (moveId: string) => {
-    setRecipeMoveIds((prev) => [...prev, moveId]);
+    if (insertIndex === null || insertIndex >= recipeMoveIds.length) {
+      setRecipeMoveIds((prev) => [...prev, moveId]);
+    } else {
+      const targetPos = insertIndex;
+      setRecipeMoveIds((prev) => [
+        ...prev.slice(0, targetPos),
+        moveId,
+        ...prev.slice(targetPos),
+      ]);
+      // 続けて途中挿入できるよう挿入位置を +1 右へ進める
+      setInsertIndex(targetPos + 1);
+    }
     clearErrors();
   };
 
   const handleUndo = () => {
+    if (isInsertingMidway && insertIndex > 0) {
+      const removePos = insertIndex - 1;
+      setRecipeMoveIds((prev) => prev.filter((_, i) => i !== removePos));
+      setInsertIndex(removePos);
+      return;
+    }
     setRecipeMoveIds((prev) => prev.slice(0, -1));
   };
 
   const handleRemoveAt = (index: number) => {
+    const nextLength = recipeMoveIds.length - 1;
     setRecipeMoveIds((prev) => prev.filter((_, i) => i !== index));
+    if (insertIndex !== null) {
+      if (index < insertIndex) {
+        const shifted = insertIndex - 1;
+        setInsertIndex(shifted >= nextLength ? null : shifted);
+      } else if (insertIndex >= nextLength) {
+        setInsertIndex(null);
+      }
+    }
+  };
+
+  const handleMoveLeft = (index: number) => {
+    if (index <= 0) return;
+    setRecipeMoveIds((prev) => {
+      const next = [...prev];
+      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+      return next;
+    });
+    clearErrors();
+  };
+
+  const handleMoveRight = (index: number) => {
+    if (index >= recipeMoveIds.length - 1) return;
+    setRecipeMoveIds((prev) => {
+      const next = [...prev];
+      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+      return next;
+    });
+    clearErrors();
   };
 
   const handleClear = () => {
     setRecipeMoveIds([]);
+    setInsertIndex(null);
   };
 
   const handleManualDriveCostChange = (nextVal: number) => {
@@ -472,10 +618,46 @@ export function ComboForm({
     clearErrors();
   };
 
+  const handleManualStockCostChange = (nextVal: number) => {
+    if (supportsAutoStock) {
+      setStockCostMode("manual");
+    }
+    setManualStockCost(nextVal);
+    clearErrors();
+  };
+
+  const handleResetStockCostToAuto = () => {
+    setStockCostMode("auto");
+    clearErrors();
+  };
+
+  const handleManualStockGainChange = (nextVal: number) => {
+    if (supportsAutoStock) {
+      setStockGainMode("manual");
+    }
+    setManualStockGain(nextVal);
+    clearErrors();
+  };
+
+  const handleResetStockGainToAuto = () => {
+    setStockGainMode("auto");
+    clearErrors();
+  };
+
   const toggleSituation = (key: string) => {
-    setSelectedSituations((prev) =>
-      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
-    );
+    const isCurrentlySelected = selectedSituations.includes(key);
+    if (isCurrentlySelected) {
+      setSelectedSituations((prev) => prev.filter((item) => item !== key));
+      // 自動連携タグをユーザーが手動で外したことを記憶
+      if (autoStock?.situationKey === key) {
+        setDismissedAutoSituations((prev) =>
+          prev.includes(key) ? prev : [...prev, key]
+        );
+      }
+    } else {
+      setSelectedSituations((prev) => [...prev, key]);
+      setDismissedAutoSituations((prev) => prev.filter((item) => item !== key));
+    }
     clearErrors();
   };
 
@@ -517,9 +699,16 @@ export function ComboForm({
       return;
     }
 
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length > 60) {
+      setValidationError("コンボタイトルは60文字以内で入力してください。");
+      return;
+    }
+
     await onSubmit({
       characterId: selectedCharacterId,
       controlType,
+      title: trimmedTitle || null,
       moveIds: recipeMoveIds,
       recipeSignature,
       situations: selectedSituations,
@@ -645,8 +834,16 @@ export function ComboForm({
           <h2 className="text-sm font-bold text-slate-900">
             技を選択して追加 <span className="text-rose-500">*</span>
           </h2>
-          <span className="text-[11px] text-slate-500">
-            タップでレシピ末尾に追加
+          <span className="text-[11px] font-medium text-slate-500">
+            {isInsertingMidway ? (
+              <span className="font-semibold text-blue-600">
+                {effectiveInsertIndex === 0
+                  ? "タップで先頭に挿入"
+                  : `タップで ${effectiveInsertIndex}→${effectiveInsertIndex + 1} 番目の間に挿入`}
+              </span>
+            ) : (
+              "タップでレシピ末尾に追加"
+            )}
           </span>
         </div>
 
@@ -723,19 +920,28 @@ export function ComboForm({
         )}
       </section>
 
-      {/* 3. 組み立て中のレシピ（選択中の表記モードでリアルタイム表示） */}
+      {/* 3. 組み立て中のレシピ（任意位置挿入・並び替え・リアルタイムプレビュー） */}
       <section
         aria-label="組み立て中のレシピ"
         className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4"
       >
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <h2 className="text-sm font-bold text-slate-900">
               組み立て中のレシピ
             </h2>
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
               {recipeMoves.length} パーツ
             </span>
+            {autoStock?.hasActivity && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${autoStock.badgeClassName}`}
+                title={`${autoStock.label} 自動計算結果`}
+              >
+                <Sparkles className="h-3 w-3" aria-hidden="true" />
+                <span>{autoStock.summaryLabel}</span>
+              </span>
+            )}
             {recipeMoves.length === 1 && (
               <span className="text-[11px] font-medium text-amber-700">
                 ※ 2つ以上選択してください
@@ -743,7 +949,17 @@ export function ComboForm({
             )}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {isInsertingMidway && (
+              <button
+                type="button"
+                onClick={() => setInsertIndex(null)}
+                className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+              >
+                <CornerDownRight className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>末尾に追加へ戻す</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={handleUndo}
@@ -766,40 +982,149 @@ export function ComboForm({
         </div>
 
         {recipeMoves.length > 0 ? (
-          <div className="rounded-lg border border-slate-100 bg-slate-50/70 p-2.5 sm:p-3">
-            <div className="flex flex-wrap items-center gap-x-1 gap-y-1.5">
-              {recipeMoves.map((move, index) => (
-                <div
-                  key={`${move.id}-${index}`}
-                  className="inline-flex max-w-full items-center gap-1"
-                >
+          <>
+            <div className="rounded-lg border border-slate-100 bg-slate-50/70 p-2.5 sm:p-3">
+              <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+                {/* 先頭挿入スロット（index = 0） */}
+                {effectiveInsertIndex === 0 ? (
                   <span
-                    className={`inline-flex max-w-full items-center gap-1 rounded-md border py-0.5 pr-1 pl-2 text-xs leading-snug sm:text-sm ${getMoveChipStyle(
-                      move
-                    )}`}
+                    aria-live="polite"
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold text-white shadow-xs"
                   >
-                    <span className="inline-flex items-center break-words">
-                      <MoveNotation move={move} notationMode={notationMode} />
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAt(index)}
-                      aria-label={`${move.notationName} を削除`}
-                      className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200/80 hover:text-slate-700"
-                    >
-                      <X className="h-3 w-3" aria-hidden="true" />
-                    </button>
-                  </span>
-                  {index < recipeMoves.length - 1 && (
-                    <ChevronRight
-                      className="h-3.5 w-3.5 shrink-0 text-slate-400"
+                    <span
+                      className="h-2.5 w-0.5 animate-pulse rounded-full bg-white"
                       aria-hidden="true"
                     />
-                  )}
-                </div>
-              ))}
+                    ここに挿入
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setInsertIndex(0)}
+                    aria-label="先頭に技を挿入する位置に設定"
+                    title="先頭に挿入"
+                    className="inline-flex h-7 items-center gap-0.5 rounded-md border border-dashed border-slate-300 bg-white px-1.5 text-[10px] font-semibold text-slate-500 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                  >
+                    <Plus className="h-3 w-3" aria-hidden="true" />
+                    <span>先頭</span>
+                  </button>
+                )}
+
+                {recipeMoves.map((move, index) => {
+                  const isFirst = index === 0;
+                  const isLast = index === recipeMoves.length - 1;
+                  const nextSlot = index + 1;
+                  const isNextSlotActive =
+                    !isLast && effectiveInsertIndex === nextSlot;
+
+                  return (
+                    <div
+                      key={`${move.id}-${index}`}
+                      className="inline-flex max-w-full items-center gap-1"
+                    >
+                      {/* 技チップ（並び替え←/→・削除×付き） */}
+                      <span
+                        className={`inline-flex max-w-full items-center gap-1 rounded-lg border py-1 pr-1 pl-2 text-xs leading-snug shadow-2xs sm:text-sm ${getMoveChipStyle(
+                          move
+                        )}`}
+                      >
+                        <span className="inline-flex items-center break-words">
+                          <MoveNotation
+                            move={move}
+                            notationMode={notationMode}
+                          />
+                        </span>
+                        <span className="ml-0.5 inline-flex shrink-0 items-center gap-0.5 border-l border-slate-200/90 pl-1">
+                          <button
+                            type="button"
+                            onClick={() => handleMoveLeft(index)}
+                            disabled={isFirst}
+                            aria-label={`${move.notationName} を1つ左へ移動`}
+                            title="1つ左へ"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-25"
+                          >
+                            <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveRight(index)}
+                            disabled={isLast}
+                            aria-label={`${move.notationName} を1つ右へ移動`}
+                            title="1つ右へ"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-25"
+                          >
+                            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAt(index)}
+                            aria-label={`${move.notationName} を削除`}
+                            title="削除"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-400 transition-colors hover:bg-rose-100 hover:text-rose-600"
+                          >
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                          </button>
+                        </span>
+                      </span>
+
+                      {/* 技と技の間の挿入スロット */}
+                      {!isLast &&
+                        (isNextSlotActive ? (
+                          <span
+                            aria-live="polite"
+                            className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold text-white shadow-xs"
+                          >
+                            <span
+                              className="h-2.5 w-0.5 animate-pulse rounded-full bg-white"
+                              aria-hidden="true"
+                            />
+                            ここに挿入
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setInsertIndex(nextSlot)}
+                            aria-label={`${index + 1}番目と${index + 2}番目の間に技を挿入`}
+                            title="ここに挿入"
+                            className="inline-flex h-7 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-600"
+                          >
+                            <ChevronRight
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            />
+                          </button>
+                        ))}
+                    </div>
+                  );
+                })}
+
+                {/* 末尾挿入スロット */}
+                {!isInsertingMidway ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">
+                    <span
+                      className="h-2.5 w-0.5 animate-pulse rounded-full bg-blue-600"
+                      aria-hidden="true"
+                    />
+                    末尾に追加
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setInsertIndex(null)}
+                    aria-label="末尾に技を追加する位置に戻す"
+                    title="末尾に追加"
+                    className="inline-flex h-7 items-center gap-0.5 rounded-md border border-dashed border-slate-300 bg-white px-1.5 text-[10px] font-semibold text-slate-500 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                  >
+                    <Plus className="h-3 w-3" aria-hidden="true" />
+                    <span>末尾</span>
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+            <p className="mt-2 text-[11px] text-slate-500">
+              ※「+ 先頭」や技の間の「›」をタップすると途中の位置に技を挿入できます。チップ内の「‹」「›」で左右に並び替えられます。
+            </p>
+          </>
         ) : (
           <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-3 py-6 text-center text-xs text-slate-500">
             上の技ボタンをタップして、コンボの始動技から順番に組み立ててください。
@@ -812,6 +1137,33 @@ export function ComboForm({
         aria-label="コンボの属性と補足メモ"
         className="mb-5 space-y-5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-5"
       >
+        {/* コンボタイトル（任意） */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <label
+              htmlFor="combo-title-input"
+              className="text-sm font-bold text-slate-900"
+            >
+              コンボタイトル（任意）
+            </label>
+            <span className="text-[11px] text-slate-400">
+              {title.trim().length}/60
+            </span>
+          </div>
+          <input
+            id="combo-title-input"
+            type="text"
+            maxLength={60}
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              clearErrors();
+            }}
+            placeholder="例: 屈中Kラッシュ運び定番 / 画面端パニカン最大"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
+          />
+        </div>
+
         {/* 状況タグ選択（必須・複数選択可） */}
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
@@ -1034,7 +1386,29 @@ export function ComboForm({
         {stockMeta && (
           <div className="grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
-              <span>{stockMeta.label} 消費数（始動必要数）</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span>{stockMeta.label} 消費数（始動必要数）</span>
+                {supportsAutoStock &&
+                  (stockCostMode === "auto" ? (
+                    <span className="inline-flex items-center rounded-full border border-pink-200 bg-pink-50 px-2 py-0.5 text-[10px] font-semibold text-pink-700">
+                      自動計算
+                    </span>
+                  ) : (
+                    <>
+                      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                        手動調整中
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleResetStockCostToAuto}
+                        className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                      >
+                        <RotateCcw className="h-2.5 w-2.5" aria-hidden="true" />
+                        <span>自動に戻す</span>
+                      </button>
+                    </>
+                  ))}
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {Array.from(
                   { length: stockMeta.maxCount + 1 },
@@ -1043,7 +1417,7 @@ export function ComboForm({
                   <button
                     key={`cost-${val}`}
                     type="button"
-                    onClick={() => setStockCost(val)}
+                    onClick={() => handleManualStockCostChange(val)}
                     className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
                       stockCost === val
                         ? "border-pink-600 bg-pink-600 text-white"
@@ -1061,14 +1435,36 @@ export function ComboForm({
             </div>
 
             <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
-              <span>
-                {stockMeta.label} 獲得数
-                {stockMeta.gainHint && (
-                  <span className="ml-1.5 font-normal text-slate-500">
-                    （{stockMeta.gainHint}）
-                  </span>
-                )}
-              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span>
+                  {stockMeta.label} 獲得数
+                  {stockMeta.gainHint && (
+                    <span className="ml-1.5 font-normal text-slate-500">
+                      （{stockMeta.gainHint}）
+                    </span>
+                  )}
+                </span>
+                {supportsAutoStock &&
+                  (stockGainMode === "auto" ? (
+                    <span className="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-700">
+                      自動計算
+                    </span>
+                  ) : (
+                    <>
+                      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                        手動調整中
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleResetStockGainToAuto}
+                        className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                      >
+                        <RotateCcw className="h-2.5 w-2.5" aria-hidden="true" />
+                        <span>自動に戻す</span>
+                      </button>
+                    </>
+                  ))}
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {(
                   stockMeta.gainOptions ??
@@ -1077,7 +1473,7 @@ export function ComboForm({
                   <button
                     key={`gain-${val}`}
                     type="button"
-                    onClick={() => setStockGain(val)}
+                    onClick={() => handleManualStockGainChange(val)}
                     className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
                       stockGain === val
                         ? "border-cyan-600 bg-cyan-600 text-white"

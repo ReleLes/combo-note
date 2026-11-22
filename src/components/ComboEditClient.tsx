@@ -64,6 +64,7 @@ export function ComboEditClient({
         .from("combos")
         .update({
           control_type: payload.controlType,
+          title: payload.title,
           move_ids: payload.moveIds,
           recipe_signature: payload.recipeSignature,
           situations: payload.situations,

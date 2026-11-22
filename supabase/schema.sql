@@ -50,6 +50,7 @@ create table if not exists public.combos (
   author_name text,
   character_id text references public.characters(id) on delete cascade not null,
   control_type text check (control_type in ('classic', 'modern')) not null,
+  title text,
   move_ids jsonb not null,
   recipe_signature text not null,
   situations text[] not null,

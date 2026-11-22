@@ -49,6 +49,7 @@ interface ComboRow {
   author_name: string | null;
   character_id: string;
   control_type: ControlType;
+  title?: string | null;
   move_ids: unknown;
   recipe_signature: string;
   situations: string[] | null;
@@ -129,6 +130,7 @@ function mapCombo(row: ComboRow): Combo {
     authorName: row.author_name ?? undefined,
     characterId: row.character_id,
     controlType: row.control_type,
+    title: row.title ?? null,
     moveIds,
     recipeSignature: row.recipe_signature,
     situations: row.situations ?? [],

@@ -106,6 +106,7 @@
   - **重複コンボ自動チェック**:
     - 組み立てた技ID配列（正規化ハッシュ）＋キャラ＋操作タイプが既存公開コンボと一致する場合、投稿ボタン付近に「同じレシピが既に登録されています（既存コンボを確認）」と警告を表示する。
   - 状況タグ選択（必須・複数選択可）
+  - コンボタイトル（任意・短い見出し）
   - カテゴリ選択（必須：初心者向け／基本・定番／高火力／ネタコン）
   - 数値・属性入力：ダメージ（任意・数値）、消費Dゲージ（0〜6）、消費SAゲージ（0〜3）、起き攻めの有無（あり／なし）
   - 補足メモ欄（必須）: タイミングのコツ、距離限定、起き攻めのフレーム状況などを自由記述。
@@ -172,6 +173,7 @@ create table public.combos (
   author_id uuid references auth.users(id) on delete cascade not null,
   character_id text references public.characters(id) on delete cascade not null,
   control_type text check (control_type in ('classic', 'modern')) not null,
+  title text,
   move_ids jsonb not null,
   recipe_signature text not null,
   situations text[] not null,

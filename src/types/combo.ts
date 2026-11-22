@@ -88,6 +88,8 @@ export interface Combo {
   authorName?: string;
   characterId: string;
   controlType: ControlType;
+  /** コンボの任意タイトル（未設定時は null / undefined） */
+  title?: string | null;
   moveIds: string[];
   recipeSignature: string;
   situations: SituationKey[];

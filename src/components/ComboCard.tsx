@@ -1,6 +1,14 @@
 "use client";
 
-import { ChevronRight, Flame, Heart, ShieldCheck, Star } from "lucide-react";
+import Link from "next/link";
+import {
+  ChevronRight,
+  Flame,
+  Heart,
+  Pencil,
+  ShieldCheck,
+  Star,
+} from "lucide-react";
 import type {
   CharacterStockMeta,
   Combo,
@@ -22,6 +30,8 @@ interface ComboCardProps {
   isSaved: boolean;
   isLiked: boolean;
   likesCount: number;
+  /** 投稿者本人のコンボにのみ渡される編集リンク */
+  editHref?: string;
   onToggleSave: (comboId: string) => void;
   onToggleLike: (combo: Combo) => void;
   onSelect: (combo: Combo) => void;
@@ -58,6 +68,7 @@ export function ComboCard({
   isSaved,
   isLiked,
   likesCount,
+  editHref,
   onToggleSave,
   onToggleLike,
   onSelect,
@@ -106,23 +117,37 @@ export function ComboCard({
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleSave(combo.id);
-          }}
-          aria-pressed={isSaved}
-          aria-label={isSaved ? "マイノートから解除" : "マイノートに保存"}
-          title={isSaved ? "マイノートから解除" : "マイノートに保存"}
-          className={`shrink-0 rounded-lg p-1.5 transition-colors ${
-            isSaved
-              ? "bg-amber-50 text-amber-500 hover:bg-amber-100"
-              : "text-slate-400 hover:bg-amber-50 hover:text-amber-500"
-          }`}
-        >
-          <Star className={`h-4 w-4 ${isSaved ? "fill-amber-400" : ""}`} />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          {editHref && (
+            <Link
+              href={editHref}
+              onClick={(e) => e.stopPropagation()}
+              aria-label="このコンボを編集"
+              title="編集"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+            >
+              <Pencil className="h-3 w-3" aria-hidden="true" />
+              <span>編集</span>
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSave(combo.id);
+            }}
+            aria-pressed={isSaved}
+            aria-label={isSaved ? "マイノートから解除" : "マイノートに保存"}
+            title={isSaved ? "マイノートから解除" : "マイノートに保存"}
+            className={`shrink-0 rounded-lg p-1.5 transition-colors ${
+              isSaved
+                ? "bg-amber-50 text-amber-500 hover:bg-amber-100"
+                : "text-slate-400 hover:bg-amber-50 hover:text-amber-500"
+            }`}
+          >
+            <Star className={`h-4 w-4 ${isSaved ? "fill-amber-400" : ""}`} />
+          </button>
+        </div>
       </div>
 
       {/* レシピ表示エリア：長尺コンボでも390px幅で崩れず折り返される */}

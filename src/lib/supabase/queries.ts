@@ -258,6 +258,28 @@ export async function fetchAllCombos(): Promise<Combo[]> {
   return ((data ?? []) as ComboRow[]).map(mapCombo);
 }
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function fetchComboById(id: string): Promise<Combo | null> {
+  if (!UUID_REGEX.test(id)) {
+    return null;
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("combos")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`コンボ情報の取得に失敗しました: ${error.message}`);
+  }
+
+  return data ? mapCombo(data as ComboRow) : null;
+}
+
 export interface CharacterComboCounts {
   total: number;
   classic: number;

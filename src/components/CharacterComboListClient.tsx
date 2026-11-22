@@ -614,6 +614,11 @@ export function CharacterComboListClient({
               isSaved={isSaved(combo.id)}
               isLiked={isLiked(combo.id)}
               likesCount={getLikesCount(combo)}
+              editHref={
+                user && user.id === combo.authorId
+                  ? `/combos/${combo.id}/edit`
+                  : undefined
+              }
               onToggleSave={handleToggleSave}
               onToggleLike={handleToggleLike}
               onSelect={setActiveCombo}
@@ -654,6 +659,11 @@ export function CharacterComboListClient({
         likesCount={activeCombo ? getLikesCount(activeCombo) : 0}
         canDelete={Boolean(user && activeCombo && user.id === activeCombo.authorId)}
         isDeleting={isDeleting}
+        editHref={
+          user && activeCombo && user.id === activeCombo.authorId
+            ? `/combos/${activeCombo.id}/edit`
+            : undefined
+        }
         onToggleSave={handleToggleSave}
         onToggleLike={handleToggleLike}
         onDelete={handleDeleteCombo}

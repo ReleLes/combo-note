@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   ChevronRight,
   Flame,
   Heart,
+  Pencil,
   ShieldCheck,
   Star,
   Trash2,
@@ -34,6 +36,8 @@ interface ComboDetailModalProps {
   likesCount: number;
   canDelete?: boolean;
   isDeleting?: boolean;
+  /** 投稿者本人のコンボにのみ渡される編集リンク */
+  editHref?: string;
   onToggleSave: (comboId: string) => void;
   onToggleLike: (combo: Combo) => void;
   onDelete?: (combo: Combo) => Promise<void> | void;
@@ -74,6 +78,7 @@ export function ComboDetailModal({
   likesCount,
   canDelete = false,
   isDeleting = false,
+  editHref,
   onToggleSave,
   onToggleLike,
   onDelete,
@@ -319,6 +324,15 @@ export function ComboDetailModal({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {editHref && !isConfirmingDelete && (
+                <Link
+                  href={editHref}
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>編集</span>
+                </Link>
+              )}
               {canDelete && onDelete && (
                 <>
                   {isConfirmingDelete ? (

@@ -44,6 +44,10 @@ export interface CharacterStockMeta {
   label: string;
   shortLabel: string;
   maxCount: number;
+  /** 獲得数として選べる値（未指定時は 0..maxCount すべて） */
+  gainOptions?: number[];
+  /** 獲得数の補足説明（投稿フォームに表示） */
+  gainHint?: string;
 }
 
 export interface Character {

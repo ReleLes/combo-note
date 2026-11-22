@@ -93,11 +93,14 @@ export default async function HomePage() {
                         {sit.label}
                       </span>
                     ))}
-                    {character.stockMeta && (
-                      <span className="inline-flex items-center rounded-md bg-cyan-50 px-2 py-0.5 text-[11px] font-semibold text-cyan-700">
-                        {character.stockMeta.label}
-                      </span>
-                    )}
+                    {character.stockMeta &&
+                      !uniqueSituations.some(
+                        (sit) => sit.label === character.stockMeta?.label
+                      ) && (
+                        <span className="inline-flex items-center rounded-md bg-cyan-50 px-2 py-0.5 text-[11px] font-semibold text-cyan-700">
+                          {character.stockMeta.label}
+                        </span>
+                      )}
                   </div>
                 )}
               </div>

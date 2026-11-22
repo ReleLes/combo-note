@@ -50,6 +50,21 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 4,
     isActive: true,
   },
+  {
+    id: "mai",
+    slug: "mai",
+    nameJa: "舞",
+    nameEn: "Mai",
+    sortOrder: 5,
+    isActive: true,
+    stockMeta: {
+      label: "焔ストック",
+      shortLabel: "焔",
+      maxCount: 5,
+      gainOptions: [0, 5],
+      gainHint: "SA1（陽炎の舞）で +5 獲得",
+    },
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -150,6 +165,13 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName: "bg-pink-100 text-pink-700",
     characterId: "ingrid",
     sortOrder: 104,
+  },
+  {
+    key: "mai_flame_stock",
+    label: "焔ストック",
+    badgeClassName: "bg-orange-100 text-orange-700",
+    characterId: "mai",
+    sortOrder: 105,
   },
 ];
 

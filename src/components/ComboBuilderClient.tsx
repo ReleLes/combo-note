@@ -989,11 +989,18 @@ export function ComboBuilderClient({
             </div>
 
             <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
-              <span>{stockMeta.label} 獲得数</span>
+              <span>
+                {stockMeta.label} 獲得数
+                {stockMeta.gainHint && (
+                  <span className="ml-1.5 font-normal text-slate-500">
+                    （{stockMeta.gainHint}）
+                  </span>
+                )}
+              </span>
               <div className="flex flex-wrap gap-1.5">
-                {Array.from(
-                  { length: stockMeta.maxCount + 1 },
-                  (_, i) => i
+                {(
+                  stockMeta.gainOptions ??
+                  Array.from({ length: stockMeta.maxCount + 1 }, (_, i) => i)
                 ).map((val) => (
                   <button
                     key={`gain-${val}`}

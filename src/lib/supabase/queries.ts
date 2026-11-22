@@ -8,6 +8,7 @@ import type {
   MoveCategory,
   MoveControlType,
 } from "@/types/combo";
+import { SEED_CHARACTERS } from "@/data/seed/common";
 import { createClient } from "./server";
 
 interface CharacterRow {
@@ -66,12 +67,15 @@ interface ComboRow {
 }
 
 function mapCharacter(row: CharacterRow): Character {
+  const seedStockMeta = SEED_CHARACTERS.find((c) => c.id === row.id)?.stockMeta;
   const stockMeta =
     row.stock_label && row.stock_short_label && row.stock_max_count
       ? {
           label: row.stock_label,
           shortLabel: row.stock_short_label,
           maxCount: row.stock_max_count,
+          gainOptions: seedStockMeta?.gainOptions,
+          gainHint: seedStockMeta?.gainHint,
         }
       : undefined;
 

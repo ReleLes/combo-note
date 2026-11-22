@@ -66,7 +66,8 @@ export const CHARACTER_STOCK_RULES: Readonly<
     shortLabel: "風破",
     label: "風破ストック",
     maxCount: 3,
-    badgeClassName: "border-pink-200 bg-pink-50 text-pink-700",
+    badgeClassName:
+      "border-pink-200 bg-pink-50 text-pink-700 dark:border-pink-400/30 dark:bg-pink-500/20 dark:text-pink-200",
     // ジュリの固有状況タグは風水エンジン（juri_feng_shui）のみのため null
     situationKey: null,
     evaluateMove: (move) => {
@@ -91,7 +92,8 @@ export const CHARACTER_STOCK_RULES: Readonly<
     shortLabel: "焔",
     label: "焔ストック",
     maxCount: 5,
-    badgeClassName: "border-orange-200 bg-orange-50 text-orange-700",
+    badgeClassName:
+      "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-400/30 dark:bg-orange-500/20 dark:text-orange-200",
     situationKey: "mai_flame_stock",
     evaluateMove: (move) => {
       let consume = 0;

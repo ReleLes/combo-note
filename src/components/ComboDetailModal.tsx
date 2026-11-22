@@ -64,15 +64,15 @@ const NOTATION_MODES: { mode: NotationMode; label: string }[] = [
 function getMoveChipStyle(move: Move): string {
   switch (move.category) {
     case "system":
-      return "border-slate-200 bg-slate-100 text-slate-700";
+      return "border-slate-200 bg-slate-100 text-slate-700 dark:border-[#3A2F58] dark:bg-[#2E2546] dark:text-[#CFC6E8]";
     case "super":
-      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
+      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold dark:border-violet-400/40 dark:bg-violet-500/20 dark:text-violet-200";
     case "special":
-      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium dark:border-indigo-400/35 dark:bg-indigo-500/20 dark:text-[#F4F1FF]";
     case "throw":
-      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium";
+      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200";
     default:
-      return "border-slate-200 bg-white text-slate-900 font-medium";
+      return "border-slate-200 bg-white text-slate-900 font-medium dark:border-[#34294F] dark:bg-[#251D3A] dark:text-[#F4F1FF]";
   }
 }
 
@@ -134,18 +134,18 @@ export function ComboDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-[1px] sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-[1px] sm:items-center sm:p-4 dark:bg-black/75"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="コンボ詳細"
     >
       <div
-        className="max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-xl sm:max-w-2xl sm:rounded-2xl"
+        className="max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-xl sm:max-w-2xl sm:rounded-2xl dark:border dark:border-[#2E2447] dark:bg-[#1B152B]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* モーダルヘッダー */}
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3.5 sm:px-6">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3.5 sm:px-6 dark:border-[#2E2447] dark:bg-[#1B152B]">
           <div className="flex flex-wrap items-center gap-1.5">
             {combo.situations.map((sitKey) => {
               const def = situationMap[sitKey];
@@ -153,17 +153,18 @@ export function ComboDetailModal({
                 <span
                   key={sitKey}
                   className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-bold ${
-                    def?.badgeClassName ?? "bg-slate-100 text-slate-700"
+                    def?.badgeClassName ??
+                    "bg-slate-100 text-slate-700 dark:bg-[#251D3A] dark:text-[#CFC6E8]"
                   }`}
                 >
                   {def?.label ?? sitKey}
                 </span>
               );
             })}
-            <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600">
+            <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600 dark:border-[#34294F] dark:bg-[#251D3A] dark:text-[#A99EC4]">
               {categoryLabel}
             </span>
-            <span className="inline-flex items-center rounded-md bg-slate-900 px-2 py-0.5 text-xs font-medium text-white">
+            <span className="inline-flex items-center rounded-md bg-slate-900 px-2 py-0.5 text-xs font-medium text-white dark:bg-[#7C3AED] dark:text-white">
               {combo.controlType === "classic" ? "クラシック" : "モダン"}
             </span>
           </div>
@@ -175,13 +176,13 @@ export function ComboDetailModal({
               aria-pressed={isSaved}
               className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors ${
                 isSaved
-                  ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-amber-50 hover:text-amber-600"
+                  ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200 dark:hover:bg-amber-500/30"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-amber-50 hover:text-amber-600 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-amber-500/20 dark:hover:text-amber-200"
               }`}
             >
               <Star
                 className={`h-3.5 w-3.5 ${
-                  isSaved ? "fill-amber-400 text-amber-500" : ""
+                  isSaved ? "fill-amber-400 text-amber-500 dark:text-amber-300" : ""
                 }`}
                 aria-hidden="true"
               />
@@ -192,7 +193,7 @@ export function ComboDetailModal({
               type="button"
               onClick={onClose}
               aria-label="モーダルを閉じる"
-              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-[#A99EC4] dark:hover:bg-[#251D3A] dark:hover:text-[#F4F1FF]"
             >
               <X className="h-5 w-5" />
             </button>
@@ -203,7 +204,7 @@ export function ComboDetailModal({
         <div className="space-y-5 p-4 sm:p-6">
           {/* コンボタイトル（設定時のみ表示） */}
           {combo.title?.trim() && (
-            <h2 className="text-base font-bold leading-snug text-slate-900 sm:text-lg">
+            <h2 className="text-base font-bold leading-snug text-slate-900 sm:text-lg dark:text-[#F4F1FF]">
               {combo.title.trim()}
             </h2>
           )}
@@ -211,13 +212,13 @@ export function ComboDetailModal({
           {/* コンボレシピ（選択中の表記＋モーダル内切替） */}
           <section className="space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+              <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-[#A99EC4]">
                 コンボレシピ
               </h2>
               <div
                 role="tablist"
                 aria-label="詳細画面の表記切替"
-                className="inline-grid grid-cols-3 rounded-lg bg-slate-200/75 p-0.5"
+                className="inline-grid grid-cols-3 rounded-lg bg-slate-200/75 p-0.5 dark:bg-[#251D3A]"
               >
                 {NOTATION_MODES.map(({ mode, label }) => (
                   <button
@@ -228,8 +229,8 @@ export function ComboDetailModal({
                     onClick={() => onChangeNotationMode(mode)}
                     className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
                       notationMode === mode
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                        ? "bg-blue-600 text-white shadow-xs dark:bg-[#7C3AED]"
+                        : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                     }`}
                   >
                     {label}
@@ -238,7 +239,7 @@ export function ComboDetailModal({
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:p-3.5">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:p-3.5 dark:border-[#2E2447] dark:bg-[#140F23]">
               <div className="flex flex-wrap items-center gap-x-1 gap-y-1.5">
                 {moves.map((move, index) => (
                   <div
@@ -254,7 +255,7 @@ export function ComboDetailModal({
                     </span>
                     {index < moves.length - 1 && (
                       <ChevronRight
-                        className="h-3.5 w-3.5 shrink-0 text-slate-400"
+                        className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-[#7E72A1]"
                         aria-hidden="true"
                       />
                     )}
@@ -275,8 +276,8 @@ export function ComboDetailModal({
                 }}
                 className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
                   copiedTarget === "recipe"
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-200"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
                 }`}
               >
                 {copiedTarget === "recipe" ? (
@@ -304,8 +305,8 @@ export function ComboDetailModal({
                 }}
                 className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
                   copiedTarget === "link"
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-200"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
                 }`}
               >
                 {copiedTarget === "link" ? (
@@ -325,41 +326,41 @@ export function ComboDetailModal({
 
           {/* メタ情報グリッド */}
           <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 bg-white p-2.5">
-              <div className="text-[11px] text-slate-500">ダメージ</div>
-              <div className="mt-0.5 flex items-center gap-1 text-base font-bold text-slate-900">
+            <div className="rounded-lg border border-slate-200 bg-white p-2.5 dark:border-[#2E2447] dark:bg-[#251D3A]">
+              <div className="text-[11px] text-slate-500 dark:text-[#A99EC4]">ダメージ</div>
+              <div className="mt-0.5 flex items-center gap-1 text-base font-bold text-slate-900 dark:text-[#F4F1FF]">
                 <Flame
-                  className="h-4 w-4 text-orange-500"
+                  className="h-4 w-4 text-orange-500 dark:text-orange-400"
                   aria-hidden="true"
                 />
                 {combo.damage !== null ? combo.damage.toLocaleString() : "---"}
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-white p-2.5">
-              <div className="text-[11px] text-slate-500">消費Dゲージ</div>
-              <div className="mt-0.5 text-base font-bold text-slate-900">
+            <div className="rounded-lg border border-slate-200 bg-white p-2.5 dark:border-[#2E2447] dark:bg-[#251D3A]">
+              <div className="text-[11px] text-slate-500 dark:text-[#A99EC4]">消費Dゲージ</div>
+              <div className="mt-0.5 text-base font-bold text-slate-900 dark:text-[#F4F1FF]">
                 {combo.driveCost} 本
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-white p-2.5">
-              <div className="text-[11px] text-slate-500">消費SAゲージ</div>
-              <div className="mt-0.5 text-base font-bold text-slate-900">
+            <div className="rounded-lg border border-slate-200 bg-white p-2.5 dark:border-[#2E2447] dark:bg-[#251D3A]">
+              <div className="text-[11px] text-slate-500 dark:text-[#A99EC4]">消費SAゲージ</div>
+              <div className="mt-0.5 text-base font-bold text-slate-900 dark:text-[#F4F1FF]">
                 SA {combo.saCost}
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-white p-2.5">
-              <div className="text-[11px] text-slate-500">起き攻め</div>
-              <div className="mt-0.5 flex items-center gap-1 text-sm font-bold text-slate-900">
+            <div className="rounded-lg border border-slate-200 bg-white p-2.5 dark:border-[#2E2447] dark:bg-[#251D3A]">
+              <div className="text-[11px] text-slate-500 dark:text-[#A99EC4]">起き攻め</div>
+              <div className="mt-0.5 flex items-center gap-1 text-sm font-bold text-slate-900 dark:text-[#F4F1FF]">
                 {combo.hasOki ? (
-                  <span className="inline-flex items-center gap-1 text-emerald-700">
+                  <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300">
                     <ShieldCheck className="h-4 w-4" aria-hidden="true" />
                     あり
                   </span>
                 ) : (
-                  <span className="text-slate-500">なし</span>
+                  <span className="text-slate-500 dark:text-[#A99EC4]">なし</span>
                 )}
               </div>
             </div>
@@ -369,8 +370,8 @@ export function ComboDetailModal({
           {(autoStock?.hasActivity ||
             (combo.stockCost ?? 0) > 0 ||
             (combo.stockGain ?? 0) > 0) && (
-            <section className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2.5 text-xs">
-              <span className="font-semibold text-slate-600">
+            <section className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2.5 text-xs dark:border-[#2E2447] dark:bg-[#140F23]">
+              <span className="font-semibold text-slate-600 dark:text-[#A99EC4]">
                 {autoStock?.label ?? stockMeta?.label ?? "固有ストック"}:
               </span>
               {autoStock?.hasActivity ? (
@@ -380,7 +381,7 @@ export function ComboDetailModal({
                   >
                     {autoStock.summaryLabel}
                   </span>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-slate-500 dark:text-[#A99EC4]">
                     （必要 {autoStock.requiredStart} / 消費{" "}
                     {autoStock.consumedTotal} / 獲得 +{autoStock.gainedTotal} /
                     終了時 {autoStock.endStock}）
@@ -389,12 +390,12 @@ export function ComboDetailModal({
               ) : (
                 <>
                   {(combo.stockCost ?? 0) > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-pink-200 bg-pink-50 px-2 py-0.5 font-semibold text-pink-700">
+                    <span className="inline-flex items-center gap-1 rounded-md border border-pink-200 bg-pink-50 px-2 py-0.5 font-semibold text-pink-700 dark:border-pink-400/30 dark:bg-pink-500/20 dark:text-pink-200">
                       消費 -{combo.stockCost}
                     </span>
                   )}
                   {(combo.stockGain ?? 0) > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-0.5 font-semibold text-cyan-700">
+                    <span className="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-0.5 font-semibold text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-500/20 dark:text-cyan-200">
                       獲得 +{combo.stockGain}
                     </span>
                   )}
@@ -405,21 +406,21 @@ export function ComboDetailModal({
 
           {/* 補足メモ全文 */}
           <section className="space-y-1.5">
-            <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+            <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-[#A99EC4]">
               補足メモ・コツ
             </h2>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm leading-relaxed whitespace-pre-wrap text-slate-800">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-sm leading-relaxed whitespace-pre-wrap text-slate-800 dark:border-[#2E2447] dark:bg-[#140F23] dark:text-[#E8E2F8]">
               {combo.note}
             </div>
           </section>
 
           {/* フッターメタ情報 */}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-[#2E2447] dark:text-[#A99EC4]">
             <div className="flex flex-wrap items-center gap-3">
               {version && (
                 <span>
                   バージョン:{" "}
-                  <strong className="font-semibold text-slate-700">
+                  <strong className="font-semibold text-slate-700 dark:text-[#F4F1FF]">
                     {version.label}
                   </strong>
                 </span>
@@ -434,7 +435,7 @@ export function ComboDetailModal({
               {editHref && !isConfirmingDelete && (
                 <Link
                   href={editHref}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
                 >
                   <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>編集</span>
@@ -443,8 +444,8 @@ export function ComboDetailModal({
               {canDelete && onDelete && (
                 <>
                   {isConfirmingDelete ? (
-                    <div className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1">
-                      <span className="text-[11px] font-semibold text-rose-700">
+                    <div className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 dark:border-rose-400/35 dark:bg-rose-500/20">
+                      <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-200">
                         削除しますか？
                       </span>
                       <button
@@ -459,7 +460,7 @@ export function ComboDetailModal({
                         type="button"
                         disabled={isDeleting}
                         onClick={() => setConfirmingComboId(null)}
-                        className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50"
+                        className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
                       >
                         中止
                       </button>
@@ -468,7 +469,7 @@ export function ComboDetailModal({
                     <button
                       type="button"
                       onClick={() => setConfirmingComboId(combo.id)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                      className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-400/35 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>削除</span>
@@ -483,13 +484,13 @@ export function ComboDetailModal({
                 aria-pressed={isLiked}
                 className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
                   isLiked
-                    ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600"
+                    ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:border-rose-400/35 dark:bg-rose-500/20 dark:text-rose-200 dark:hover:bg-rose-500/30"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
                 }`}
               >
                 <Heart
                   className={`h-3.5 w-3.5 ${
-                    isLiked ? "fill-rose-500 text-rose-500" : ""
+                    isLiked ? "fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400" : ""
                   }`}
                   aria-hidden="true"
                 />

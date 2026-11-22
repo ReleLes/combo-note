@@ -117,7 +117,7 @@ export function ComboBuilderClient({
   if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-5xl animate-pulse px-3 py-6 sm:px-6">
-        <div className="h-44 rounded-2xl border border-slate-200 bg-white" />
+        <div className="h-44 rounded-2xl border border-slate-200 bg-white dark:border-[#2E2447] dark:bg-[#1B152B]" />
       </div>
     );
   }
@@ -126,27 +126,27 @@ export function ComboBuilderClient({
   if (!user) {
     return (
       <div className="mx-auto w-full max-w-lg px-3 py-10 sm:px-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xs">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xs dark:border-[#2E2447] dark:bg-[#1B152B]">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-violet-500/20 dark:text-[#C4B5FD]">
             <Lock className="h-5 w-5" aria-hidden="true" />
           </div>
-          <h1 className="text-lg font-bold text-slate-900">
+          <h1 className="text-lg font-bold text-slate-900 dark:text-[#F4F1FF]">
             公開コンボの投稿にはログインが必要です
           </h1>
-          <p className="mt-1.5 text-xs leading-relaxed text-slate-600 sm:text-sm">
+          <p className="mt-1.5 text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-[#A99EC4]">
             ログインすると、技ボタン選択式ビルダーで公開コンボを作成・共有できます。
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
             <Link
               href="/login?next=%2Fcombos%2Fnew"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
             >
               <LogIn className="h-4 w-4" aria-hidden="true" />
               <span>ログイン画面へ進む</span>
             </Link>
             <Link
               href="/"
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
             >
               キャラ一覧へ戻る
             </Link>
@@ -160,11 +160,11 @@ export function ComboBuilderClient({
     <div className="mx-auto w-full max-w-5xl px-3 py-4 pb-10 sm:px-6 sm:py-6">
       {/* ページ見出し */}
       <div className="mb-4">
-        <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-          <PlusCircle className="h-5 w-5 text-blue-600" aria-hidden="true" />
+        <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-[#F4F1FF]">
+          <PlusCircle className="h-5 w-5 text-blue-600 dark:text-[#A78BFA]" aria-hidden="true" />
           <span>公開コンボを投稿</span>
         </h1>
-        <p className="mt-0.5 text-xs text-slate-500">
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-[#A99EC4]">
           技ボタンをタップしてレシピを組み立て、状況と補足メモを添えて共有できます。
         </p>
       </div>

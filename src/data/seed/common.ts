@@ -97,56 +97,64 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
   {
     key: "midscreen",
     label: "中央・基本",
-    badgeClassName: "bg-blue-100 text-blue-700",
+    badgeClassName:
+      "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200 dark:border dark:border-blue-400/30",
     characterId: null,
     sortOrder: 1,
   },
   {
     key: "corner",
     label: "画面端",
-    badgeClassName: "bg-amber-100 text-amber-700",
+    badgeClassName:
+      "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200 dark:border dark:border-amber-400/30",
     characterId: null,
     sortOrder: 2,
   },
   {
     key: "di_hit",
     label: "DIヒット",
-    badgeClassName: "bg-purple-100 text-purple-700",
+    badgeClassName:
+      "bg-purple-100 text-purple-700 dark:bg-purple-500/25 dark:text-purple-200 dark:border dark:border-purple-400/35",
     characterId: null,
     sortOrder: 3,
   },
   {
     key: "di_wall_splat",
     label: "壁ドン",
-    badgeClassName: "bg-fuchsia-100 text-fuchsia-700",
+    badgeClassName:
+      "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-500/20 dark:text-fuchsia-200 dark:border dark:border-fuchsia-400/30",
     characterId: null,
     sortOrder: 4,
   },
   {
     key: "counter",
     label: "カウンター",
-    badgeClassName: "bg-red-100 text-red-700",
+    badgeClassName:
+      "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200 dark:border dark:border-red-400/30",
     characterId: null,
     sortOrder: 5,
   },
   {
     key: "punish_counter",
     label: "パニカン",
-    badgeClassName: "bg-rose-100 text-rose-700",
+    badgeClassName:
+      "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200 dark:border dark:border-rose-400/30",
     characterId: null,
     sortOrder: 6,
   },
   {
     key: "anti_air",
     label: "対空",
-    badgeClassName: "bg-emerald-100 text-emerald-700",
+    badgeClassName:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200 dark:border dark:border-emerald-400/30",
     characterId: null,
     sortOrder: 7,
   },
   {
     key: "stun",
     label: "スタン",
-    badgeClassName: "bg-yellow-100 text-yellow-800",
+    badgeClassName:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-200 dark:border dark:border-yellow-400/30",
     characterId: null,
     sortOrder: 8,
   },
@@ -155,28 +163,32 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
   {
     key: "juri_feng_shui",
     label: "風水エンジン",
-    badgeClassName: "bg-pink-100 text-pink-700",
+    badgeClassName:
+      "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-200 dark:border dark:border-pink-400/30",
     characterId: "juri",
     sortOrder: 101,
   },
   {
     key: "c_viper_feint",
     label: "フェイントキャンセル",
-    badgeClassName: "bg-pink-100 text-pink-700",
+    badgeClassName:
+      "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-200 dark:border dark:border-pink-400/30",
     characterId: "c-viper",
     sortOrder: 103,
   },
   {
     key: "ingrid_sun_install",
     label: "空中派生",
-    badgeClassName: "bg-pink-100 text-pink-700",
+    badgeClassName:
+      "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-200 dark:border dark:border-pink-400/30",
     characterId: "ingrid",
     sortOrder: 104,
   },
   {
     key: "mai_flame_stock",
     label: "焔ストック",
-    badgeClassName: "bg-orange-100 text-orange-700",
+    badgeClassName:
+      "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/30",
     characterId: "mai",
     sortOrder: 105,
   },

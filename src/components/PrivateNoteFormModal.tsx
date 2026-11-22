@@ -47,15 +47,15 @@ const NOTATION_TABS: { mode: NotationMode; label: string }[] = [
 function getMoveChipStyle(move: Move): string {
   switch (move.category) {
     case "system":
-      return "border-slate-200 bg-slate-100 text-slate-700";
+      return "border-slate-200 bg-slate-100 text-slate-700 dark:border-[#3B3057] dark:bg-[#251D3A] dark:text-[#CFC6E8]";
     case "super":
-      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
+      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold dark:border-violet-400/40 dark:bg-violet-500/20 dark:text-violet-200";
     case "special":
-      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium dark:border-sky-400/35 dark:bg-sky-500/15 dark:text-[#F4F1FF]";
     case "throw":
-      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium";
+      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium dark:border-amber-400/35 dark:bg-amber-500/15 dark:text-amber-200";
     default:
-      return "border-slate-200 bg-white text-slate-900 font-medium";
+      return "border-slate-200 bg-white text-slate-900 font-medium dark:border-[#3D315C] dark:bg-[#261E3B] dark:text-[#F4F1FF]";
   }
 }
 
@@ -220,25 +220,25 @@ export function PrivateNoteFormModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-[1px] sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-[1px] sm:items-center sm:p-4 dark:bg-black/70"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={editingNote ? "非公開メモを編集" : "非公開メモを作成"}
     >
       <div
-        className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-xl sm:max-w-2xl sm:rounded-2xl"
+        className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-xl sm:max-w-2xl sm:rounded-2xl dark:border dark:border-[#2E2447] dark:bg-[#1B152B]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3.5 sm:px-6">
-          <h2 className="text-base font-bold text-slate-900">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3.5 sm:px-6 dark:border-[#2D2346] dark:bg-[#1B152B]">
+          <h2 className="text-base font-bold text-slate-900 dark:text-[#F4F1FF]">
             {editingNote ? "非公開メモを編集" : "非公開メモを作成"}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="モーダルを閉じる"
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-[#A99EC4] dark:hover:bg-[#251D3A] dark:hover:text-[#F4F1FF]"
           >
             <X className="h-5 w-5" />
           </button>
@@ -248,7 +248,7 @@ export function PrivateNoteFormModal({
           {error && (
             <div
               role="alert"
-              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700"
+              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/35 dark:bg-rose-500/15 dark:text-rose-200"
             >
               {error}
             </div>
@@ -256,12 +256,12 @@ export function PrivateNoteFormModal({
 
           {/* キャラクター & 操作タイプ */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="flex flex-col gap-1 text-xs font-semibold text-slate-700">
+            <label className="flex flex-col gap-1 text-xs font-semibold text-slate-700 dark:text-[#CFC6E8]">
               <span>キャラクター</span>
               <select
                 value={characterId}
                 onChange={(e) => handleChangeCharacter(e.target.value)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-500 focus:outline-none"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus:border-blue-500 focus:outline-none dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:focus:border-[#8B5CF6]"
               >
                 {characters.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -271,9 +271,9 @@ export function PrivateNoteFormModal({
               </select>
             </label>
 
-            <div className="flex flex-col gap-1 text-xs font-semibold text-slate-700">
+            <div className="flex flex-col gap-1 text-xs font-semibold text-slate-700 dark:text-[#CFC6E8]">
               <span>操作タイプ（任意）</span>
-              <div className="grid grid-cols-3 rounded-lg bg-slate-100 p-0.5">
+              <div className="grid grid-cols-3 rounded-lg bg-slate-100 p-0.5 dark:bg-[#251D3A]">
                 {(
                   [
                     { value: "", label: "指定なし" },
@@ -287,8 +287,8 @@ export function PrivateNoteFormModal({
                     onClick={() => setControlType(item.value)}
                     className={`rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
                       controlType === item.value
-                        ? "bg-white text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                        ? "bg-white text-blue-700 shadow-xs dark:bg-[#7C3AED] dark:text-white"
+                        : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                     }`}
                   >
                     {item.label}
@@ -302,9 +302,9 @@ export function PrivateNoteFormModal({
           <div className="space-y-1.5">
             <label
               htmlFor="private-note-situation"
-              className="block text-xs font-semibold text-slate-700"
+              className="block text-xs font-semibold text-slate-700 dark:text-[#CFC6E8]"
             >
-              状況 <span className="text-rose-500">*</span>
+              状況 <span className="text-rose-500 dark:text-rose-400">*</span>
             </label>
             <input
               id="private-note-situation"
@@ -315,7 +315,7 @@ export function PrivateNoteFormModal({
                 setError(null);
               }}
               placeholder="例: 画面端パニカン、風水エンジン"
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] dark:focus:border-[#8B5CF6]"
             />
             <div className="flex flex-wrap gap-1.5 pt-1">
               {quickSituations.map((sit) => (
@@ -335,15 +335,15 @@ export function PrivateNoteFormModal({
           </div>
 
           {/* コンボレシピ（技ボタン選択 / 自由入力 切替） */}
-          <div className="space-y-2.5 rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+          <div className="space-y-2.5 rounded-xl border border-slate-200 bg-slate-50/50 p-3 dark:border-[#2E2447] dark:bg-[#140F23]">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-bold text-slate-700">
-                コンボレシピ <span className="text-rose-500">*</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-[#E2DCF5]">
+                コンボレシピ <span className="text-rose-500 dark:text-rose-400">*</span>
               </span>
               <div
                 role="tablist"
                 aria-label="レシピ入力方式切替"
-                className="inline-grid grid-cols-2 rounded-lg bg-slate-200/75 p-0.5"
+                className="inline-grid grid-cols-2 rounded-lg bg-slate-200/75 p-0.5 dark:bg-[#251D3A]"
               >
                 <button
                   type="button"
@@ -352,8 +352,8 @@ export function PrivateNoteFormModal({
                   onClick={() => handleSwitchRecipeMode("builder")}
                   className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
                     recipeInputMode === "builder"
-                      ? "bg-white text-blue-700 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-white text-blue-700 shadow-xs dark:bg-[#7C3AED] dark:text-white"
+                      : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                   }`}
                 >
                   技ボタンで選択
@@ -365,8 +365,8 @@ export function PrivateNoteFormModal({
                   onClick={() => handleSwitchRecipeMode("text")}
                   className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
                     recipeInputMode === "text"
-                      ? "bg-white text-blue-700 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-white text-blue-700 shadow-xs dark:bg-[#7C3AED] dark:text-white"
+                      : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                   }`}
                 >
                   自由入力
@@ -389,8 +389,8 @@ export function PrivateNoteFormModal({
                           onClick={() => setActiveMoveCategory(tab.key)}
                           className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold transition-colors ${
                             isActive
-                              ? "bg-blue-600 text-white"
-                              : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                              ? "bg-blue-600 text-white dark:bg-[#7C3AED]"
+                              : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                           }`}
                         >
                           <span>{tab.label}</span>
@@ -400,7 +400,7 @@ export function PrivateNoteFormModal({
                     })}
                   </div>
 
-                  <div className="inline-grid grid-cols-3 rounded-md bg-slate-200/75 p-0.5">
+                  <div className="inline-grid grid-cols-3 rounded-md bg-slate-200/75 p-0.5 dark:bg-[#251D3A]">
                     {NOTATION_TABS.map((item) => (
                       <button
                         key={item.mode}
@@ -408,8 +408,8 @@ export function PrivateNoteFormModal({
                         onClick={() => onChangeNotationMode(item.mode)}
                         className={`rounded px-2 py-0.5 text-[11px] font-semibold transition-colors ${
                           notationMode === item.mode
-                            ? "bg-blue-600 text-white"
-                            : "text-slate-600 hover:text-slate-900"
+                            ? "bg-blue-600 text-white dark:bg-[#7C3AED]"
+                            : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                         }`}
                       >
                         {item.label}
@@ -436,10 +436,10 @@ export function PrivateNoteFormModal({
                           setError(null);
                         }}
                         title={`${move.notationName} (${move.notationNumpad})`}
-                        className="flex min-h-[38px] items-center justify-center rounded-lg border border-slate-200 bg-white px-1.5 py-1.5 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98]"
+                        className="flex min-h-[38px] items-center justify-center rounded-lg border border-slate-200 bg-white px-1.5 py-1.5 text-center transition-all hover:border-blue-400 hover:bg-blue-50/50 active:scale-[0.98] dark:border-[#3A2E58] dark:bg-[#1B152B] dark:hover:border-[#8B5CF6] dark:hover:bg-[#251D3A]"
                       >
                         <span
-                          className={`inline-flex max-w-full items-center justify-center text-xs font-bold text-slate-900 ${
+                          className={`inline-flex max-w-full items-center justify-center text-xs font-bold text-slate-900 dark:text-[#F4F1FF] ${
                             notationMode === "command"
                               ? "leading-tight"
                               : "truncate"
@@ -454,15 +454,15 @@ export function PrivateNoteFormModal({
                     ))}
                   </div>
                 ) : (
-                  <p className="py-4 text-center text-xs text-slate-500">
+                  <p className="py-4 text-center text-xs text-slate-500 dark:text-[#A99EC4]">
                     このカテゴリの技はありません。
                   </p>
                 )}
 
                 {/* 組み立て中レシピ */}
-                <div className="rounded-lg border border-slate-200 bg-white p-2.5">
+                <div className="rounded-lg border border-slate-200 bg-white p-2.5 dark:border-[#2E2447] dark:bg-[#1B152B]">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-slate-500">
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-[#A99EC4]">
                       組み立て中 ({recipeMoves.length} パーツ)
                     </span>
                     <div className="flex items-center gap-1">
@@ -472,7 +472,7 @@ export function PrivateNoteFormModal({
                           setRecipeMoveIds((prev) => prev.slice(0, -1))
                         }
                         disabled={recipeMoves.length === 0}
-                        className="inline-flex items-center gap-1 rounded border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                        className="inline-flex items-center gap-1 rounded border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                       >
                         <Undo2 className="h-3 w-3" aria-hidden="true" />
                         戻す
@@ -481,7 +481,7 @@ export function PrivateNoteFormModal({
                         type="button"
                         onClick={() => setRecipeMoveIds([])}
                         disabled={recipeMoves.length === 0}
-                        className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50/60 px-2 py-0.5 text-[11px] font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-40"
+                        className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50/60 px-2 py-0.5 text-[11px] font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-40 dark:border-rose-500/35 dark:bg-rose-500/15 dark:text-rose-200 dark:hover:bg-rose-500/25"
                       >
                         <Trash2 className="h-3 w-3" aria-hidden="true" />
                         消去
@@ -515,14 +515,14 @@ export function PrivateNoteFormModal({
                                 )
                               }
                               aria-label={`${move.notationName} を削除`}
-                              className="rounded p-0.5 text-slate-400 hover:bg-slate-200/80 hover:text-slate-700"
+                              className="rounded p-0.5 text-slate-400 hover:bg-slate-200/80 hover:text-slate-700 dark:text-[#8E82B3] dark:hover:bg-[#3A2E58] dark:hover:text-[#F4F1FF]"
                             >
                               <X className="h-3 w-3" aria-hidden="true" />
                             </button>
                           </span>
                           {index < recipeMoves.length - 1 && (
                             <ChevronRight
-                              className="h-3.5 w-3.5 shrink-0 text-slate-400"
+                              className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-[#7D71A1]"
                               aria-hidden="true"
                             />
                           )}
@@ -530,7 +530,7 @@ export function PrivateNoteFormModal({
                       ))}
                     </div>
                   ) : (
-                    <p className="py-2 text-center text-xs text-slate-400">
+                    <p className="py-2 text-center text-xs text-slate-400 dark:text-[#8E82B3]">
                       上の技ボタンをタップして組み立ててください
                     </p>
                   )}
@@ -546,7 +546,7 @@ export function PrivateNoteFormModal({
                   setError(null);
                 }}
                 placeholder="例: 2中K > CDR > 5大P > 236中K"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none dark:border-[#3A2E58] dark:bg-[#1B152B] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] dark:focus:border-[#8B5CF6]"
               />
             )}
           </div>
@@ -555,9 +555,9 @@ export function PrivateNoteFormModal({
           <div className="space-y-1">
             <label
               htmlFor="private-note-body"
-              className="block text-xs font-semibold text-slate-700"
+              className="block text-xs font-semibold text-slate-700 dark:text-[#CFC6E8]"
             >
-              補足メモ・コツ <span className="text-rose-500">*</span>
+              補足メモ・コツ <span className="text-rose-500 dark:text-rose-400">*</span>
             </label>
             <textarea
               id="private-note-body"
@@ -568,22 +568,22 @@ export function PrivateNoteFormModal({
                 setError(null);
               }}
               placeholder="タイミングのコツ、距離限定、起き攻めのフレーム状況など"
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] dark:focus:border-[#8B5CF6]"
             />
           </div>
 
           {/* アクション */}
-          <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+          <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-[#2D2346]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 sm:text-sm"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 sm:text-sm dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
             >
               キャンセル
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 sm:text-sm"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 sm:text-sm dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
             >
               {editingNote ? "更新する" : "保存する"}
             </button>

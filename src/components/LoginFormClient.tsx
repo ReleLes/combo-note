@@ -112,19 +112,19 @@ export function LoginFormClient() {
   if (user) {
     return (
       <div className="mx-auto w-full max-w-md px-3 py-10 sm:px-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-          <div className="mb-3 flex items-center gap-2 text-emerald-700">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-[#2E2447] dark:bg-[#1B152B]">
+          <div className="mb-3 flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
             <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-            <h1 className="text-lg font-bold text-slate-900">ログイン済み</h1>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-[#F4F1FF]">ログイン済み</h1>
           </div>
-          <p className="text-sm text-slate-600">
-            現在 <strong className="font-semibold text-slate-900">{user.email}</strong>{" "}
+          <p className="text-sm text-slate-600 dark:text-[#A99EC4]">
+            現在 <strong className="font-semibold text-slate-900 dark:text-[#F4F1FF]">{user.email}</strong>{" "}
             としてログインしています。
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <Link
               href={nextPath}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
             >
               アプリへ戻る
             </Link>
@@ -134,7 +134,7 @@ export function LoginFormClient() {
                 await signOut();
                 router.refresh();
               }}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
             >
               ログアウト
             </button>
@@ -146,12 +146,12 @@ export function LoginFormClient() {
 
   return (
     <div className="mx-auto w-full max-w-md px-3 py-8 sm:px-6 sm:py-12">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-[#2E2447] dark:bg-[#1B152B]">
         <div className="mb-5 text-center">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-[#F4F1FF]">
             {mode === "login" ? "コンボノートにログイン" : "アカウント新規登録"}
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-[#A99EC4]">
             ログインすると「いいね」や今後のコンボ投稿機能が利用できます。
           </p>
         </div>
@@ -160,7 +160,7 @@ export function LoginFormClient() {
         <div
           role="tablist"
           aria-label="認証モード切替"
-          className="mb-5 grid grid-cols-2 rounded-lg bg-slate-100 p-1"
+          className="mb-5 grid grid-cols-2 rounded-lg bg-slate-100 p-1 dark:bg-[#251D3A]"
         >
           <button
             type="button"
@@ -172,8 +172,8 @@ export function LoginFormClient() {
             }}
             className={`inline-flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition-all sm:text-sm ${
               mode === "login"
-                ? "bg-white text-blue-700 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-blue-700 shadow-xs dark:bg-[#7C3AED] dark:text-white"
+                : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
             }`}
           >
             <LogIn className="h-3.5 w-3.5" aria-hidden="true" />
@@ -189,8 +189,8 @@ export function LoginFormClient() {
             }}
             className={`inline-flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition-all sm:text-sm ${
               mode === "signup"
-                ? "bg-white text-blue-700 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-blue-700 shadow-xs dark:bg-[#7C3AED] dark:text-white"
+                : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
             }`}
           >
             <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -201,7 +201,7 @@ export function LoginFormClient() {
         {errorMessage && (
           <div
             role="alert"
-            className="mb-4 flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs font-medium text-rose-700"
+            className="mb-4 flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs font-medium text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/20 dark:text-rose-200"
           >
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{errorMessage}</span>
@@ -211,7 +211,7 @@ export function LoginFormClient() {
         {infoMessage && (
           <div
             role="status"
-            className="mb-4 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-medium text-emerald-800"
+            className="mb-4 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-medium text-emerald-800 dark:border-emerald-400/35 dark:bg-emerald-500/20 dark:text-emerald-200"
           >
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{infoMessage}</span>
@@ -222,7 +222,7 @@ export function LoginFormClient() {
           <div className="space-y-1">
             <label
               htmlFor="auth-email"
-              className="block text-xs font-semibold text-slate-700"
+              className="block text-xs font-semibold text-slate-700 dark:text-[#E2DCF5]"
             >
               メールアドレス
             </label>
@@ -234,14 +234,14 @@ export function LoginFormClient() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm dark:border-[#34294F] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#7E72A1] dark:focus:border-[#8B5CF6]"
             />
           </div>
 
           <div className="space-y-1">
             <label
               htmlFor="auth-password"
-              className="block text-xs font-semibold text-slate-700"
+              className="block text-xs font-semibold text-slate-700 dark:text-[#E2DCF5]"
             >
               パスワード（6文字以上）
             </label>
@@ -256,14 +256,14 @@ export function LoginFormClient() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••"
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm dark:border-[#34294F] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#7E72A1] dark:focus:border-[#8B5CF6]"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
           >
             {submitting
               ? "処理中..."
@@ -273,10 +273,10 @@ export function LoginFormClient() {
           </button>
         </form>
 
-        <div className="mt-5 border-t border-slate-100 pt-4 text-center text-xs text-slate-500">
+        <div className="mt-5 border-t border-slate-100 pt-4 text-center text-xs text-slate-500 dark:border-[#2E2447] dark:text-[#A99EC4]">
           閲覧やマイノート機能はログインなしでも利用できます。
           <div className="mt-2">
-            <Link href="/" className="font-medium text-blue-600 hover:underline">
+            <Link href="/" className="font-medium text-blue-600 hover:underline dark:text-[#C4B5FD]">
               キャラクター一覧へ戻る
             </Link>
           </div>

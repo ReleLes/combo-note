@@ -455,11 +455,11 @@ export function MyNoteClient({
       {/* タイトル */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-            <BookMarked className="h-5 w-5 text-blue-600" aria-hidden="true" />
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-[#F4F1FF]">
+            <BookMarked className="h-5 w-5 text-blue-600 dark:text-[#A78BFA]" aria-hidden="true" />
             <span>マイノート</span>
           </h1>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-[#A99EC4]">
             このブラウザに自動保存されます（ログイン不要）
           </p>
         </div>
@@ -467,7 +467,7 @@ export function MyNoteClient({
         <button
           type="button"
           onClick={handleOpenCreateNote}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 sm:px-3.5 sm:text-sm"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 sm:px-3.5 sm:text-sm dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
           <span>非公開メモを作成</span>
@@ -478,7 +478,7 @@ export function MyNoteClient({
       <section aria-label="キャラクター選択タブ" className="mb-4">
         <div
           role="tablist"
-          className="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xs sm:grid-cols-4"
+          className="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xs sm:grid-cols-4 dark:border-[#2E2447] dark:bg-[#1B152B]"
         >
           {characters.map((char) => {
             const isSelected = char.id === selectedCharacterId;
@@ -494,8 +494,8 @@ export function MyNoteClient({
                 onClick={() => handleSelectCharacter(char.id)}
                 className={`flex items-center justify-between gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all sm:text-sm ${
                   isSelected
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "text-slate-700 hover:bg-slate-100"
+                    ? "bg-blue-600 text-white shadow-xs dark:bg-[#7C3AED]"
+                    : "text-slate-700 hover:bg-slate-100 dark:text-[#CFC6E8] dark:hover:bg-[#251D3A]"
                 }`}
               >
                 <span className="truncate">{char.nameJa}</span>
@@ -503,7 +503,7 @@ export function MyNoteClient({
                   className={`shrink-0 rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
                     isSelected
                       ? "bg-white/20 text-white"
-                      : "bg-slate-100 text-slate-600"
+                      : "bg-slate-100 text-slate-600 dark:bg-[#251D3A] dark:text-[#A99EC4]"
                   }`}
                 >
                   {totalCount}
@@ -519,7 +519,7 @@ export function MyNoteClient({
         <div
           role="tablist"
           aria-label="マイノートセクション切替"
-          className="grid w-full grid-cols-2 rounded-xl bg-slate-200/75 p-1 sm:w-auto"
+          className="grid w-full grid-cols-2 rounded-xl bg-slate-200/75 p-1 sm:w-auto dark:bg-[#251D3A]"
         >
           <button
             type="button"
@@ -528,20 +528,26 @@ export function MyNoteClient({
             onClick={() => setActiveSection("saved")}
             className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:px-4 sm:text-sm ${
               activeSection === "saved"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-slate-900 shadow-xs dark:bg-[#7C3AED] dark:text-white"
+                : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
             }`}
           >
             <Star
               className={`h-3.5 w-3.5 ${
                 activeSection === "saved"
-                  ? "fill-amber-400 text-amber-500"
+                  ? "fill-amber-400 text-amber-500 dark:fill-amber-300 dark:text-amber-200"
                   : ""
               }`}
               aria-hidden="true"
             />
             <span>保存コンボ</span>
-            <span className="rounded-full bg-slate-100 px-1.5 py-0.2 text-[11px] text-slate-600">
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[11px] ${
+                activeSection === "saved"
+                  ? "bg-slate-100 text-slate-600 dark:bg-white/20 dark:text-white"
+                  : "bg-slate-100 text-slate-600 dark:bg-[#1B152B] dark:text-[#A99EC4]"
+              }`}
+            >
               {currentSavedCombos.length}
             </span>
           </button>
@@ -553,13 +559,19 @@ export function MyNoteClient({
             onClick={() => setActiveSection("private")}
             className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:px-4 sm:text-sm ${
               activeSection === "private"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-slate-900 shadow-xs dark:bg-[#7C3AED] dark:text-white"
+                : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
             }`}
           >
             <Lock className="h-3.5 w-3.5" aria-hidden="true" />
             <span>非公開メモ</span>
-            <span className="rounded-full bg-slate-100 px-1.5 py-0.2 text-[11px] text-slate-600">
+            <span
+              className={`rounded-full px-1.5 py-0.2 text-[11px] ${
+                activeSection === "private"
+                  ? "bg-slate-100 text-slate-600 dark:bg-white/20 dark:text-white"
+                  : "bg-slate-100 text-slate-600 dark:bg-[#1B152B] dark:text-[#A99EC4]"
+              }`}
+            >
               {currentPrivateNotes.length}
             </span>
           </button>
@@ -567,11 +579,11 @@ export function MyNoteClient({
 
         {/* 3表記切替（保存コンボ・技ボタン作成の非公開メモ共通） */}
         <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
-          <span className="text-xs font-semibold text-slate-500">表記</span>
+          <span className="text-xs font-semibold text-slate-500 dark:text-[#A99EC4]">表記</span>
           <div
             role="tablist"
             aria-label="マイノートの表記切替"
-            className="grid flex-1 grid-cols-3 rounded-lg bg-slate-200/75 p-0.5 sm:flex-initial"
+            className="grid flex-1 grid-cols-3 rounded-lg bg-slate-200/75 p-0.5 sm:flex-initial dark:bg-[#251D3A]"
           >
             {(
               [
@@ -588,8 +600,8 @@ export function MyNoteClient({
                 onClick={() => setNotationMode(item.value)}
                 className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all sm:px-3 ${
                   notationMode === item.value
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-blue-600 text-white shadow-xs dark:bg-[#7C3AED]"
+                    : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                 }`}
               >
                 {item.label}
@@ -603,16 +615,16 @@ export function MyNoteClient({
       {activeSection === "saved" && (
         <section aria-label="保存した公開コンボ" className="space-y-4">
           {currentSavedCombos.length > 0 && (
-            <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+            <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-[#2E2447] dark:bg-[#1B152B]">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-xs font-bold text-slate-700 dark:text-[#E2DCF5]">
                   状況で絞る
                 </span>
                 {hasSavedFilters && (
                   <button
                     type="button"
                     onClick={resetSavedFilters}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline dark:text-[#C4B5FD]"
                   >
                     <RotateCcw className="h-3 w-3" aria-hidden="true" />
                     クリア
@@ -630,8 +642,8 @@ export function MyNoteClient({
                       aria-pressed={isSelected}
                       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
                         isSelected
-                          ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1`
-                          : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                          ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                          : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                       }`}
                     >
                       {sit.label}
@@ -647,8 +659,8 @@ export function MyNoteClient({
                       aria-pressed={onlyStockGain}
                       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
                         onlyStockGain
-                          ? "bg-cyan-100 text-cyan-800 ring-2 ring-blue-600 ring-offset-1"
-                          : "border border-cyan-200 bg-cyan-50/70 text-cyan-700 hover:bg-cyan-100/70"
+                          ? "bg-cyan-100 text-cyan-800 ring-2 ring-blue-600 ring-offset-1 dark:bg-cyan-500/25 dark:text-cyan-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
+                          : "border border-cyan-200 bg-cyan-50/70 text-cyan-700 hover:bg-cyan-100/70 dark:border-cyan-400/30 dark:bg-cyan-500/15 dark:text-cyan-200 dark:hover:bg-cyan-500/25"
                       }`}
                     >
                       {activeCharacter.stockMeta.shortLabel}獲得
@@ -671,8 +683,8 @@ export function MyNoteClient({
                           aria-pressed={isSelected}
                           className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
                             isSelected
-                              ? "bg-pink-100 text-pink-800 ring-2 ring-blue-600 ring-offset-1"
-                              : "border border-pink-200 bg-pink-50/70 text-pink-700 hover:bg-pink-100/70"
+                              ? "bg-pink-100 text-pink-800 ring-2 ring-blue-600 ring-offset-1 dark:bg-pink-500/25 dark:text-pink-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
+                              : "border border-pink-200 bg-pink-50/70 text-pink-700 hover:bg-pink-100/70 dark:border-pink-400/30 dark:bg-pink-500/15 dark:text-pink-200 dark:hover:bg-pink-500/25"
                           }`}
                         >
                           {label}
@@ -707,31 +719,31 @@ export function MyNoteClient({
               ))}
             </div>
           ) : currentSavedCombos.length > 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center">
-              <p className="text-sm font-medium text-slate-700">
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center dark:border-[#3A2E58] dark:bg-[#1B152B]">
+              <p className="text-sm font-medium text-slate-700 dark:text-[#E2DCF5]">
                 選択した状況に一致する保存コンボがありません。
               </p>
               <button
                 type="button"
                 onClick={resetSavedFilters}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-700 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
               >
                 <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
                 絞り込みをクリア
               </button>
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center">
-              <p className="text-sm font-medium text-slate-700">
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center dark:border-[#3A2E58] dark:bg-[#1B152B]">
+              <p className="text-sm font-medium text-slate-700 dark:text-[#E2DCF5]">
                 {activeCharacter?.nameJa}の保存済みコンボはまだありません。
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-[#A99EC4]">
                 コンボ一覧で「☆」をタップすると、ここにカンペとしてまとまります。
               </p>
               {activeCharacter && (
                 <Link
                   href={`/characters/${activeCharacter.slug}`}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
                 >
                   <span>{activeCharacter.nameJa}のコンボ一覧を見る</span>
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
@@ -758,17 +770,17 @@ export function MyNoteClient({
               />
             ))
           ) : (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center">
-              <p className="text-sm font-medium text-slate-700">
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center dark:border-[#3A2E58] dark:bg-[#1B152B]">
+              <p className="text-sm font-medium text-slate-700 dark:text-[#E2DCF5]">
                 {activeCharacter?.nameJa}の非公開メモはまだありません。
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-[#A99EC4]">
                 自分だけの練習メモや手癖ルートを自由テキストで手軽に記録できます。
               </p>
               <button
                 type="button"
                 onClick={handleOpenCreateNote}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 <span>最初のメモを作成する</span>
@@ -781,14 +793,14 @@ export function MyNoteClient({
       {/* 画面下部：JSONエクスポート / インポート */}
       <section
         aria-label="データバックアップ"
-        className="mt-8 rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
+        className="mt-8 rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-[#2E2447] dark:bg-[#1B152B]"
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xs font-bold text-slate-800 sm:text-sm">
+            <h2 className="text-xs font-bold text-slate-800 sm:text-sm dark:text-[#F4F1FF]">
               マイノートデータのバックアップ
             </h2>
-            <p className="mt-0.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-[#A99EC4]">
               ブラウザのデータ消去や端末移行に備えて、JSON形式で保存・復元できます。
             </p>
           </div>
@@ -796,7 +808,7 @@ export function MyNoteClient({
             <button
               type="button"
               onClick={handleExportJson}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
             >
               <Download className="h-3.5 w-3.5" aria-hidden="true" />
               <span>JSONエクスポート</span>
@@ -805,7 +817,7 @@ export function MyNoteClient({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
             >
               <Upload className="h-3.5 w-3.5" aria-hidden="true" />
               <span>JSONインポート</span>
@@ -868,14 +880,14 @@ export function MyNoteClient({
       {notice && (
         <div
           role="status"
-          className="fixed right-3 bottom-4 left-3 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-900 px-4 py-3 text-sm text-white shadow-lg sm:right-6 sm:left-auto"
+          className="fixed right-3 bottom-4 left-3 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-900 px-4 py-3 text-sm text-white shadow-lg sm:right-6 sm:left-auto dark:border-[#3A2E58] dark:bg-[#221A36] dark:text-[#F4F1FF]"
         >
           <span>{notice.message}</span>
           <div className="flex shrink-0 items-center gap-2">
             {notice.showLoginLink && (
               <Link
                 href="/login?next=%2Fmy-note"
-                className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
+                className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-blue-500 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
               >
                 ログイン
               </Link>
@@ -884,7 +896,7 @@ export function MyNoteClient({
               type="button"
               onClick={() => setNotice(null)}
               aria-label="通知を閉じる"
-              className="rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white"
+              className="rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
             >
               <X className="h-4 w-4" />
             </button>

@@ -11,7 +11,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="mx-auto w-full max-w-md px-3 py-10 sm:px-6">
-          <div className="h-72 animate-pulse rounded-2xl border border-slate-200 bg-white" />
+          <div className="h-72 animate-pulse rounded-2xl border border-slate-200 bg-white dark:border-[#2E2447] dark:bg-[#1B152B]" />
         </div>
       }
     >

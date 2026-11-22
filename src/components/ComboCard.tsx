@@ -51,15 +51,15 @@ interface ComboCardProps {
 function getMoveChipStyle(move: Move): string {
   switch (move.category) {
     case "system":
-      return "border-slate-200 bg-slate-100 text-slate-700";
+      return "border-slate-200 bg-slate-100 text-slate-700 dark:border-[#3A2F58] dark:bg-[#2E2546] dark:text-[#CFC6E8]";
     case "super":
-      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
+      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold dark:border-violet-400/40 dark:bg-violet-500/20 dark:text-violet-200";
     case "special":
-      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium dark:border-indigo-400/35 dark:bg-indigo-500/20 dark:text-[#F4F1FF]";
     case "throw":
-      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium";
+      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200";
     default:
-      return "border-slate-200 bg-white text-slate-900 font-medium";
+      return "border-slate-200 bg-white text-slate-900 font-medium dark:border-[#34294F] dark:bg-[#251D3A] dark:text-[#F4F1FF]";
   }
 }
 
@@ -138,16 +138,17 @@ export function ComboCard({
       }}
       role="button"
       tabIndex={0}
-      className="group cursor-pointer rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs transition-all hover:border-blue-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:p-4"
+      className="group cursor-pointer rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs transition-all hover:border-blue-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:p-4 dark:border-[#2E2447] dark:bg-[#1B152B] dark:hover:border-[#8B5CF6] dark:focus-visible:outline-[#8B5CF6]"
     >
-      {/* ヘッダー行：最重要の状況バッジ + カテゴリ + マイノート保存ボタン */}
+      {/* ヘッダー行：最重要の状況バッジ + カテゴリ + 編集・マイノート保存ボタン */}
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
           {combo.situations.map((sitKey) => {
             const def = situationMap[sitKey];
             const label = def?.label ?? sitKey;
             const badgeStyle =
-              def?.badgeClassName ?? "bg-slate-100 text-slate-700";
+              def?.badgeClassName ??
+              "bg-slate-100 text-slate-700 dark:bg-[#251D3A] dark:text-[#CFC6E8]";
             return (
               <span
                 key={sitKey}
@@ -157,7 +158,7 @@ export function ComboCard({
               </span>
             );
           })}
-          <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+          <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:border-[#34294F] dark:bg-[#251D3A] dark:text-[#A99EC4]">
             {getCategoryLabel(combo.category)}
           </span>
         </div>
@@ -169,7 +170,7 @@ export function ComboCard({
               onClick={(e) => e.stopPropagation()}
               aria-label="このコンボを編集"
               title="編集"
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
             >
               <Pencil className="h-3 w-3" aria-hidden="true" />
               <span>編集</span>
@@ -186,8 +187,8 @@ export function ComboCard({
             title={isSaved ? "マイノートから解除" : "マイノートに保存"}
             className={`shrink-0 rounded-lg p-1.5 transition-colors ${
               isSaved
-                ? "bg-amber-50 text-amber-500 hover:bg-amber-100"
-                : "text-slate-400 hover:bg-amber-50 hover:text-amber-500"
+                ? "bg-amber-50 text-amber-500 hover:bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 dark:hover:bg-amber-500/30"
+                : "text-slate-400 hover:bg-amber-50 hover:text-amber-500 dark:text-[#A99EC4] dark:hover:bg-amber-500/15 dark:hover:text-amber-300"
             }`}
           >
             <Star className={`h-4 w-4 ${isSaved ? "fill-amber-400" : ""}`} />
@@ -197,13 +198,13 @@ export function ComboCard({
 
       {/* コンボタイトル（設定時のみ表示） */}
       {combo.title?.trim() && (
-        <h3 className="mb-2 text-sm font-bold leading-snug text-slate-900 sm:text-[15px]">
+        <h3 className="mb-2 text-sm font-bold leading-snug text-slate-900 sm:text-[15px] dark:text-[#F4F1FF]">
           {combo.title.trim()}
         </h3>
       )}
 
       {/* レシピ表示エリア：長尺コンボでも390px幅で崩れず折り返される */}
-      <div className="mb-3 rounded-lg border border-slate-100 bg-slate-50/70 p-2.5 sm:p-3">
+      <div className="mb-3 rounded-lg border border-slate-100 bg-slate-50/70 p-2.5 sm:p-3 dark:border-[#2E2447] dark:bg-[#140F23]">
         <div className="flex flex-wrap items-center gap-x-1 gap-y-1.5">
           {moves.map((move, index) => (
             <div
@@ -219,7 +220,7 @@ export function ComboCard({
               </span>
               {index < moves.length - 1 && (
                 <ChevronRight
-                  className="h-3.5 w-3.5 shrink-0 text-slate-400"
+                  className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-[#7E72A1]"
                   aria-hidden="true"
                 />
               )}
@@ -229,11 +230,11 @@ export function ComboCard({
       </div>
 
       {/* メタ情報バー */}
-      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-slate-100 pb-2.5 text-xs text-slate-600">
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-slate-100 pb-2.5 text-xs text-slate-600 dark:border-[#2E2447] dark:text-[#A99EC4]">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           {/* ダメージ */}
-          <span className="inline-flex items-center gap-1 font-semibold text-slate-900">
-            <Flame className="h-3.5 w-3.5 text-orange-500" aria-hidden="true" />
+          <span className="inline-flex items-center gap-1 font-semibold text-slate-900 dark:text-[#F4F1FF]">
+            <Flame className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" aria-hidden="true" />
             {combo.damage !== null ? combo.damage.toLocaleString() : "---"}
           </span>
 
@@ -242,24 +243,26 @@ export function ComboCard({
             className="inline-flex items-center gap-1.5"
             title={`消費Dゲージ: ${combo.driveCost}`}
           >
-            <span className="text-[11px] font-medium text-slate-500">D</span>
+            <span className="text-[11px] font-medium text-slate-500 dark:text-[#A99EC4]">D</span>
             <span className="inline-flex items-center gap-0.5" aria-hidden="true">
               {Array.from({ length: 6 }).map((_, i) => (
                 <span
                   key={i}
                   className={`h-2.5 w-1.5 rounded-[2px] ${
-                    i < driveBlocks ? "bg-emerald-500" : "bg-slate-200"
+                    i < driveBlocks
+                      ? "bg-emerald-500 dark:bg-emerald-400"
+                      : "bg-slate-200 dark:bg-[#2E2447]"
                   }`}
                 />
               ))}
             </span>
-            <span className="font-mono text-[11px] font-semibold text-slate-700">
+            <span className="font-mono text-[11px] font-semibold text-slate-700 dark:text-[#E2DCF5]">
               {combo.driveCost}
             </span>
           </span>
 
           {/* 消費SAゲージ */}
-          <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
+          <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-slate-700 dark:bg-[#251D3A] dark:text-[#DDD6FE]">
             SA {combo.saCost}
           </span>
 
@@ -275,7 +278,7 @@ export function ComboCard({
             <>
               {stockCost > 0 && (
                 <span
-                  className="inline-flex items-center gap-0.5 rounded border border-pink-200 bg-pink-50 px-1.5 py-0.5 text-[11px] font-semibold text-pink-700"
+                  className="inline-flex items-center gap-0.5 rounded border border-pink-200 bg-pink-50 px-1.5 py-0.5 text-[11px] font-semibold text-pink-700 dark:border-pink-400/30 dark:bg-pink-500/20 dark:text-pink-200"
                   title={`${stockMeta?.label ?? "ストック"}を${stockCost}消費`}
                 >
                   <span>{stockShortLabel}</span>
@@ -284,7 +287,7 @@ export function ComboCard({
               )}
               {stockGain > 0 && (
                 <span
-                  className="inline-flex items-center gap-0.5 rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[11px] font-semibold text-cyan-700"
+                  className="inline-flex items-center gap-0.5 rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[11px] font-semibold text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-500/20 dark:text-cyan-200"
                   title={`${stockMeta?.label ?? "ストック"}を${stockGain}獲得`}
                 >
                   <span>{stockShortLabel}</span>
@@ -296,16 +299,16 @@ export function ComboCard({
 
           {/* 起き攻め */}
           {combo.hasOki && (
-            <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+            <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border dark:border-emerald-400/30 dark:bg-emerald-500/20 dark:text-emerald-200">
               <ShieldCheck className="h-3 w-3" aria-hidden="true" />
               起き攻めあり
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2.5 text-[11px] text-slate-500">
+        <div className="flex items-center gap-2.5 text-[11px] text-slate-500 dark:text-[#A99EC4]">
           {version && (
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600">
+            <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-[#251D3A] dark:text-[#A99EC4]">
               {version.label}
             </span>
           )}
@@ -323,12 +326,12 @@ export function ComboCard({
             }
             className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors ${
               isLiked
-                ? "bg-rose-50 text-rose-600 hover:bg-rose-100"
-                : "text-slate-500 hover:bg-rose-50 hover:text-rose-600"
+                ? "bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/30"
+                : "text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-[#A99EC4] dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
             }`}
           >
             <Heart
-              className={`h-3.5 w-3.5 ${isLiked ? "fill-rose-500 text-rose-500" : ""}`}
+              className={`h-3.5 w-3.5 ${isLiked ? "fill-rose-500 text-rose-500 dark:fill-rose-400 dark:text-rose-400" : ""}`}
               aria-hidden="true"
             />
             <span className="font-medium">{likesCount}</span>
@@ -337,12 +340,12 @@ export function ComboCard({
       </div>
 
       {/* 補足メモプレビュー（1〜2行） */}
-      <p className="line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
+      <p className="line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-[#CFC6E8]">
         {combo.note}
       </p>
 
       {/* クイックアクション（レシピコピー・共有リンク） */}
-      <div className="mt-2.5 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-2">
+      <div className="mt-2.5 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2E2447]">
         <button
           type="button"
           onClick={handleCopyRecipe}
@@ -350,8 +353,8 @@ export function ComboCard({
           title="表示中の表記モードでレシピをコピー"
           className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold transition-colors ${
             copiedTarget === "recipe"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-200"
+              : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
           }`}
         >
           {copiedTarget === "recipe" ? (
@@ -374,8 +377,8 @@ export function ComboCard({
           title="このコンボを直接開くURLをコピー"
           className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold transition-colors ${
             copiedTarget === "link"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-200"
+              : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
           }`}
         >
           {copiedTarget === "link" ? (

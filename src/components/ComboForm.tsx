@@ -122,15 +122,15 @@ const NOTATION_TABS: { mode: NotationMode; label: string }[] = [
 function getMoveChipStyle(move: Move): string {
   switch (move.category) {
     case "system":
-      return "border-slate-200 bg-slate-100 text-slate-700";
+      return "border-slate-200 bg-slate-100 text-slate-700 dark:border-[#3B3057] dark:bg-[#251D3A] dark:text-[#CFC6E8]";
     case "super":
-      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold";
+      return "border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold dark:border-violet-400/40 dark:bg-violet-500/20 dark:text-violet-200";
     case "special":
-      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium";
+      return "border-blue-200 bg-blue-50/70 text-slate-900 font-medium dark:border-sky-400/35 dark:bg-sky-500/15 dark:text-[#F4F1FF]";
     case "throw":
-      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium";
+      return "border-amber-200 bg-amber-50/70 text-amber-900 font-medium dark:border-amber-400/35 dark:bg-amber-500/15 dark:text-amber-200";
     default:
-      return "border-slate-200 bg-white text-slate-900 font-medium";
+      return "border-slate-200 bg-white text-slate-900 font-medium dark:border-[#3D315C] dark:bg-[#261E3B] dark:text-[#F4F1FF]";
   }
 }
 
@@ -750,30 +750,30 @@ export function ComboForm({
       {/* 1. キャラクター & 操作タイプ & 表記モード選択 */}
       <section
         aria-label="キャラクター・操作タイプ・表記選択"
-        className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4"
+        className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4 dark:border-[#2E2447] dark:bg-[#1B152B]"
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {mode === "edit" ? (
-            <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+            <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
               <div className="flex items-center gap-1.5">
                 <span>対象キャラクター</span>
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-[#251D3A] dark:text-[#A99EC4]">
                   変更不可
                 </span>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#CFC6E8]">
                 {selectedCharacter
                   ? `${selectedCharacter.nameJa}（${selectedCharacter.nameEn}）`
                   : selectedCharacterId}
               </div>
             </div>
           ) : (
-            <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+            <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
               <span>対象キャラクター</span>
               <select
                 value={selectedCharacterId}
                 onChange={(e) => handleChangeCharacter(e.target.value)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 focus:border-blue-500 focus:outline-none"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 focus:border-blue-500 focus:outline-none dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:focus:border-[#8B5CF6]"
               >
                 {characters.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -784,12 +784,12 @@ export function ComboForm({
             </label>
           )}
 
-          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
             <span>操作タイプ</span>
             <div
               role="tablist"
               aria-label="操作タイプ選択"
-              className="grid grid-cols-2 rounded-lg bg-slate-100 p-1"
+              className="grid grid-cols-2 rounded-lg bg-slate-100 p-1 dark:bg-[#251D3A]"
             >
               {(
                 [
@@ -805,8 +805,8 @@ export function ComboForm({
                   onClick={() => handleChangeControlType(item.value)}
                   className={`rounded-md py-1.5 text-xs font-semibold transition-all sm:text-sm ${
                     controlType === item.value
-                      ? "bg-white text-blue-700 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-white text-blue-700 shadow-xs dark:bg-[#7C3AED] dark:text-white"
+                      : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                   }`}
                 >
                   {item.label}
@@ -815,12 +815,12 @@ export function ComboForm({
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
             <span>表記モード</span>
             <div
               role="tablist"
               aria-label="表記モード選択"
-              className="grid grid-cols-3 rounded-lg bg-slate-100 p-1"
+              className="grid grid-cols-3 rounded-lg bg-slate-100 p-1 dark:bg-[#251D3A]"
             >
               {NOTATION_TABS.map((item) => (
                 <button
@@ -831,8 +831,8 @@ export function ComboForm({
                   onClick={() => setNotationMode(item.mode)}
                   className={`rounded-md py-1.5 text-xs font-semibold transition-all sm:text-sm ${
                     notationMode === item.mode
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-600 text-white shadow-xs dark:bg-[#7C3AED]"
+                      : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                   }`}
                 >
                   {item.label}
@@ -846,15 +846,15 @@ export function ComboForm({
       {/* 2. 技ボタン選択式ビルダー */}
       <section
         aria-label="技ボタンビルダー"
-        className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4"
+        className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4 dark:border-[#2E2447] dark:bg-[#1B152B]"
       >
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-sm font-bold text-slate-900">
-            技を選択して追加 <span className="text-rose-500">*</span>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-[#F4F1FF]">
+            技を選択して追加 <span className="text-rose-500 dark:text-rose-400">*</span>
           </h2>
-          <span className="text-[11px] font-medium text-slate-500">
+          <span className="text-[11px] font-medium text-slate-500 dark:text-[#A99EC4]">
             {isInsertingMidway ? (
-              <span className="font-semibold text-blue-600">
+              <span className="font-semibold text-blue-600 dark:text-[#C4B5FD]">
                 {effectiveInsertIndex === 0
                   ? "タップで先頭に挿入"
                   : `タップで ${effectiveInsertIndex}→${effectiveInsertIndex + 1} 番目の間に挿入`}
@@ -869,7 +869,7 @@ export function ComboForm({
         <div
           role="tablist"
           aria-label="技カテゴリ切替"
-          className="mb-2.5 grid grid-cols-3 gap-1.5 border-b border-slate-100 pb-2.5 sm:flex sm:flex-wrap"
+          className="mb-2.5 grid grid-cols-3 gap-1.5 border-b border-slate-100 pb-2.5 sm:flex sm:flex-wrap dark:border-[#2D2346]"
         >
           {MOVE_CATEGORY_TABS.map((tab) => {
             const count = movesByCategory[tab.key].length;
@@ -883,8 +883,8 @@ export function ComboForm({
                 onClick={() => setActiveMoveCategory(tab.key)}
                 className={`inline-flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors sm:px-3 ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    ? "bg-blue-600 text-white shadow-xs dark:bg-[#7C3AED]"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                 }`}
               >
                 <span className="truncate">{tab.label}</span>
@@ -892,7 +892,7 @@ export function ComboForm({
                   className={`shrink-0 rounded-full px-1.5 py-0.2 text-[10px] ${
                     isActive
                       ? "bg-white/20 text-white"
-                      : "bg-white text-slate-500"
+                      : "bg-white text-slate-500 dark:bg-[#1B152B] dark:text-[#A99EC4]"
                   }`}
                 >
                   {count}
@@ -904,7 +904,7 @@ export function ComboForm({
 
         {/* 技ボタングリッド（選択中の表記モードのみ表示・CDR/DR/DIは常にアイコン統一） */}
         {currentCategoryMoves.length > 0 ? (
-          <div className="max-h-60 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-1.5 sm:max-h-72 sm:p-2">
+          <div className="max-h-60 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-1.5 sm:max-h-72 sm:p-2 dark:border-[#2A2142] dark:bg-[#140F23]">
             <div
               className={`grid gap-1.5 ${
                 notationMode === "name"
@@ -918,10 +918,10 @@ export function ComboForm({
                   type="button"
                   onClick={() => handleAppendMove(move.id)}
                   title={`${move.notationName} (${move.notationNumpad})`}
-                  className="flex min-h-[40px] items-center justify-center rounded-lg border border-slate-200 bg-white px-1.5 py-1.5 text-center shadow-2xs transition-all hover:border-blue-400 hover:bg-blue-50/60 active:scale-[0.97] sm:px-2"
+                  className="flex min-h-[40px] items-center justify-center rounded-lg border border-slate-200 bg-white px-1.5 py-1.5 text-center shadow-2xs transition-all hover:border-blue-400 hover:bg-blue-50/60 active:scale-[0.97] sm:px-2 dark:border-[#3A2E58] dark:bg-[#1E1730] dark:hover:border-[#8B5CF6] dark:hover:bg-[#2A2145]"
                 >
                   <span
-                    className={`inline-flex max-w-full items-center justify-center text-xs font-bold text-slate-900 sm:text-[13px] ${
+                    className={`inline-flex max-w-full items-center justify-center text-xs font-bold text-slate-900 sm:text-[13px] dark:text-[#F4F1FF] ${
                       notationMode === "command" ? "leading-tight" : "truncate"
                     }`}
                   >
@@ -932,7 +932,7 @@ export function ComboForm({
             </div>
           </div>
         ) : (
-          <p className="py-6 text-center text-xs text-slate-500">
+          <p className="py-6 text-center text-xs text-slate-500 dark:text-[#A99EC4]">
             このカテゴリに登録されている技はありません。
           </p>
         )}
@@ -941,14 +941,14 @@ export function ComboForm({
       {/* 3. 組み立て中のレシピ（任意位置挿入・並び替え・リアルタイムプレビュー） */}
       <section
         aria-label="組み立て中のレシピ"
-        className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4"
+        className="mb-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4 dark:border-[#2E2447] dark:bg-[#1B152B]"
       >
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <h2 className="text-sm font-bold text-slate-900">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-[#F4F1FF]">
               組み立て中のレシピ
             </h2>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-[#251D3A] dark:text-[#CFC6E8]">
               {recipeMoves.length} パーツ
             </span>
             {autoStock?.hasActivity && (
@@ -961,7 +961,7 @@ export function ComboForm({
               </span>
             )}
             {recipeMoves.length === 1 && (
-              <span className="text-[11px] font-medium text-amber-700">
+              <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
                 ※ 2つ以上選択してください
               </span>
             )}
@@ -972,7 +972,7 @@ export function ComboForm({
               <button
                 type="button"
                 onClick={() => setInsertIndex(null)}
-                className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 dark:border-violet-400/40 dark:bg-violet-500/20 dark:text-[#DDD6FE] dark:hover:bg-violet-500/30"
               >
                 <CornerDownRight className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>末尾に追加へ戻す</span>
@@ -982,7 +982,7 @@ export function ComboForm({
               type="button"
               onClick={handleUndo}
               disabled={recipeMoves.length === 0}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
             >
               <Undo2 className="h-3.5 w-3.5" aria-hidden="true" />
               <span>1つ戻す</span>
@@ -991,7 +991,7 @@ export function ComboForm({
               type="button"
               onClick={handleClear}
               disabled={recipeMoves.length === 0}
-              className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50/60 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50/60 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-rose-500/35 dark:bg-rose-500/15 dark:text-rose-200 dark:hover:bg-rose-500/25"
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
               <span>全消去</span>
@@ -1001,13 +1001,13 @@ export function ComboForm({
 
         {recipeMoves.length > 0 ? (
           <>
-            <div className="rounded-lg border border-slate-100 bg-slate-50/70 p-2.5 sm:p-3">
+            <div className="rounded-lg border border-slate-100 bg-slate-50/70 p-2.5 sm:p-3 dark:border-[#2A2142] dark:bg-[#140F23]">
               <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
                 {/* 先頭挿入スロット（index = 0） */}
                 {effectiveInsertIndex === 0 ? (
                   <span
                     aria-live="polite"
-                    className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold text-white shadow-xs"
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold text-white shadow-xs dark:bg-[#7C3AED]"
                   >
                     <span
                       className="h-2.5 w-0.5 animate-pulse rounded-full bg-white"
@@ -1021,7 +1021,7 @@ export function ComboForm({
                     onClick={() => setInsertIndex(0)}
                     aria-label="先頭に技を挿入する位置に設定"
                     title="先頭に挿入"
-                    className="inline-flex h-7 items-center gap-0.5 rounded-md border border-dashed border-slate-300 bg-white px-1.5 text-[10px] font-semibold text-slate-500 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                    className="inline-flex h-7 items-center gap-0.5 rounded-md border border-dashed border-slate-300 bg-white px-1.5 text-[10px] font-semibold text-slate-500 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 dark:border-[#4A3B70] dark:bg-[#1B152B] dark:text-[#A99EC4] dark:hover:border-[#8B5CF6] dark:hover:bg-[#251D3A] dark:hover:text-[#DDD6FE]"
                   >
                     <Plus className="h-3 w-3" aria-hidden="true" />
                     <span>先頭</span>
@@ -1052,14 +1052,14 @@ export function ComboForm({
                             notationMode={notationMode}
                           />
                         </span>
-                        <span className="ml-0.5 inline-flex shrink-0 items-center gap-0.5 border-l border-slate-200/90 pl-1">
+                        <span className="ml-0.5 inline-flex shrink-0 items-center gap-0.5 border-l border-slate-200/90 pl-1 dark:border-[#4A3B70]/70">
                           <button
                             type="button"
                             onClick={() => handleMoveLeft(index)}
                             disabled={isFirst}
                             aria-label={`${move.notationName} を1つ左へ移動`}
                             title="1つ左へ"
-                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-25"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-25 dark:text-[#A99EC4] dark:hover:bg-[#3A2E58] dark:hover:text-[#F4F1FF]"
                           >
                             <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
@@ -1069,7 +1069,7 @@ export function ComboForm({
                             disabled={isLast}
                             aria-label={`${move.notationName} を1つ右へ移動`}
                             title="1つ右へ"
-                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-25"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-25 dark:text-[#A99EC4] dark:hover:bg-[#3A2E58] dark:hover:text-[#F4F1FF]"
                           >
                             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
@@ -1078,7 +1078,7 @@ export function ComboForm({
                             onClick={() => handleRemoveAt(index)}
                             aria-label={`${move.notationName} を削除`}
                             title="削除"
-                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-400 transition-colors hover:bg-rose-100 hover:text-rose-600"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-400 transition-colors hover:bg-rose-100 hover:text-rose-600 dark:text-[#8E82B3] dark:hover:bg-rose-500/20 dark:hover:text-rose-300"
                           >
                             <X className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
@@ -1090,7 +1090,7 @@ export function ComboForm({
                         (isNextSlotActive ? (
                           <span
                             aria-live="polite"
-                            className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold text-white shadow-xs"
+                            className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold text-white shadow-xs dark:bg-[#7C3AED]"
                           >
                             <span
                               className="h-2.5 w-0.5 animate-pulse rounded-full bg-white"
@@ -1104,7 +1104,7 @@ export function ComboForm({
                             onClick={() => setInsertIndex(nextSlot)}
                             aria-label={`${index + 1}番目と${index + 2}番目の間に技を挿入`}
                             title="ここに挿入"
-                            className="inline-flex h-7 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-600"
+                            className="inline-flex h-7 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:text-[#7D71A1] dark:hover:bg-violet-500/25 dark:hover:text-[#DDD6FE]"
                           >
                             <ChevronRight
                               className="h-4 w-4"
@@ -1118,9 +1118,9 @@ export function ComboForm({
 
                 {/* 末尾挿入スロット */}
                 {!isInsertingMidway ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700 dark:border-violet-400/40 dark:bg-violet-500/20 dark:text-[#DDD6FE]">
                     <span
-                      className="h-2.5 w-0.5 animate-pulse rounded-full bg-blue-600"
+                      className="h-2.5 w-0.5 animate-pulse rounded-full bg-blue-600 dark:bg-[#A78BFA]"
                       aria-hidden="true"
                     />
                     末尾に追加
@@ -1131,7 +1131,7 @@ export function ComboForm({
                     onClick={() => setInsertIndex(null)}
                     aria-label="末尾に技を追加する位置に戻す"
                     title="末尾に追加"
-                    className="inline-flex h-7 items-center gap-0.5 rounded-md border border-dashed border-slate-300 bg-white px-1.5 text-[10px] font-semibold text-slate-500 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                    className="inline-flex h-7 items-center gap-0.5 rounded-md border border-dashed border-slate-300 bg-white px-1.5 text-[10px] font-semibold text-slate-500 transition-colors hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 dark:border-[#4A3B70] dark:bg-[#1B152B] dark:text-[#A99EC4] dark:hover:border-[#8B5CF6] dark:hover:bg-[#251D3A] dark:hover:text-[#DDD6FE]"
                   >
                     <Plus className="h-3 w-3" aria-hidden="true" />
                     <span>末尾</span>
@@ -1139,12 +1139,12 @@ export function ComboForm({
                 )}
               </div>
             </div>
-            <p className="mt-2 text-[11px] text-slate-500">
+            <p className="mt-2 text-[11px] text-slate-500 dark:text-[#A99EC4]">
               ※「+ 先頭」や技の間の「›」をタップすると途中の位置に技を挿入できます。チップ内の「‹」「›」で左右に並び替えられます。
             </p>
           </>
         ) : (
-          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-3 py-6 text-center text-xs text-slate-500">
+          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-3 py-6 text-center text-xs text-slate-500 dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#A99EC4]">
             上の技ボタンをタップして、コンボの始動技から順番に組み立ててください。
           </div>
         )}
@@ -1153,18 +1153,18 @@ export function ComboForm({
       {/* 4. 状況・カテゴリ・数値・補足メモ入力 */}
       <section
         aria-label="コンボの属性と補足メモ"
-        className="mb-5 space-y-5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-5"
+        className="mb-5 space-y-5 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-5 dark:border-[#2E2447] dark:bg-[#1B152B]"
       >
         {/* コンボタイトル（任意） */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-2">
             <label
               htmlFor="combo-title-input"
-              className="text-sm font-bold text-slate-900"
+              className="text-sm font-bold text-slate-900 dark:text-[#F4F1FF]"
             >
               コンボタイトル（任意）
             </label>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-[11px] text-slate-400 dark:text-[#8E82B3]">
               {title.trim().length}/60
             </span>
           </div>
@@ -1178,17 +1178,17 @@ export function ComboForm({
               clearErrors();
             }}
             placeholder="例: 屈中Kラッシュ運び定番 / 画面端パニカン最大"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] dark:focus:border-[#8B5CF6]"
           />
         </div>
 
         {/* 状況タグ選択（必須・複数選択可） */}
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <span className="text-sm font-bold text-slate-900">
-              状況タグ（複数選択可） <span className="text-rose-500">*</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-[#F4F1FF]">
+              状況タグ（複数選択可） <span className="text-rose-500 dark:text-rose-400">*</span>
             </span>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-slate-500 dark:text-[#A99EC4]">
               カードの最上部に表示されます
             </span>
           </div>
@@ -1203,8 +1203,8 @@ export function ComboForm({
                   aria-pressed={isSelected}
                   className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold transition-all ${
                     isSelected
-                      ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1`
-                      : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                      ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                      : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                   }`}
                 >
                   {sit.label}
@@ -1216,8 +1216,8 @@ export function ComboForm({
 
         {/* カテゴリ選択（必須） */}
         <div>
-          <span className="mb-2 block text-sm font-bold text-slate-900">
-            カテゴリ <span className="text-rose-500">*</span>
+          <span className="mb-2 block text-sm font-bold text-slate-900 dark:text-[#F4F1FF]">
+            カテゴリ <span className="text-rose-500 dark:text-rose-400">*</span>
           </span>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {COMBO_CATEGORIES.map((cat) => {
@@ -1230,8 +1230,8 @@ export function ComboForm({
                   aria-pressed={isSelected}
                   className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-all sm:text-sm ${
                     isSelected
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      ? "border-blue-600 bg-blue-50 text-blue-700 dark:border-[#8B5CF6] dark:bg-violet-500/20 dark:text-[#DDD6FE]"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                   }`}
                 >
                   {cat.label}
@@ -1242,9 +1242,9 @@ export function ComboForm({
         </div>
 
         {/* 数値・ゲージ・起き攻め */}
-        <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2 dark:border-[#2D2346]">
           {/* ダメージ */}
-          <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+          <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
             <span>ダメージ（任意）</span>
             <input
               type="number"
@@ -1255,21 +1255,21 @@ export function ComboForm({
               value={damageInput}
               onChange={(e) => setDamageInput(e.target.value)}
               placeholder="例: 2740"
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] dark:focus:border-[#8B5CF6]"
             />
           </label>
 
           {/* 起き攻め */}
-          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
             <span>起き攻めの有無</span>
-            <div className="grid grid-cols-2 rounded-lg bg-slate-100 p-1">
+            <div className="grid grid-cols-2 rounded-lg bg-slate-100 p-1 dark:bg-[#251D3A]">
               <button
                 type="button"
                 onClick={() => setHasOki(true)}
                 className={`inline-flex items-center justify-center gap-1 rounded-md py-1.5 text-xs font-semibold transition-all sm:text-sm ${
                   hasOki
-                    ? "bg-emerald-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-emerald-600 text-white shadow-xs dark:bg-emerald-500"
+                    : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                 }`}
               >
                 <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1280,8 +1280,8 @@ export function ComboForm({
                 onClick={() => setHasOki(false)}
                 className={`rounded-md py-1.5 text-xs font-semibold transition-all sm:text-sm ${
                   !hasOki
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white text-slate-900 shadow-xs dark:bg-[#3A2E58] dark:text-[#F4F1FF]"
+                    : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
                 }`}
               >
                 なし
@@ -1290,23 +1290,23 @@ export function ComboForm({
           </div>
 
           {/* 消費Dゲージ（自動計算＋手動微調整＋自動復帰） */}
-          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
             <div className="flex flex-wrap items-center justify-between gap-1.5">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span>消費Dゲージ（0〜6）</span>
                 {driveCostMode === "auto" ? (
-                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-400/35 dark:bg-emerald-500/20 dark:text-emerald-200">
                     自動計算
                   </span>
                 ) : (
                   <>
-                    <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                    <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200">
                       手動調整中
                     </span>
                     <button
                       type="button"
                       onClick={handleResetDriveCostToAuto}
-                      className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                      className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#C4B5FD] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
                     >
                       <RotateCcw className="h-2.5 w-2.5" aria-hidden="true" />
                       <span>自動に戻す</span>
@@ -1314,7 +1314,7 @@ export function ComboForm({
                   </>
                 )}
               </div>
-              <span className="font-mono text-xs text-slate-600">
+              <span className="font-mono text-xs text-slate-600 dark:text-[#E2DCF5]">
                 {driveCost} 本
               </span>
             </div>
@@ -1326,8 +1326,8 @@ export function ComboForm({
                   onClick={() => handleManualDriveCostChange(val)}
                   className={`h-8 w-8 rounded-lg border text-xs font-bold transition-colors ${
                     driveCost === val
-                      ? "border-emerald-600 bg-emerald-600 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      ? "border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                   }`}
                 >
                   {val}
@@ -1346,11 +1346,11 @@ export function ComboForm({
                   }
                 }}
                 aria-label="消費Dゲージ数値入力（0.5刻み可）"
-                className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-center font-mono text-xs text-slate-900 focus:border-blue-500 focus:outline-none"
+                className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-center font-mono text-xs text-slate-900 focus:border-blue-500 focus:outline-none dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:focus:border-[#8B5CF6]"
               />
             </div>
             {autoGauge.isDriveOverCap && (
-              <p className="text-[11px] font-medium leading-relaxed text-amber-700">
+              <p className="text-[11px] font-medium leading-relaxed text-amber-700 dark:text-amber-300">
                 ※計算上 {autoGauge.rawDriveCost}{" "}
                 本消費（バーンアウト想定のため上限 6 で登録されます）
               </p>
@@ -1358,22 +1358,22 @@ export function ComboForm({
           </div>
 
           {/* 消費SAゲージ（自動計算＋手動微調整＋自動復帰） */}
-          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+          <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
             <div className="flex flex-wrap items-center gap-1.5">
               <span>消費SAゲージ</span>
               {saCostMode === "auto" ? (
-                <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:border-violet-400/35 dark:bg-violet-500/20 dark:text-violet-200">
                   自動計算
                 </span>
               ) : (
                 <>
-                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200">
                     手動調整中
                   </span>
                   <button
                     type="button"
                     onClick={handleResetSaCostToAuto}
-                    className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                    className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#C4B5FD] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
                   >
                     <RotateCcw className="h-2.5 w-2.5" aria-hidden="true" />
                     <span>自動に戻す</span>
@@ -1389,8 +1389,8 @@ export function ComboForm({
                   onClick={() => handleManualSaCostChange(val)}
                   className={`rounded-lg border py-1.5 font-mono text-xs font-bold transition-colors ${
                     saCost === val
-                      ? "border-indigo-600 bg-indigo-600 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      ? "border-indigo-600 bg-indigo-600 text-white dark:border-[#7C3AED] dark:bg-[#7C3AED]"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                   }`}
                 >
                   SA {val}
@@ -1402,24 +1402,24 @@ export function ComboForm({
 
         {/* キャラ固有ストック（ジュリ・イングリッド・舞など対応キャラのみ表示） */}
         {stockMeta && (
-          <div className="grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+          <div className="grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:grid-cols-2 dark:border-[#2E2447] dark:bg-[#140F23]">
+            <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span>{stockMeta.label} 消費数（始動必要数）</span>
                 {supportsAutoStock &&
                   (stockCostMode === "auto" ? (
-                    <span className="inline-flex items-center rounded-full border border-pink-200 bg-pink-50 px-2 py-0.5 text-[10px] font-semibold text-pink-700">
+                    <span className="inline-flex items-center rounded-full border border-pink-200 bg-pink-50 px-2 py-0.5 text-[10px] font-semibold text-pink-700 dark:border-pink-400/35 dark:bg-pink-500/20 dark:text-pink-200">
                       自動計算
                     </span>
                   ) : (
                     <>
-                      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200">
                         手動調整中
                       </span>
                       <button
                         type="button"
                         onClick={handleResetStockCostToAuto}
-                        className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                        className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#C4B5FD] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
                       >
                         <RotateCcw className="h-2.5 w-2.5" aria-hidden="true" />
                         <span>自動に戻す</span>
@@ -1438,8 +1438,8 @@ export function ComboForm({
                     onClick={() => handleManualStockCostChange(val)}
                     className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
                       stockCost === val
-                        ? "border-pink-600 bg-pink-600 text-white"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-pink-50"
+                        ? "border-pink-600 bg-pink-600 text-white dark:border-pink-500 dark:bg-pink-500"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-pink-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-pink-500/20"
                     }`}
                   >
                     {val === 0
@@ -1452,30 +1452,30 @@ export function ComboForm({
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700">
+            <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span>
                   {stockMeta.label} 獲得数
                   {stockMeta.gainHint && (
-                    <span className="ml-1.5 font-normal text-slate-500">
+                    <span className="ml-1.5 font-normal text-slate-500 dark:text-[#A99EC4]">
                       （{stockMeta.gainHint}）
                     </span>
                   )}
                 </span>
                 {supportsAutoStock &&
                   (stockGainMode === "auto" ? (
-                    <span className="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-700">
+                    <span className="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-700 dark:border-cyan-400/35 dark:bg-cyan-500/20 dark:text-cyan-200">
                       自動計算
                     </span>
                   ) : (
                     <>
-                      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200">
                         手動調整中
                       </span>
                       <button
                         type="button"
                         onClick={handleResetStockGainToAuto}
-                        className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                        className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#C4B5FD] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
                       >
                         <RotateCcw className="h-2.5 w-2.5" aria-hidden="true" />
                         <span>自動に戻す</span>
@@ -1494,8 +1494,8 @@ export function ComboForm({
                     onClick={() => handleManualStockGainChange(val)}
                     className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
                       stockGain === val
-                        ? "border-cyan-600 bg-cyan-600 text-white"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-cyan-50"
+                        ? "border-cyan-600 bg-cyan-600 text-white dark:border-cyan-500 dark:bg-cyan-500"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-cyan-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-cyan-500/20"
                     }`}
                   >
                     {val === 0 ? "0（なし）" : `+${val}`}
@@ -1507,17 +1507,17 @@ export function ComboForm({
         )}
 
         {/* 補足メモ欄（必須） */}
-        <div className="space-y-2 border-t border-slate-100 pt-4">
+        <div className="space-y-2 border-t border-slate-100 pt-4 dark:border-[#2D2346]">
           <label
             htmlFor="combo-note-textarea"
-            className="block text-sm font-bold text-slate-900"
+            className="block text-sm font-bold text-slate-900 dark:text-[#F4F1FF]"
           >
-            補足メモ・コツ <span className="text-rose-500">*</span>
+            補足メモ・コツ <span className="text-rose-500 dark:text-rose-400">*</span>
           </label>
           {recipeMoveIds.includes("sys_delay") && (
-            <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-800">
+            <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-800 dark:border-sky-400/35 dark:bg-sky-500/15 dark:text-sky-200">
               <Info
-                className="mt-0.5 h-4 w-4 shrink-0 text-blue-600"
+                className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-sky-300"
                 aria-hidden="true"
               />
               <span>
@@ -1536,7 +1536,7 @@ export function ComboForm({
               clearErrors();
             }}
             placeholder="タイミングのコツ、距離限定、キャラ限定、起き攻めのフレーム状況などを記入してください。"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] dark:focus:border-[#8B5CF6]"
           />
         </div>
       </section>
@@ -1545,16 +1545,16 @@ export function ComboForm({
       {duplicateCombo && (
         <div
           role="alert"
-          className="mb-4 flex flex-col gap-2.5 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-amber-900 sm:flex-row sm:items-center sm:justify-between"
+          className="mb-4 flex flex-col gap-2.5 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-amber-900 sm:flex-row sm:items-center sm:justify-between dark:border-amber-400/35 dark:bg-amber-500/15 dark:text-amber-100"
         >
           <div className="flex items-start gap-2.5">
             <AlertTriangle
-              className="mt-0.5 h-5 w-5 shrink-0 text-amber-600"
+              className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300"
               aria-hidden="true"
             />
             <div className="text-xs leading-relaxed sm:text-sm">
               <p className="font-bold">同じレシピが既に登録されています</p>
-              <p className="text-amber-800">
+              <p className="text-amber-800 dark:text-amber-200/90">
                 重複投稿を避けるため、先に既存のコンボ内容をご確認ください。
               </p>
             </div>
@@ -1562,7 +1562,7 @@ export function ComboForm({
           <button
             type="button"
             onClick={() => setPreviewDuplicateModal(true)}
-            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 transition-colors hover:bg-amber-100"
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 transition-colors hover:bg-amber-100 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-100 dark:hover:bg-amber-500/30"
           >
             <span>既存コンボを確認</span>
             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1571,7 +1571,7 @@ export function ComboForm({
       )}
 
       {isCheckingDuplicate && recipeMoveIds.length > 0 && !duplicateCombo && (
-        <p className="mb-3 text-right text-[11px] text-slate-400">
+        <p className="mb-3 text-right text-[11px] text-slate-400 dark:text-[#8E82B3]">
           重複レシピを確認中...
         </p>
       )}
@@ -1580,7 +1580,7 @@ export function ComboForm({
       {activeError && (
         <div
           role="alert"
-          className="mb-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700 sm:text-sm"
+          className="mb-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700 sm:text-sm dark:border-rose-500/35 dark:bg-rose-500/15 dark:text-rose-200"
         >
           <AlertCircle
             className="mt-0.5 h-4 w-4 shrink-0"
@@ -1594,7 +1594,7 @@ export function ComboForm({
       {submitSuccess && (
         <div
           role="status"
-          className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800 sm:text-sm"
+          className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800 sm:text-sm dark:border-emerald-500/35 dark:bg-emerald-500/15 dark:text-emerald-200"
         >
           <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>{submitSuccess}</span>
@@ -1603,7 +1603,7 @@ export function ComboForm({
 
       {/* 送信ボタン */}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[11px] text-slate-500">
+        <p className="text-[11px] text-slate-500 dark:text-[#A99EC4]">
           {mode === "create"
             ? "※ 投稿時の最新ゲームバージョンが自動で紐付けられます。"
             : "※ 変更内容は公開コンボ一覧へ即座に反映されます。"}
@@ -1611,7 +1611,7 @@ export function ComboForm({
         <button
           type="submit"
           disabled={isSubmitting || Boolean(submitSuccess)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
         >
           <Send className="h-4 w-4" aria-hidden="true" />
           <span>

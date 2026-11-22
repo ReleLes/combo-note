@@ -26,7 +26,7 @@ const STRENGTH_CIRCLE_CLASS: Record<Strength, string> = {
   light: "bg-sky-500 text-white ring-1 ring-sky-600/40",
   medium: "bg-amber-500 text-white ring-1 ring-amber-600/40",
   heavy: "bg-rose-500 text-white ring-1 ring-rose-700/40",
-  any: "bg-white text-slate-800 ring-[1.5px] ring-slate-500",
+  any: "bg-white text-slate-800 ring-[1.5px] ring-slate-500 dark:bg-[#2A2242] dark:text-[#F4F1FF] dark:ring-[#8E82B3]",
 };
 
 const STRENGTH_JA: Record<Exclude<Strength, "any">, string> = {
@@ -40,7 +40,7 @@ function ArrowIcon({ dir }: { dir: string }) {
   return (
     <svg
       viewBox="0 0 16 16"
-      className="h-4 w-4 shrink-0 text-slate-800"
+      className="h-4 w-4 shrink-0 text-slate-800 dark:text-[#F4F1FF]"
       aria-label={dir}
       style={{ transform: `rotate(${deg}deg)` }}
     >
@@ -136,7 +136,7 @@ function AssistBadge() {
   return (
     <span
       title="アシスト (A)"
-      className="inline-flex h-[20px] items-center rounded bg-slate-700 px-1 text-[10px] font-bold text-white"
+      className="inline-flex h-[20px] items-center rounded bg-slate-700 px-1 text-[10px] font-bold text-white dark:bg-[#4C3C78] dark:text-[#F4F1FF]"
     >
       A
     </span>
@@ -177,7 +177,7 @@ function ModernAnyAttackBadge({ count = 1 }: { count?: number }) {
       {Array.from({ length: count }).map((_, idx) => (
         <span
           key={idx}
-          className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-slate-100 shadow-2xs ring-[1.5px] ring-slate-500"
+          className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-slate-100 shadow-2xs ring-[1.5px] ring-slate-500 dark:bg-[#2A2242] dark:ring-[#8E82B3]"
         />
       ))}
     </span>
@@ -202,7 +202,7 @@ function renderToken(token: string, key: number): React.ReactNode {
       return (
         <span
           key={key}
-          className="rounded bg-slate-200/80 px-1 py-0.5 text-[10px] font-bold leading-none text-slate-700"
+          className="rounded bg-slate-200/80 px-1 py-0.5 text-[10px] font-bold leading-none text-slate-700 dark:bg-[#30264A] dark:text-[#E2DCF5]"
         >
           空中
         </span>

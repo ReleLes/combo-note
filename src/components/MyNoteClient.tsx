@@ -21,7 +21,6 @@ import type {
   Move,
   PrivateNote,
   SituationDefinition,
-  UserPreferences,
 } from "@/types/combo";
 import {
   type CreatePrivateNoteInput,
@@ -32,20 +31,20 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useComboLikes } from "@/hooks/useComboLikes";
+import {
+  type MyNoteImportMode,
+  type ParsedMyNoteBackup,
+  applyMyNoteBackup,
+  downloadMyNoteBackup,
+  parseAndValidateMyNoteBackup,
+} from "@/lib/myNoteBackup";
 import { ComboCard } from "./ComboCard";
 import { ComboDetailModal } from "./ComboDetailModal";
+import { MyNoteImportModal } from "./MyNoteImportModal";
 import { PrivateNoteCard } from "./PrivateNoteCard";
 import { PrivateNoteFormModal } from "./PrivateNoteFormModal";
 
 type MyNoteSection = "saved" | "private";
-
-interface BackupPayload {
-  version: 1;
-  exportedAt: string;
-  preferences?: UserPreferences;
-  savedCombos: string[];
-  privateNotes: PrivateNote[];
-}
 
 interface MyNoteClientProps {
   characters: Character[];
@@ -66,12 +65,7 @@ export function MyNoteClient({
 }: MyNoteClientProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const {
-    preferences,
-    notationMode,
-    setControlType,
-    setNotationMode,
-  } = usePreferences();
+  const { notationMode, setControlType, setNotationMode } = usePreferences();
   const {
     savedComboIds,
     isSaved,
@@ -104,6 +98,10 @@ export function MyNoteClient({
   const [activeCombo, setActiveCombo] = useState<Combo | null>(null);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<PrivateNote | null>(null);
+  const [pendingImport, setPendingImport] = useState<{
+    fileName: string;
+    backup: ParsedMyNoteBackup;
+  } | null>(null);
   const [notice, setNotice] = useState<{
     message: string;
     showLoginLink?: boolean;
@@ -344,24 +342,13 @@ export function MyNoteClient({
   };
 
   const handleExportJson = () => {
-    const payload: BackupPayload = {
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      preferences,
-      savedCombos: savedComboIds,
-      privateNotes,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
+    const { filename, payload } = downloadMyNoteBackup(
+      savedComboIds,
+      privateNotes
+    );
+    setNotice({
+      message: `${filename} をエクスポートしました（保存コンボ ${payload.savedCombos.length}件・非公開メモ ${payload.privateNotes.length}件）`,
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    a.href = url;
-    a.download = `combonote-backup-${today}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setNotice({ message: "バックアップJSONをエクスポートしました。" });
   };
 
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -371,81 +358,64 @@ export function MyNoteClient({
 
     try {
       const text = await file.text();
-      const parsed: unknown = JSON.parse(text);
-      if (typeof parsed !== "object" || parsed === null) {
-        throw new Error("invalid");
+      const result = parseAndValidateMyNoteBackup(text);
+      if (!result.ok) {
+        setNotice({ message: result.error });
+        return;
       }
 
-      const data = parsed as Record<string, unknown>;
-      const importedSaved = Array.isArray(data.savedCombos)
-        ? data.savedCombos.filter(
-            (id): id is string => typeof id === "string"
-          )
-        : [];
-
-      const importedNotes = Array.isArray(data.privateNotes)
-        ? data.privateNotes.filter((item): item is PrivateNote => {
-            if (typeof item !== "object" || item === null) return false;
-            const n = item as Record<string, unknown>;
-            return (
-              typeof n.id === "string" &&
-              typeof n.characterId === "string" &&
-              typeof n.situation === "string" &&
-              typeof n.recipeText === "string" &&
-              typeof n.note === "string" &&
-              typeof n.createdAt === "string" &&
-              typeof n.updatedAt === "string"
-            );
-          })
-        : [];
-
-      if (
-        !Array.isArray(data.savedCombos) &&
-        !Array.isArray(data.privateNotes)
-      ) {
-        throw new Error("missing-fields");
-      }
-
-      // 既存データと安全にマージ（ID重複はインポート側で更新）
-      const mergedSaved = Array.from(
-        new Set([...savedComboIds, ...importedSaved])
-      );
-      replaceSavedCombos(mergedSaved);
-
-      const noteMap = new Map<string, PrivateNote>();
-      for (const n of privateNotes) {
-        noteMap.set(n.id, n);
-      }
-      for (const n of importedNotes) {
-        noteMap.set(n.id, n);
-      }
-      const mergedNotes = Array.from(noteMap.values()).sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      );
-      replacePrivateNotes(mergedNotes);
-
-      if (typeof data.preferences === "object" && data.preferences !== null) {
-        const pref = data.preferences as Record<string, unknown>;
-        if (pref.controlType === "classic" || pref.controlType === "modern") {
-          setControlType(pref.controlType);
-        }
-        if (
-          pref.notationMode === "numpad" ||
-          pref.notationMode === "command" ||
-          pref.notationMode === "name"
-        ) {
-          setNotationMode(pref.notationMode);
-        }
-      }
-
-      setNotice({
-        message: `インポート完了（保存コンボ ${importedSaved.length}件・非公開メモ ${importedNotes.length}件を取り込みました）`,
+      setPendingImport({
+        fileName: file.name,
+        backup: result.data,
       });
     } catch {
       setNotice({
         message:
-          "JSONファイルの読み込みに失敗しました。コンボノートのバックアップファイルを選択してください。",
+          "JSONファイルの読み込みに失敗しました。ファイル内容を確認してください。",
+      });
+    }
+  };
+
+  const handleConfirmImport = (mode: MyNoteImportMode) => {
+    if (!pendingImport) return;
+    const { backup } = pendingImport;
+
+    const applied = applyMyNoteBackup(
+      mode,
+      {
+        savedCombos: savedComboIds,
+        privateNotes,
+      },
+      {
+        savedCombos: backup.savedCombos,
+        privateNotes: backup.privateNotes,
+      }
+    );
+
+    replaceSavedCombos(applied.savedCombos);
+    replacePrivateNotes(applied.privateNotes);
+
+    // 旧バックアップ形式に含まれる設定値がある場合は復元
+    if (backup.preferences?.controlType) {
+      setControlType(backup.preferences.controlType);
+    }
+    if (backup.preferences?.notationMode) {
+      setNotationMode(backup.preferences.notationMode);
+    }
+
+    setPendingImport(null);
+
+    if (mode === "overwrite") {
+      setNotice({
+        message: `上書きインポートが完了しました（保存コンボ ${applied.savedCombos.length}件・非公開メモ ${applied.privateNotes.length}件）`,
+      });
+    } else {
+      const noteDetail =
+        applied.updatedNotesCount > 0
+          ? `メモ +${applied.addedNotesCount}件（更新 ${applied.updatedNotesCount}件）`
+          : `メモ +${applied.addedNotesCount}件`;
+      setNotice({
+        message: `マージが完了しました（保存コンボ +${applied.addedSavedCount}件・${noteDetail}）`,
       });
     }
   };
@@ -797,29 +767,34 @@ export function MyNoteClient({
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xs font-bold text-slate-800 sm:text-sm dark:text-[#F4F1FF]">
-              マイノートデータのバックアップ
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-[#A99EC4]">
-              ブラウザのデータ消去や端末移行に備えて、JSON形式で保存・復元できます。
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xs font-bold text-slate-800 sm:text-sm dark:text-[#F4F1FF]">
+                マイノートデータのバックアップ・移行
+              </h2>
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-[#251D3A] dark:text-[#A99EC4]">
+                保存 {savedComboIds.length}件 / メモ {privateNotes.length}件
+              </span>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-[#A99EC4]">
+              ブラウザのデータ消去や端末間の引き継ぎに備えて、お気に入りコンボと非公開メモをJSON形式で保存・復元（マージ／上書き）できます。
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0 sm:items-center">
             <button
               type="button"
               onClick={handleExportJson}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:py-1.5 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
             >
-              <Download className="h-3.5 w-3.5" aria-hidden="true" />
+              <Download className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <span>JSONエクスポート</span>
             </button>
 
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 px-3 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100 sm:py-1.5 dark:border-violet-400/40 dark:bg-violet-500/20 dark:text-[#DDD6FE] dark:hover:bg-violet-500/30"
             >
-              <Upload className="h-3.5 w-3.5" aria-hidden="true" />
+              <Upload className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <span>JSONインポート</span>
             </button>
             <input
@@ -832,6 +807,16 @@ export function MyNoteClient({
           </div>
         </div>
       </section>
+
+      {/* バックアップインポート確認モーダル */}
+      <MyNoteImportModal
+        key={pendingImport ? `${pendingImport.fileName}-${pendingImport.backup.exportedAt ?? ""}` : "closed"}
+        pendingImport={pendingImport}
+        currentSavedCount={savedComboIds.length}
+        currentNotesCount={privateNotes.length}
+        onConfirm={handleConfirmImport}
+        onClose={() => setPendingImport(null)}
+      />
 
       {/* 保存済み公開コンボ詳細モーダル */}
       <ComboDetailModal

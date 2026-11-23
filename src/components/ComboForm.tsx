@@ -43,6 +43,10 @@ import {
   calculateRecipeStock,
   hasStockCalculator,
 } from "@/lib/stockCalculator";
+import {
+  type ComboValidationWarning,
+  validateComboRecipe,
+} from "@/lib/comboValidator";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
 import { ComboDetailModal } from "@/components/ComboDetailModal";
 import { MoveNotation } from "@/components/CommandNotation";
@@ -518,6 +522,26 @@ export function ComboForm({
     if (recipeMoveIds.length < 2) return "";
     return buildRecipeSignature(selectedCharacterId, controlType, recipeMoveIds);
   }, [selectedCharacterId, controlType, recipeMoveIds]);
+
+  // リアルタイムフレーム検証（ソフト警告：投稿・保存はブロックしない）
+  const frameWarnings = useMemo<ComboValidationWarning[]>(
+    () =>
+      validateComboRecipe({
+        characterId: selectedCharacterId,
+        moves: activeMoves,
+        moveIds: recipeMoveIds,
+        situations: selectedSituations,
+      }),
+    [selectedCharacterId, activeMoves, recipeMoveIds, selectedSituations]
+  );
+
+  const frameWarningByStepIndex = useMemo(() => {
+    const map = new Map<number, ComboValidationWarning>();
+    for (const warning of frameWarnings) {
+      map.set(warning.stepIndex, warning);
+    }
+    return map;
+  }, [frameWarnings]);
 
   const duplicateCombo =
     recipeSignature && duplicateCheck.signature === recipeSignature
@@ -1132,6 +1156,10 @@ export function ComboForm({
                   const nextSlot = index + 1;
                   const isNextSlotActive =
                     !isLast && effectiveInsertIndex === nextSlot;
+                  const chipWarning = frameWarningByStepIndex.get(index);
+                  const nextConnectorWarning = !isLast
+                    ? frameWarningByStepIndex.get(nextSlot)
+                    : undefined;
 
                   return (
                     <div
@@ -1140,9 +1168,14 @@ export function ComboForm({
                     >
                       {/* 技チップ（並び替え←/→・削除×付き） */}
                       <span
+                        title={chipWarning?.message}
                         className={`inline-flex max-w-full items-center gap-1 rounded-lg border py-1 pr-1 pl-2 text-xs leading-snug shadow-2xs sm:text-sm ${getMoveChipStyle(
                           move
-                        )}`}
+                        )} ${
+                          chipWarning
+                            ? "border-amber-400 ring-1 ring-amber-400/70 dark:border-amber-400/75 dark:ring-amber-400/50"
+                            : ""
+                        }`}
                       >
                         <span className="inline-flex items-center break-words">
                           <MoveNotation
@@ -1201,8 +1234,16 @@ export function ComboForm({
                             type="button"
                             onClick={() => setInsertIndex(nextSlot)}
                             aria-label={`${index + 1}番目と${index + 2}番目の間に技を挿入`}
-                            title="ここに挿入"
-                            className="inline-flex h-7 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:text-[#7D71A1] dark:hover:bg-violet-500/25 dark:hover:text-[#DDD6FE]"
+                            title={
+                              nextConnectorWarning
+                                ? `${nextConnectorWarning.message}（タップでここに挿入）`
+                                : "ここに挿入"
+                            }
+                            className={`inline-flex h-7 w-6 shrink-0 items-center justify-center rounded-md transition-colors ${
+                              nextConnectorWarning
+                                ? "bg-amber-100/90 text-amber-700 ring-1 ring-amber-300 hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:ring-amber-400/45 dark:hover:bg-amber-500/30"
+                                : "text-slate-400 hover:bg-blue-100 hover:text-blue-600 dark:text-[#7D71A1] dark:hover:bg-violet-500/25 dark:hover:text-[#DDD6FE]"
+                            }`}
                           >
                             <ChevronRight
                               className="h-4 w-4"
@@ -1240,6 +1281,69 @@ export function ComboForm({
             <p className="mt-2 text-[11px] text-slate-500 dark:text-[#A99EC4]">
               ※「+ 先頭」や技の間の「›」をタップすると途中の位置に技を挿入できます。チップ内の「‹」「›」で左右に並び替えられます。
             </p>
+
+            {/* フレーム検証ソフト警告カード（警告が1件以上あるときのみ表示・投稿はブロックしない） */}
+            {frameWarnings.length > 0 && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="mt-3 rounded-xl border border-amber-300 bg-amber-50/95 p-3 text-amber-950 sm:p-3.5 dark:border-amber-400/35 dark:bg-amber-500/15 dark:text-amber-100"
+              >
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle
+                    className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 sm:h-5 sm:w-5 dark:text-amber-300"
+                    aria-hidden="true"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="text-xs font-bold sm:text-sm">
+                        繋がらない可能性があります（フレーム検証）
+                      </p>
+                      <span className="rounded-full bg-amber-200/80 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 dark:bg-amber-400/25 dark:text-amber-200">
+                        {frameWarnings.length}件
+                      </span>
+                    </div>
+                    <ul className="mt-1.5 space-y-1 text-xs leading-relaxed text-amber-900/95 dark:text-amber-100/95">
+                      {frameWarnings.map((warning) => {
+                        const fromMove = moveMap[warning.fromMoveId];
+                        const toMove = moveMap[warning.toMoveId];
+                        const pairSummary =
+                          fromMove && toMove
+                            ? `${fromMove.notationNumpad}（${fromMove.notationName}） → ${toMove.notationNumpad}（${toMove.notationName}）`
+                            : null;
+
+                        return (
+                          <li
+                            key={`${warning.stepIndex}-${warning.kind}-${warning.fromMoveId}-${warning.toMoveId}`}
+                            className="flex items-start gap-1.5 break-words"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500 dark:bg-amber-300"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <span className="font-medium">
+                                {warning.message}
+                              </span>
+                              {pairSummary &&
+                                warning.kind === "frame_shortage" && (
+                                  <span className="mt-0.5 block text-[11px] text-amber-800/85 dark:text-amber-200/80">
+                                    対象箇所（{warning.stepIndex}→
+                                    {warning.stepIndex + 1}番目）: {pairSummary}
+                                  </span>
+                                )}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <p className="mt-2 border-t border-amber-200/80 pt-2 text-[11px] leading-relaxed text-amber-800/90 dark:border-amber-400/20 dark:text-amber-200/80">
+                      ※しゃがみ喰らい（+1F）・持続当て・画面端限定・設置技の時間差ヒットなどで成立する場合は、そのまま投稿できます。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-3 py-6 text-center text-xs text-slate-500 dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#A99EC4]">

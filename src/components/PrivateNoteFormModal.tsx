@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Trash2, Undo2, X } from "lucide-react";
+import { ChevronRight, Loader2, Trash2, Undo2, X } from "lucide-react";
 import type {
   Character,
   ControlType,
@@ -20,6 +20,8 @@ interface PrivateNoteFormModalProps {
   isOpen: boolean;
   characters: Character[];
   allMoves: Move[];
+  isLoadingMoves?: boolean;
+  onRequestCharacterMoves?: (characterId: string) => void;
   situationsByCharacter: Record<string, SituationDefinition[]>;
   defaultCharacterId: string;
   notationMode: NotationMode;
@@ -63,6 +65,8 @@ export function PrivateNoteFormModal({
   isOpen,
   characters,
   allMoves,
+  isLoadingMoves = false,
+  onRequestCharacterMoves,
   situationsByCharacter,
   defaultCharacterId,
   notationMode,
@@ -102,6 +106,11 @@ export function PrivateNoteFormModal({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen || !characterId) return;
+    onRequestCharacterMoves?.(characterId);
+  }, [isOpen, characterId, onRequestCharacterMoves]);
 
   const moveMap = useMemo(() => {
     const map: Record<string, Move> = {};
@@ -419,7 +428,15 @@ export function PrivateNoteFormModal({
                 </div>
 
                 {/* 技ボタングリッド */}
-                {currentCategoryMoves.length > 0 ? (
+                {isLoadingMoves && currentCategoryMoves.length === 0 ? (
+                  <div className="flex items-center justify-center gap-2 py-6 text-xs text-slate-500 dark:text-[#A99EC4]">
+                    <Loader2
+                      className="h-4 w-4 animate-spin text-blue-600 dark:text-[#A78BFA]"
+                      aria-hidden="true"
+                    />
+                    <span>技データを読み込み中...</span>
+                  </div>
+                ) : currentCategoryMoves.length > 0 ? (
                   <div
                     className={`grid max-h-48 gap-1.5 overflow-y-auto overscroll-contain pr-0.5 ${
                       notationMode === "name"

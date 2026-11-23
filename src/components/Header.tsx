@@ -37,6 +37,12 @@ export function Header() {
     router.refresh();
   };
 
+  // キャラ別コンボ一覧画面 (/characters/[slug]) にいる場合は選択中キャラを投稿画面へ引き継ぐ
+  const characterPageMatch = pathname.match(/^\/characters\/([^/]+)$/);
+  const newComboHref = characterPageMatch
+    ? `/combos/new?character=${encodeURIComponent(characterPageMatch[1])}`
+    : "/combos/new";
+
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-[#2D2346] dark:bg-[#151024]/90">
@@ -90,7 +96,7 @@ export function Header() {
             </Link>
 
             <Link
-              href="/combos/new"
+              href={newComboHref}
               className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${
                 pathname.startsWith("/combos/new")
                   ? "bg-blue-50 text-blue-700 dark:bg-[#7C3AED]/25 dark:text-[#DDD6FE]"

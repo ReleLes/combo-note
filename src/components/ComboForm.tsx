@@ -10,6 +10,7 @@ import {
   CornerDownRight,
   ExternalLink,
   Info,
+  Loader2,
   Plus,
   RotateCcw,
   Send,
@@ -36,6 +37,7 @@ import {
 } from "@/data/seed/common";
 import { getSituationsForCharacter } from "@/data/seed";
 import { createClient } from "@/lib/supabase/client";
+import { fetchClientMovesForCharacter } from "@/lib/supabase/clientQueries";
 import { calculateRecipeGaugeCost } from "@/lib/gaugeCalculator";
 import {
   calculateRecipeStock,
@@ -65,7 +67,10 @@ export interface ComboFormSubmitPayload {
 export interface ComboFormProps {
   mode: "create" | "edit";
   characters: Character[];
-  allMoves: Move[];
+  /** 初期選択キャラクターの技＋システム共通パーツ（別キャラ切替時はクライアント側で遅延取得＆キャッシュ） */
+  initialMoves: Move[];
+  /** 新規投稿時の初期選択キャラクターID（URLクエリ引き継ぎ等） */
+  initialCharacterId?: string;
   versions: GameVersion[];
   /** 編集モード時の初期値 */
   initialCombo?: Combo;
@@ -170,7 +175,8 @@ function mapRowToCombo(row: DuplicateComboRow): Combo {
 export function ComboForm({
   mode,
   characters,
-  allMoves,
+  initialMoves,
+  initialCharacterId,
   versions,
   initialCombo,
   excludeComboId,
@@ -188,35 +194,100 @@ export function ComboForm({
   } = usePreferences();
   const { isSaved, toggleSavedCombo } = useSavedCombos();
 
-  const moveMap = useMemo(() => {
+  const defaultCharacterId =
+    initialCombo?.characterId ??
+    initialCharacterId ??
+    characters[0]?.id ??
+    "akuma";
+
+  // キャラ別技キャッシュ（初回選択キャラ分はSSR取得済みをそのまま格納し、再切替時は即表示）
+  const [movesByCharacter, setMovesByCharacter] = useState<
+    Record<string, Move[]>
+  >(() => ({
+    [defaultCharacterId]: initialMoves,
+  }));
+  const [isLoadingMoves, setIsLoadingMoves] = useState(false);
+  const [movesLoadError, setMovesLoadError] = useState<string | null>(null);
+  const [movesRetryNonce, setMovesRetryNonce] = useState(0);
+
+  // Step 1: ビルダー状態
+  const [selectedCharacterId, setSelectedCharacterId] =
+    useState<string>(defaultCharacterId);
+
+  // 選択キャラの技が未キャッシュのときのみ非同期取得
+  useEffect(() => {
+    if (movesByCharacter[selectedCharacterId]) {
+      setIsLoadingMoves(false);
+      setMovesLoadError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingMoves(true);
+    setMovesLoadError(null);
+
+    fetchClientMovesForCharacter(selectedCharacterId)
+      .then((fetchedMoves) => {
+        if (cancelled) return;
+        setMovesByCharacter((prev) => ({
+          ...prev,
+          [selectedCharacterId]: fetchedMoves,
+        }));
+        setIsLoadingMoves(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setMovesLoadError(
+          err instanceof Error
+            ? err.message
+            : "技データの読み込みに失敗しました。"
+        );
+        setIsLoadingMoves(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCharacterId, movesByCharacter, movesRetryNonce]);
+
+  const activeMoves = useMemo(
+    () => movesByCharacter[selectedCharacterId] ?? [],
+    [movesByCharacter, selectedCharacterId]
+  );
+
+  const initialMoveMap = useMemo(() => {
     const map: Record<string, Move> = {};
-    for (const m of allMoves) {
+    for (const m of initialMoves) {
       map[m.id] = m;
     }
     return map;
-  }, [allMoves]);
+  }, [initialMoves]);
+
+  const moveMap = useMemo(() => {
+    const map: Record<string, Move> = {};
+    for (const m of activeMoves) {
+      map[m.id] = m;
+    }
+    return map;
+  }, [activeMoves]);
 
   // 初期ゲージ・ストック計算（編集モード時に手動調整済みか判定するため）
   const initialAutoGauge = useMemo(() => {
     if (!initialCombo) return null;
     const moves = initialCombo.moveIds
-      .map((id) => moveMap[id])
+      .map((id) => initialMoveMap[id])
       .filter((m): m is Move => Boolean(m));
     return calculateRecipeGaugeCost(moves);
-  }, [initialCombo, moveMap]);
+  }, [initialCombo, initialMoveMap]);
 
   const initialAutoStock = useMemo(() => {
     if (!initialCombo) return null;
     const moves = initialCombo.moveIds
-      .map((id) => moveMap[id])
+      .map((id) => initialMoveMap[id])
       .filter((m): m is Move => Boolean(m));
     return calculateRecipeStock(initialCombo.characterId, moves);
-  }, [initialCombo, moveMap]);
+  }, [initialCombo, initialMoveMap]);
 
-  // Step 1: ビルダー状態
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string>(
-    initialCombo?.characterId ?? characters[0]?.id ?? "akuma"
-  );
   const [controlType, setControlType] = useState<ControlType>(
     initialCombo?.controlType ?? preferredControlType
   );
@@ -327,7 +398,7 @@ export function ComboForm({
 
   // 選択中キャラ＋操作タイプに該当する技一覧（システム共通パーツ含む）
   const availableMoves = useMemo(() => {
-    return allMoves
+    return activeMoves
       .filter((move) => {
         const matchCharacter =
           move.characterId === selectedCharacterId || move.characterId === null;
@@ -336,7 +407,7 @@ export function ComboForm({
         return matchCharacter && matchControl;
       })
       .sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [allMoves, selectedCharacterId, controlType]);
+  }, [activeMoves, selectedCharacterId, controlType]);
 
   const movesByCategory = useMemo(() => {
     const grouped: Record<MoveCategory, Move[]> = {
@@ -903,7 +974,27 @@ export function ComboForm({
         </div>
 
         {/* 技ボタングリッド（選択中の表記モードのみ表示・CDR/DR/DIは常にアイコン統一） */}
-        {currentCategoryMoves.length > 0 ? (
+        {isLoadingMoves ? (
+          <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-100 bg-slate-50/40 py-8 text-xs text-slate-500 dark:border-[#2A2142] dark:bg-[#140F23] dark:text-[#A99EC4]">
+            <Loader2
+              className="h-5 w-5 animate-spin text-blue-600 dark:text-[#A78BFA]"
+              aria-hidden="true"
+            />
+            <span>技データを読み込み中...</span>
+          </div>
+        ) : movesLoadError ? (
+          <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-rose-200 bg-rose-50/70 px-3 py-6 text-center text-xs text-rose-700 dark:border-rose-500/35 dark:bg-rose-500/15 dark:text-rose-200">
+            <p>{movesLoadError}</p>
+            <button
+              type="button"
+              onClick={() => setMovesRetryNonce((n) => n + 1)}
+              className="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
+            >
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>再読み込み</span>
+            </button>
+          </div>
+        ) : currentCategoryMoves.length > 0 ? (
           <div className="max-h-60 overflow-y-auto overscroll-contain rounded-lg border border-slate-100 bg-slate-50/40 p-1.5 sm:max-h-72 sm:p-2 dark:border-[#2A2142] dark:bg-[#140F23]">
             <div
               className={`grid gap-1.5 ${

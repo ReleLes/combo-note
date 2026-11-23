@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import {
   fetchActiveCharacters,
-  fetchAllMoves,
   fetchComboById,
   fetchGameVersions,
+  fetchMovesForCharacter,
 } from "@/lib/supabase/queries";
 import type { Character, Combo, GameVersion, Move } from "@/types/combo";
 import { DataErrorBanner } from "@/components/DataErrorBanner";
@@ -24,17 +24,21 @@ export default async function EditComboPage({ params }: EditComboPageProps) {
 
   let combo: Combo | null = null;
   let characters: Character[] = [];
-  let allMoves: Move[] = [];
+  let initialMoves: Move[] = [];
   let versions: GameVersion[] = [];
   let errorMessage: string | null = null;
 
   try {
-    [combo, characters, allMoves, versions] = await Promise.all([
+    [combo, characters, versions] = await Promise.all([
       fetchComboById(id),
       fetchActiveCharacters(),
-      fetchAllMoves(),
       fetchGameVersions(),
     ]);
+
+    // 編集対象コンボのキャラクター分の技＋システム共通パーツのみを取得
+    if (combo) {
+      initialMoves = await fetchMovesForCharacter(combo.characterId);
+    }
   } catch (error) {
     errorMessage =
       error instanceof Error
@@ -56,7 +60,7 @@ export default async function EditComboPage({ params }: EditComboPageProps) {
       comboId={id}
       combo={combo}
       characters={characters}
-      allMoves={allMoves}
+      initialMoves={initialMoves}
       versions={versions}
     />
   );

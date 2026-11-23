@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -29,6 +29,11 @@ import {
   useSavedCombos,
 } from "@/hooks/useComboNoteStorage";
 import { createClient } from "@/lib/supabase/client";
+import {
+  fetchClientCombosByIds,
+  fetchClientMovesForCharacter,
+  fetchClientMovesForCharacters,
+} from "@/lib/supabase/clientQueries";
 import { useAuth } from "@/components/AuthProvider";
 import { useComboLikes } from "@/hooks/useComboLikes";
 import {
@@ -48,18 +53,12 @@ type MyNoteSection = "saved" | "private";
 
 interface MyNoteClientProps {
   characters: Character[];
-  allCombos: Combo[];
-  allMoves: Move[];
-  moveMap: Record<string, Move>;
   allSituations: SituationDefinition[];
   versions: GameVersion[];
 }
 
 export function MyNoteClient({
   characters,
-  allCombos,
-  allMoves,
-  moveMap,
   allSituations,
   versions,
 }: MyNoteClientProps) {
@@ -80,7 +79,165 @@ export function MyNoteClient({
     deletePrivateNote,
     replacePrivateNotes,
   } = usePrivateNotes();
-  const { isLiked, getLikesCount, toggleLike } = useComboLikes(allCombos);
+
+  // 保存済み公開コンボのみを必要最小限で取得（保存0件ならクエリ自体をスキップ）
+  const [savedCombos, setSavedCombos] = useState<Combo[]>([]);
+  // 必要キャラ分の技マスタのみをキャラ単位でキャッシュ
+  const [movesByCharCache, setMovesByCharCache] = useState<
+    Record<string, Move[]>
+  >({});
+  const [systemMovesCache, setSystemMovesCache] = useState<Move[]>([]);
+  const loadedMoveCharIdsRef = useRef<Set<string>>(new Set());
+  const [isLoadingModalMoves, setIsLoadingModalMoves] = useState(false);
+
+  const savedComboIdsKey = useMemo(
+    () => [...savedComboIds].sort().join(","),
+    [savedComboIds]
+  );
+
+  useEffect(() => {
+    if (savedComboIds.length === 0) {
+      setSavedCombos([]);
+      return;
+    }
+
+    let cancelled = false;
+    fetchClientCombosByIds(savedComboIds)
+      .then((fetched) => {
+        if (!cancelled) {
+          setSavedCombos(fetched);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error("保存済みコンボの読み込みに失敗しました:", err);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [savedComboIdsKey, savedComboIds]);
+
+  // 保存済み公開コンボ＆技ボタン作成済みの非公開メモに登場するキャラ分だけ技マスタを取得
+  const neededMoveCharIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const combo of savedCombos) {
+      if (combo.characterId) set.add(combo.characterId);
+    }
+    for (const note of privateNotes) {
+      if (note.moveIds && note.moveIds.length > 0 && note.characterId) {
+        set.add(note.characterId);
+      }
+    }
+    return Array.from(set).sort();
+  }, [savedCombos, privateNotes]);
+
+  const neededMoveCharIdsKey = neededMoveCharIds.join(",");
+
+  useEffect(() => {
+    const missingIds = neededMoveCharIds.filter(
+      (id) => !loadedMoveCharIdsRef.current.has(id)
+    );
+    if (missingIds.length === 0) {
+      return;
+    }
+
+    for (const id of missingIds) {
+      loadedMoveCharIdsRef.current.add(id);
+    }
+
+    let cancelled = false;
+    fetchClientMovesForCharacters(missingIds)
+      .then((fetchedMoves) => {
+        if (cancelled) return;
+        const sys: Move[] = [];
+        const grouped: Record<string, Move[]> = {};
+        for (const id of missingIds) {
+          grouped[id] = [];
+        }
+        for (const m of fetchedMoves) {
+          if (m.characterId === null) {
+            sys.push(m);
+          } else if (grouped[m.characterId]) {
+            grouped[m.characterId].push(m);
+          }
+        }
+        if (sys.length > 0) {
+          setSystemMovesCache(sys);
+        }
+        setMovesByCharCache((prev) => ({ ...prev, ...grouped }));
+      })
+      .catch((err) => {
+        // 失敗したキャラIDは再取得できるようマークを戻す
+        for (const id of missingIds) {
+          loadedMoveCharIdsRef.current.delete(id);
+        }
+        if (!cancelled) {
+          console.error("技マスタの読み込みに失敗しました:", err);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [neededMoveCharIdsKey, neededMoveCharIds]);
+
+  // 非公開メモ作成・編集モーダル用：指定キャラの技が未取得なら遅延取得してキャッシュ
+  const handleRequestCharacterMoves = useCallback((charId: string) => {
+    if (!charId || loadedMoveCharIdsRef.current.has(charId)) {
+      return;
+    }
+    loadedMoveCharIdsRef.current.add(charId);
+    setIsLoadingModalMoves(true);
+
+    fetchClientMovesForCharacter(charId)
+      .then((fetchedMoves) => {
+        const sys: Move[] = [];
+        const charMoves: Move[] = [];
+        for (const m of fetchedMoves) {
+          if (m.characterId === null) {
+            sys.push(m);
+          } else if (m.characterId === charId) {
+            charMoves.push(m);
+          }
+        }
+        if (sys.length > 0) {
+          setSystemMovesCache(sys);
+        }
+        setMovesByCharCache((prev) => ({ ...prev, [charId]: charMoves }));
+      })
+      .catch((err) => {
+        loadedMoveCharIdsRef.current.delete(charId);
+        console.error("モーダル用技マスタの読み込みに失敗しました:", err);
+      })
+      .finally(() => {
+        setIsLoadingModalMoves(false);
+      });
+  }, []);
+
+  const allMoves = useMemo(() => {
+    const map = new Map<string, Move>();
+    for (const m of systemMovesCache) {
+      map.set(m.id, m);
+    }
+    for (const list of Object.values(movesByCharCache)) {
+      for (const m of list) {
+        map.set(m.id, m);
+      }
+    }
+    return Array.from(map.values());
+  }, [systemMovesCache, movesByCharCache]);
+
+  const moveMap = useMemo(() => {
+    const map: Record<string, Move> = {};
+    for (const m of allMoves) {
+      map[m.id] = m;
+    }
+    return map;
+  }, [allMoves]);
+
+  const { isLiked, getLikesCount, toggleLike } = useComboLikes(savedCombos);
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -161,7 +318,7 @@ export function MyNoteClient({
     for (const c of characters) {
       map[c.id] = [];
     }
-    for (const combo of allCombos) {
+    for (const combo of savedCombos) {
       if (
         !deletedIds.has(combo.id) &&
         idSet.has(combo.id) &&
@@ -171,7 +328,7 @@ export function MyNoteClient({
       }
     }
     return map;
-  }, [allCombos, characters, savedComboIds, deletedIds]);
+  }, [savedCombos, characters, savedComboIds, deletedIds]);
 
   const privateNotesByChar = useMemo(() => {
     const map: Record<string, PrivateNote[]> = {};
@@ -849,6 +1006,8 @@ export function MyNoteClient({
         isOpen={isNoteModalOpen}
         characters={characters}
         allMoves={allMoves}
+        isLoadingMoves={isLoadingModalMoves}
+        onRequestCharacterMoves={handleRequestCharacterMoves}
         situationsByCharacter={situationsByCharacter}
         defaultCharacterId={selectedCharacterId}
         notationMode={notationMode}

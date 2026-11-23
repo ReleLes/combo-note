@@ -23,7 +23,7 @@ interface ComboEditClientProps {
   comboId: string;
   combo: Combo | null;
   characters: Character[];
-  allMoves: Move[];
+  initialMoves: Move[];
   versions: GameVersion[];
 }
 
@@ -31,7 +31,7 @@ export function ComboEditClient({
   comboId,
   combo,
   characters,
-  allMoves,
+  initialMoves,
   versions,
 }: ComboEditClientProps) {
   const router = useRouter();
@@ -220,7 +220,7 @@ export function ComboEditClient({
       <ComboForm
         mode="edit"
         characters={characters}
-        allMoves={allMoves}
+        initialMoves={initialMoves}
         versions={versions}
         initialCombo={combo}
         excludeComboId={combo.id}

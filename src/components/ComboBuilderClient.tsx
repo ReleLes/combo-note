@@ -15,13 +15,17 @@ import {
 
 interface ComboBuilderClientProps {
   characters: Character[];
-  allMoves: Move[];
+  initialMoves: Move[];
+  initialCharacterId?: string;
+  initialCharacterSlug?: string;
   versions: GameVersion[];
 }
 
 export function ComboBuilderClient({
   characters,
-  allMoves,
+  initialMoves,
+  initialCharacterId,
+  initialCharacterSlug,
   versions,
 }: ComboBuilderClientProps) {
   const router = useRouter();
@@ -124,6 +128,9 @@ export function ComboBuilderClient({
 
   // 未ログイン時のガード表示
   if (!user) {
+    const nextPath = initialCharacterSlug
+      ? `/combos/new?character=${encodeURIComponent(initialCharacterSlug)}`
+      : "/combos/new";
     return (
       <div className="mx-auto w-full max-w-lg px-3 py-10 sm:px-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xs dark:border-[#2E2447] dark:bg-[#1B152B]">
@@ -138,7 +145,7 @@ export function ComboBuilderClient({
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
             <Link
-              href="/login?next=%2Fcombos%2Fnew"
+              href={`/login?next=${encodeURIComponent(nextPath)}`}
               className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-700 dark:bg-[#7C3AED] dark:hover:bg-[#6D28D9]"
             >
               <LogIn className="h-4 w-4" aria-hidden="true" />
@@ -170,9 +177,11 @@ export function ComboBuilderClient({
       </div>
 
       <ComboForm
+        key={initialCharacterId ?? "default"}
         mode="create"
         characters={characters}
-        allMoves={allMoves}
+        initialMoves={initialMoves}
+        initialCharacterId={initialCharacterId}
         versions={versions}
         currentUserId={user.id}
         isSubmitting={isSubmitting}

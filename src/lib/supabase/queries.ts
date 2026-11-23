@@ -1,3 +1,25 @@
+/**
+ * =============================================================================
+ * Supabase サーバー側データ取得クエリ（再発防止・スケーリング規約）
+ * =============================================================================
+ * 今後の開発者・AIエージェントは以下のルールを必ず遵守すること：
+ *
+ * 1. 【1,000件上限対策】
+ *    Supabase (PostgREST) はデフォルトで 1 リクエスト最大 1,000 件しか返さない。
+ *    1,000 件を超え得るテーブル（moves, combos 等）を取得するクエリは、必ず
+ *    `fetchAllPages()` を経由し、ページ境界での重複・欠落を防ぐため一意な列
+ *    （`id` 等）を最終ソートキーに含めること。
+ *
+ * 2. 【全件取得の回避・キャラ単位絞り込み＆RPC優先】
+ *    30キャラ規模（技マスタ数千件・コンボ数千件）への拡張および Next.js の
+ *    データ転送量・2MB キャッシュ上限対策として、原則として全件取得
+ *    （`fetchAllMoves()`・`fetchAllCombos()` 等）は新規利用を避け、
+ *    `fetchMovesForCharacter()` / `fetchMovesForCharacters()` のように
+ *    `character_id` で絞り込んだ関数や、集計 RPC
+ *    （`get_combo_counts_by_character` 等）を優先すること。
+ * =============================================================================
+ */
+
 import type {
   Character,
   Combo,
@@ -253,6 +275,41 @@ export async function fetchMovesForCharacter(
   return rows.map(mapMove);
 }
 
+/**
+ * 複数キャラクター分の技マスタ＋システム共通パーツ（character_id IS NULL）のみを
+ * ページネーション付きで取得する。characterIds が空の場合はクエリ自体をスキップする。
+ */
+export async function fetchMovesForCharacters(
+  characterIds: string[]
+): Promise<Move[]> {
+  const uniqueIds = Array.from(
+    new Set(characterIds.filter((id) => typeof id === "string" && id.length > 0))
+  );
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  const inList = uniqueIds.join(",");
+  const rows = await fetchAllPages<MoveRow>(
+    (from, to) =>
+      supabase
+        .from("moves")
+        .select("*")
+        .or(`character_id.in.(${inList}),character_id.is.null`)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to),
+    "技マスタの取得に失敗しました"
+  );
+
+  return rows.map(mapMove);
+}
+
+/**
+ * @deprecated 全キャラ分の技を一括取得するため、原則として `fetchMovesForCharacter()` または
+ * `fetchMovesForCharacters()` を使用すること。
+ */
 export async function fetchAllMoves(): Promise<Move[]> {
   const supabase = await createClient();
   const rows = await fetchAllPages<MoveRow>(
@@ -334,10 +391,43 @@ export interface CharacterComboCounts {
   modern: number;
 }
 
+interface ComboCountRpcRow {
+  character_id: string;
+  total_count: number | string | null;
+  classic_count: number | string | null;
+  modern_count: number | string | null;
+}
+
 export async function fetchComboCountsByCharacter(): Promise<
   Record<string, CharacterComboCounts>
 > {
   const supabase = await createClient();
+
+  // 優先: Supabase RPC (get_combo_counts_by_character) で DB 側 GROUP BY 集計
+  const { data: rpcData, error: rpcError } = await supabase.rpc(
+    "get_combo_counts_by_character"
+  );
+
+  if (!rpcError && Array.isArray(rpcData)) {
+    const counts: Record<string, CharacterComboCounts> = {};
+    for (const row of rpcData as ComboCountRpcRow[]) {
+      if (!row.character_id) continue;
+      counts[row.character_id] = {
+        total: Number(row.total_count ?? 0),
+        classic: Number(row.classic_count ?? 0),
+        modern: Number(row.modern_count ?? 0),
+      };
+    }
+    return counts;
+  }
+
+  // RPC 未適用環境向けフォールバック（クラッシュを防ぎつつ警告を出力）
+  if (rpcError) {
+    console.warn(
+      `[fetchComboCountsByCharacter] RPC呼び出しに失敗したためフォールバック集計を実行します（013_combo_counts_rpc.sql 適用済みか確認してください）: ${rpcError.message}`
+    );
+  }
+
   const rows = await fetchAllPages<{
     character_id: string;
     control_type: ControlType;

@@ -1,34 +1,29 @@
 import type { Metadata } from "next";
 import { SEED_SITUATIONS } from "@/data/seed";
+import {
+  fetchActiveCharacters,
+  fetchGameVersions,
+} from "@/lib/supabase/queries";
+import type { Character, GameVersion } from "@/types/combo";
+import { MyNoteClient } from "@/components/MyNoteClient";
+import { DataErrorBanner } from "@/components/DataErrorBanner";
 
 export const metadata: Metadata = {
   title: "マイノート",
 };
-import {
-  buildMoveMap,
-  fetchActiveCharacters,
-  fetchAllCombos,
-  fetchAllMoves,
-  fetchGameVersions,
-} from "@/lib/supabase/queries";
-import type { Character, Combo, GameVersion, Move } from "@/types/combo";
-import { MyNoteClient } from "@/components/MyNoteClient";
-import { DataErrorBanner } from "@/components/DataErrorBanner";
 
 export const dynamic = "force-dynamic";
 
 export default async function MyNotePage() {
   let characters: Character[] = [];
-  let allCombos: Combo[] = [];
-  let allMoves: Move[] = [];
   let versions: GameVersion[] = [];
   let errorMessage: string | null = null;
 
   try {
-    [characters, allCombos, allMoves, versions] = await Promise.all([
+    // サーバー側では全コンボ・全技の一括取得を行わず、軽量なキャラ一覧・バージョンのみ取得
+    // 保存済みコンボおよび必要キャラ分の技はクライアント側で必要最小限だけ取得する
+    [characters, versions] = await Promise.all([
       fetchActiveCharacters(),
-      fetchAllCombos(),
-      fetchAllMoves(),
       fetchGameVersions(),
     ]);
   } catch (error) {
@@ -47,14 +42,9 @@ export default async function MyNotePage() {
     );
   }
 
-  const moveMap = buildMoveMap(allMoves);
-
   return (
     <MyNoteClient
       characters={characters}
-      allCombos={allCombos}
-      allMoves={allMoves}
-      moveMap={moveMap}
       allSituations={SEED_SITUATIONS}
       versions={versions}
     />

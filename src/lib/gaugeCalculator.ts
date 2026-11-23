@@ -90,6 +90,24 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "ed_m_shoot_od_l",
   "ed_m_shoot_od_m",
   "ed_m_shoot_od_h",
+  // サガット: OD タイガーネクサスからの各種OD派生（親技ODタイガーネクサスで既に +2 消費済み・追加消費なし）
+  "sagat_nexus_od_might",
+  "sagat_nexus_od_greed",
+  "sagat_nexus_od_nova",
+  "sagat_m_nexus_od_might",
+  "sagat_m_nexus_od_greed",
+  "sagat_m_nexus_od_nova",
+  // ディージェイ: OD ジョスクールからの各種OD派生（親技ODジョスクールで既に +2 消費済み・追加消費なし）
+  "deejay_jos_od_lk",
+  "deejay_jos_od_mk",
+  "deejay_jos_od_hk",
+  "deejay_jos_od_step",
+  "deejay_jos_od_sway",
+  "deejay_m_jos_od_l",
+  "deejay_m_jos_od_m",
+  "deejay_m_jos_od_h",
+  "deejay_m_jos_od_step",
+  "deejay_m_jos_od_sway",
 ]);
 
 /**
@@ -145,6 +163,20 @@ export const MOVE_SA_COST_OVERRIDES: Readonly<Record<string, number>> = {
   terry_m_sa2_twin: 0,
   terry_sa2_triple: 1,
   terry_m_sa2_triple: 1,
+  // サガット: SA2 サベージタイガーからの4方向派生フィニッシュ（親技SA2で既に消費済み・追加SA 0）
+  sagat_sa2_raid: 0,
+  sagat_sa2_zenith: 0,
+  sagat_sa2_pendulum: 0,
+  sagat_sa2_stamp: 0,
+  sagat_m_sa2_raid: 0,
+  sagat_m_sa2_zenith: 0,
+  sagat_m_sa2_pendulum: 0,
+  sagat_m_sa2_stamp: 0,
+  // ディージェイ: SA2 サンライズフェスティバルからのフィニッシュ派生（親技SA2で既に消費済み・追加SA 0）
+  deejay_sa2_climax: 0,
+  deejay_sa2_encore: 0,
+  deejay_m_sa2_climax: 0,
+  deejay_m_sa2_encore: 0,
 };
 
 /**

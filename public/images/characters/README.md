@@ -23,6 +23,8 @@
 - JP: `jp.webp` / `jp.png` / `jp.jpg`
 - エド: `ed.webp` / `ed.png` / `ed.jpg`
 - テリー: `terry.webp` / `terry.png` / `terry.jpg`
+- サガット: `sagat.webp` / `sagat.png` / `sagat.jpg`
+- ディージェイ: `deejay.webp` / `deejay.png` / `deejay.jpg`
 
 ## 検出優先順位
 

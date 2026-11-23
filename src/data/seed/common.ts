@@ -158,6 +158,22 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 16,
     isActive: true,
   },
+  {
+    id: "sagat",
+    slug: "sagat",
+    nameJa: "サガット",
+    nameEn: "Sagat",
+    sortOrder: 17,
+    isActive: true,
+  },
+  {
+    id: "deejay",
+    slug: "deejay",
+    nameJa: "ディージェイ",
+    nameEn: "Dee Jay",
+    sortOrder: 18,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [

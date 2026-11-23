@@ -208,6 +208,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(59, 130, 246, 0.45)",
     watermark: "TERRY",
   },
+  // サガット：帝王ゴールド／バーミリオンレッド系
+  sagat: {
+    accent: "#F59E0B",
+    secondary: "#DC2626",
+    gradientFrom: "#451A03",
+    gradientTo: "#270A0A",
+    glow: "rgba(245, 158, 11, 0.50)",
+    badgeBg: "rgba(245, 158, 11, 0.24)",
+    badgeBorder: "rgba(220, 38, 38, 0.45)",
+    watermark: "SAGAT",
+  },
+  // ディージェイ：トロピカルライム／サンセットオレンジ系
+  deejay: {
+    accent: "#84CC16",
+    secondary: "#F97316",
+    gradientFrom: "#1A2E05",
+    gradientTo: "#2B1408",
+    glow: "rgba(132, 204, 22, 0.50)",
+    badgeBg: "rgba(132, 204, 22, 0.24)",
+    badgeBorder: "rgba(249, 115, 22, 0.45)",
+    watermark: "DEE JAY",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
@@ -241,6 +263,8 @@ export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
   jp: ["じぇいぴー", "じぇーぴー", "じぇいぴ", "ジェイピー", "ジェーピー"],
   ed: ["えど", "エド"],
   terry: ["てりー", "てりーぼがーど", "テリーボガード", "terrybogard"],
+  sagat: ["さがっと", "サガット"],
+  deejay: ["でぃーじぇい", "でぃーじぇー", "dj", "ディージェー"],
 };
 
 /**

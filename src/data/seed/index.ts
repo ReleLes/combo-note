@@ -32,6 +32,8 @@ import { vegaSeedData } from "./characters/vega";
 import { jpSeedData } from "./characters/jp";
 import { edSeedData } from "./characters/ed";
 import { terrySeedData } from "./characters/terry";
+import { sagatSeedData } from "./characters/sagat";
+import { deejaySeedData } from "./characters/deejay";
 
 const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   akuma: akumaSeedData,
@@ -50,6 +52,8 @@ const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   jp: jpSeedData,
   ed: edSeedData,
   terry: terrySeedData,
+  sagat: sagatSeedData,
+  deejay: deejaySeedData,
 };
 
 export {

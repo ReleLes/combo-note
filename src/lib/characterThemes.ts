@@ -252,6 +252,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(132, 204, 22, 0.45)",
     watermark: "A.K.I.",
   },
+  // エレナ：サバンナエメラルド／サンセットゴールド系
+  elena: {
+    accent: "#10B981",
+    secondary: "#F59E0B",
+    gradientFrom: "#064E3B",
+    gradientTo: "#291A08",
+    glow: "rgba(16, 185, 129, 0.50)",
+    badgeBg: "rgba(16, 185, 129, 0.24)",
+    badgeBorder: "rgba(245, 158, 11, 0.45)",
+    watermark: "ELENA",
+  },
+  // アレックス：ファイターレッド／ミリタリーグリーン系
+  alex: {
+    accent: "#EF4444",
+    secondary: "#65A30D",
+    gradientFrom: "#450A0A",
+    gradientTo: "#1A2E05",
+    glow: "rgba(239, 68, 68, 0.50)",
+    badgeBg: "rgba(239, 68, 68, 0.24)",
+    badgeBorder: "rgba(101, 163, 13, 0.45)",
+    watermark: "ALEX",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
@@ -289,6 +311,8 @@ export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
   deejay: ["でぃーじぇい", "でぃーじぇー", "dj", "ディージェー"],
   rashid: ["らしーど", "ラシード"],
   aki: ["あき", "アキ", "a.k.i.", "a.k.i", "aki"],
+  elena: ["えれな", "エレナ"],
+  alex: ["あれっくす", "アレックス", "あれくす"],
 };
 
 /**

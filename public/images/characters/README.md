@@ -27,6 +27,8 @@
 - ディージェイ: `deejay.webp` / `deejay.png` / `deejay.jpg`
 - ラシード: `rashid.webp` / `rashid.png` / `rashid.jpg`
 - A.K.I.: `aki.webp` / `aki.png` / `aki.jpg`
+- エレナ: `elena.webp` / `elena.png` / `elena.jpg`
+- アレックス: `alex.webp` / `alex.png` / `alex.jpg`
 
 ## 検出優先順位
 

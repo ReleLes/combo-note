@@ -190,6 +190,22 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 20,
     isActive: true,
   },
+  {
+    id: "elena",
+    slug: "elena",
+    nameJa: "エレナ",
+    nameEn: "Elena",
+    sortOrder: 21,
+    isActive: true,
+  },
+  {
+    id: "alex",
+    slug: "alex",
+    nameJa: "アレックス",
+    nameEn: "Alex",
+    sortOrder: 22,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -364,6 +380,14 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-violet-100 text-violet-800 dark:bg-violet-500/25 dark:text-lime-200 dark:border dark:border-lime-400/35",
     characterId: "aki",
     sortOrder: 111,
+  },
+  {
+    key: "alex_back_turned",
+    label: "背面やられ",
+    badgeClassName:
+      "bg-red-100 text-red-800 dark:bg-red-500/25 dark:text-lime-200 dark:border dark:border-red-400/35",
+    characterId: "alex",
+    sortOrder: 112,
   },
 ];
 

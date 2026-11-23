@@ -118,6 +118,20 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   // A.K.I.: OD 紫煙砲からの追撃派生（OD 紫煙追は親技OD紫煙砲で既に +2 消費済み・追加消費なし）
   "aki_shientsui_od",
   "aki_m_shientsui_od",
+  // エレナ: OD リンクシング派生（ODリンクスワール・強化版各種）および OD ムーングライド（2段目）は親技で既に +2 消費済み・追加消費なし
+  "elena_swirl_od",
+  "elena_m_swirl_od",
+  "elena_leopard_ex",
+  "elena_harvest_ex",
+  "elena_mallet_ex",
+  "elena_m_leopard_ex",
+  "elena_m_harvest_ex",
+  "elena_m_mallet_ex",
+  "elena_moonglide_od_2",
+  "elena_m_moonglide_od_2",
+  // アレックス: OD パワードロップからのハイパーボム派生（親技ODパワードロップで既に +2 消費済み・追加消費なし）
+  "alex_hyperbomb",
+  "alex_m_hyperbomb",
 ]);
 
 /**

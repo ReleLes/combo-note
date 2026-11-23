@@ -12,6 +12,7 @@
 - イングリッド: `ingrid.webp` / `ingrid.png` / `ingrid.jpg`
 - C.ヴァイパー: `c-viper.webp` / `c-viper.png` / `c-viper.jpg`
 - 舞: `mai.webp` / `mai.png` / `mai.jpg`
+- リュウ: `ryu.webp` / `ryu.png` / `ryu.jpg`
 
 ## 検出優先順位
 

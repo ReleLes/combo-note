@@ -21,6 +21,7 @@ import { juriSeedData } from "./characters/juri";
 import { ingridSeedData } from "./characters/ingrid";
 import { cViperSeedData } from "./characters/c-viper";
 import { maiSeedData } from "./characters/mai";
+import { ryuSeedData } from "./characters/ryu";
 
 const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   akuma: akumaSeedData,
@@ -28,6 +29,7 @@ const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   ingrid: ingridSeedData,
   "c-viper": cViperSeedData,
   mai: maiSeedData,
+  ryu: ryuSeedData,
 };
 
 export {

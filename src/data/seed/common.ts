@@ -65,6 +65,19 @@ export const SEED_CHARACTERS: Character[] = [
       gainHint: "SA1（陽炎の舞）で +5 獲得",
     },
   },
+  {
+    id: "ryu",
+    slug: "ryu",
+    nameJa: "リュウ",
+    nameEn: "Ryu",
+    sortOrder: 6,
+    isActive: true,
+    stockMeta: {
+      label: "電刃練気",
+      shortLabel: "電刃",
+      maxCount: 1,
+    },
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -199,6 +212,14 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/30",
     characterId: "mai",
     sortOrder: 105,
+  },
+  {
+    key: "ryu_denjin",
+    label: "電刃練気",
+    badgeClassName:
+      "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200 dark:border dark:border-sky-400/30",
+    characterId: "ryu",
+    sortOrder: 107,
   },
 ];
 

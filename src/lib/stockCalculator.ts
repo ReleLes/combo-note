@@ -161,6 +161,38 @@ export const CHARACTER_STOCK_RULES: Readonly<
       return { consume, gain };
     },
   },
+  ryu: {
+    characterId: "ryu",
+    shortLabel: "電刃",
+    label: "電刃練気",
+    maxCount: 1,
+    badgeClassName:
+      "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/30 dark:bg-sky-500/20 dark:text-sky-200",
+    situationKey: "ryu_denjin",
+    evaluateMove: (move) => {
+      let consume = 0;
+      let gain = 0;
+
+      // 消費（-1）: [強化版] 波動拳・OD波動拳・波掌撃・OD波掌撃・SA1真空波動拳・SA2真・波掌撃（クラシック・モダン共通）
+      if (
+        (move.category === "special" || move.category === "super") &&
+        isEnhancedMove(move)
+      ) {
+        consume += 1;
+      }
+
+      // 獲得（+1・上限1）: 電刃錬気（クラシック 22P / モダン 22攻撃）
+      if (
+        move.category === "special" &&
+        (move.notationName.includes("電刃錬気") ||
+          move.notationName.includes("電刃練気"))
+      ) {
+        gain += 1;
+      }
+
+      return { consume, gain };
+    },
+  },
 };
 
 export function hasStockCalculator(characterId: string): boolean {

@@ -87,6 +87,17 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(253, 164, 175, 0.42)",
     watermark: "MAI",
   },
+  // リュウ：精悍なロイヤルブルー／電刃シアン系
+  ryu: {
+    accent: "#38BDF8",
+    secondary: "#2563EB",
+    gradientFrom: "#0C2D57",
+    gradientTo: "#121024",
+    glow: "rgba(56, 189, 248, 0.48)",
+    badgeBg: "rgba(56, 189, 248, 0.24)",
+    badgeBorder: "rgba(125, 211, 252, 0.45)",
+    watermark: "RYU",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {

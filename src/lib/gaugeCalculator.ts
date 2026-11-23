@@ -108,6 +108,16 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "deejay_m_jos_od_h",
   "deejay_m_jos_od_step",
   "deejay_m_jos_od_sway",
+  // ラシード: アラビアン・サイクロン（OD含む）からの各種派生（親技ODアラビアン・サイクロンで既に +2 消費済み・追加消費なし）
+  "rashid_wing_stroke",
+  "rashid_assault_roll",
+  "rashid_assault_nail",
+  "rashid_m_wing_stroke",
+  "rashid_m_assault_roll",
+  "rashid_m_assault_nail",
+  // A.K.I.: OD 紫煙砲からの追撃派生（OD 紫煙追は親技OD紫煙砲で既に +2 消費済み・追加消費なし）
+  "aki_shientsui_od",
+  "aki_m_shientsui_od",
 ]);
 
 /**

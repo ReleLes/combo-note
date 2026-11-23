@@ -230,6 +230,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(249, 115, 22, 0.45)",
     watermark: "DEE JAY",
   },
+  // ラシード：ターコイズ／サンゴールド系
+  rashid: {
+    accent: "#14B8A6",
+    secondary: "#F59E0B",
+    gradientFrom: "#042F2E",
+    gradientTo: "#1E1B2E",
+    glow: "rgba(20, 184, 166, 0.50)",
+    badgeBg: "rgba(20, 184, 166, 0.24)",
+    badgeBorder: "rgba(245, 158, 11, 0.45)",
+    watermark: "RASHID",
+  },
+  // A.K.I.：毒パープル／アシッドグリーン系
+  aki: {
+    accent: "#A855F7",
+    secondary: "#84CC16",
+    gradientFrom: "#2E1065",
+    gradientTo: "#132018",
+    glow: "rgba(168, 85, 247, 0.50)",
+    badgeBg: "rgba(168, 85, 247, 0.24)",
+    badgeBorder: "rgba(132, 204, 22, 0.45)",
+    watermark: "A.K.I.",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
@@ -265,6 +287,8 @@ export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
   terry: ["てりー", "てりーぼがーど", "テリーボガード", "terrybogard"],
   sagat: ["さがっと", "サガット"],
   deejay: ["でぃーじぇい", "でぃーじぇー", "dj", "ディージェー"],
+  rashid: ["らしーど", "ラシード"],
+  aki: ["あき", "アキ", "a.k.i.", "a.k.i", "aki"],
 };
 
 /**

@@ -25,6 +25,8 @@
 - テリー: `terry.webp` / `terry.png` / `terry.jpg`
 - サガット: `sagat.webp` / `sagat.png` / `sagat.jpg`
 - ディージェイ: `deejay.webp` / `deejay.png` / `deejay.jpg`
+- ラシード: `rashid.webp` / `rashid.png` / `rashid.jpg`
+- A.K.I.: `aki.webp` / `aki.png` / `aki.jpg`
 
 ## 検出優先順位
 

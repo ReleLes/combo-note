@@ -174,6 +174,22 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 18,
     isActive: true,
   },
+  {
+    id: "rashid",
+    slug: "rashid",
+    nameJa: "ラシード",
+    nameEn: "Rashid",
+    sortOrder: 19,
+    isActive: true,
+  },
+  {
+    id: "aki",
+    slug: "aki",
+    nameJa: "A.K.I.",
+    nameEn: "A.K.I.",
+    sortOrder: 20,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -332,6 +348,22 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-purple-100 text-purple-800 dark:bg-purple-500/25 dark:text-purple-200 dark:border dark:border-fuchsia-400/35",
     characterId: "vega",
     sortOrder: 109,
+  },
+  {
+    key: "rashid_air_current",
+    label: "気流",
+    badgeClassName:
+      "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-200 dark:border dark:border-teal-400/35",
+    characterId: "rashid",
+    sortOrder: 110,
+  },
+  {
+    key: "aki_poison",
+    label: "毒状態",
+    badgeClassName:
+      "bg-violet-100 text-violet-800 dark:bg-violet-500/25 dark:text-lime-200 dark:border dark:border-lime-400/35",
+    characterId: "aki",
+    sortOrder: 111,
   },
 ];
 

@@ -37,6 +37,20 @@ export const MOVE_DRIVE_COST_OVERRIDES: Readonly<Record<string, number>> = {
   sys_dr: 3, // キャンセルドライブラッシュ (CDR)
   sys_raw_dr: 1, // 生ドライブラッシュ (DR)
   sys_di: 1, // ドライブインパクト (DI)
+  // C.ヴァイパー: 発動時に Dゲージを 10000（1本）消費する固有アクション・派生技
+  cviper_hj_f: 1, // ハイジャンプ（前方）
+  cviper_hj_v: 1, // ハイジャンプ（垂直）
+  cviper_hjc: 1, // ハイジャンプキャンセル
+  cviper_trace_l: 1, // 弱 トレースコンビネーション
+  cviper_trace_m: 1, // 中 トレースコンビネーション
+  cviper_trace_h: 1, // 強 トレースコンビネーション
+  cviper_m_trace_l: 1, // 弱 トレースコンビネーション（モダン）
+  cviper_m_trace_m: 1, // 中 トレースコンビネーション（モダン）
+  cviper_m_trace_h: 1, // 強 トレースコンビネーション（モダン）
+  cviper_chase: 1, // チェイスナックル
+  cviper_m_chase: 1, // チェイスナックル（モダン）
+  cviper_double_burn: 1, // ダブルバーン
+  cviper_m_double_burn: 1, // ダブルバーン（モダン）
 };
 
 /**

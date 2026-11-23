@@ -169,3 +169,88 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
   return CHARACTER_THEMES[slug] ?? DEFAULT_CHARACTER_THEME;
 }
+
+/**
+ * 漢字表記や表記揺れのあるキャラクター向け検索補助（読み仮名・通称）。
+ * 新規キャラクターを追加する際は必要に応じて追記する。
+ */
+export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
+  akuma: ["ごうき", "ゴウキ", "gouki", "あくま"],
+  juri: ["じゅり"],
+  ingrid: ["いんぐりっど"],
+  "c-viper": [
+    "ばいぱー",
+    "ゔぁいぱー",
+    "しーばいぱー",
+    "cviper",
+    "くりむぞんばいぱー",
+  ],
+  mai: ["まい", "マイ", "しらぬいまい", "不知火舞"],
+  ryu: ["りゅう", "りゅー"],
+  ken: ["けん"],
+  luke: ["るーく"],
+  cammy: ["きゃみぃ", "きゃみー", "キャミー"],
+  "chun-li": ["ちゅんりー", "チュンリー", "ちゅんり", "chunli"],
+  guile: ["がいる"],
+  zangief: ["ざんぎえふ", "ざんぎ"],
+};
+
+/**
+ * キャラクター検索用に文字列を正規化する：
+ * - NFKC 正規化＆小文字化
+ * - ひらがな → カタカナ変換
+ * - ヴァ/ヴィ/ヴ/ヴェ/ヴォ → バ/ビ/ブ/ベ/ボ 統一（例: 「ばいぱー」で「C.ヴァイパー」にヒット）
+ */
+export function normalizeCharacterSearchText(input: string): string {
+  return input
+    .normalize("NFKC")
+    .toLowerCase()
+    .trim()
+    .replace(/[\u3041-\u3096]/g, (ch) =>
+      String.fromCharCode(ch.charCodeAt(0) + 0x60)
+    )
+    .replace(/ヴァ/g, "バ")
+    .replace(/ヴィ/g, "ビ")
+    .replace(/ヴェ/g, "ベ")
+    .replace(/ヴォ/g, "ボ")
+    .replace(/ヴ/g, "ブ");
+}
+
+function stripSearchSeparators(normalized: string): string {
+  return normalized.replace(/[\s.\-・_]/g, "");
+}
+
+/**
+ * キャラクターが検索クエリに部分一致するか判定する。
+ * `nameJa` / `nameEn` / `slug` / 読み仮名補助マップを大文字小文字・かな揺れ無視で照合する。
+ */
+export function matchesCharacterSearch(
+  character: { id: string; slug: string; nameJa: string; nameEn: string },
+  rawQuery: string
+): boolean {
+  const normalizedQuery = normalizeCharacterSearchText(rawQuery);
+  if (!normalizedQuery) return true;
+
+  const compactQuery = stripSearchSeparators(normalizedQuery);
+  const readings =
+    CHARACTER_SEARCH_READINGS[character.slug] ??
+    CHARACTER_SEARCH_READINGS[character.id] ??
+    [];
+
+  const candidates = [
+    character.nameJa,
+    character.nameEn,
+    character.slug,
+    character.id,
+    ...readings,
+  ];
+
+  return candidates.some((candidate) => {
+    const normalized = normalizeCharacterSearchText(candidate);
+    if (normalized.includes(normalizedQuery)) return true;
+    if (compactQuery && stripSearchSeparators(normalized).includes(compactQuery)) {
+      return true;
+    }
+    return false;
+  });
+}

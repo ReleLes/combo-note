@@ -244,6 +244,9 @@ export function MyNoteClient({
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>(
     characters[0]?.id ?? "akuma"
   );
+  // キャラ増殖対策：デフォルトは「登録があるキャラのみ表示」
+  const [showAllCharacters, setShowAllCharacters] = useState(false);
+  const hasManuallySelectedCharRef = useRef(false);
   const [activeSection, setActiveSection] = useState<MyNoteSection>("saved");
 
   // 保存済みコンボ用の状況フィルタ
@@ -353,6 +356,48 @@ export function MyNoteClient({
     [privateNotesByChar, selectedCharacterId]
   );
 
+  // 保存コンボまたは非公開メモが1件以上あるキャラ一覧
+  const charactersWithEntries = useMemo(() => {
+    return characters.filter(
+      (c) =>
+        (savedCombosByChar[c.id]?.length ?? 0) +
+          (privateNotesByChar[c.id]?.length ?? 0) >
+        0
+    );
+  }, [characters, savedCombosByChar, privateNotesByChar]);
+
+  // 初回ロード時、登録のあるキャラが存在して現在の選択キャラが0件なら自動で登録ありキャラへ合わせる
+  useEffect(() => {
+    if (hasManuallySelectedCharRef.current) return;
+    if (charactersWithEntries.length === 0) return;
+    const currentHasEntries = charactersWithEntries.some(
+      (c) => c.id === selectedCharacterId
+    );
+    if (!currentHasEntries) {
+      setSelectedCharacterId(charactersWithEntries[0].id);
+    }
+  }, [charactersWithEntries, selectedCharacterId]);
+
+  // タブバーに表示するキャラ一覧（「登録ありのみ」時は0件キャラを隠し、現在選択中のキャラだけは表示維持）
+  const visibleTabCharacters = useMemo(() => {
+    if (showAllCharacters || charactersWithEntries.length === 0) {
+      return characters;
+    }
+    const visible = [...charactersWithEntries];
+    if (!visible.some((c) => c.id === selectedCharacterId)) {
+      const selected = characters.find((c) => c.id === selectedCharacterId);
+      if (selected) {
+        visible.push(selected);
+      }
+    }
+    return visible;
+  }, [
+    showAllCharacters,
+    charactersWithEntries,
+    characters,
+    selectedCharacterId,
+  ]);
+
   const filteredSavedCombos = useMemo(() => {
     return currentSavedCombos.filter((combo) => {
       if (
@@ -380,6 +425,7 @@ export function MyNoteClient({
   ]);
 
   const handleSelectCharacter = (charId: string) => {
+    hasManuallySelectedCharRef.current = true;
     setSelectedCharacterId(charId);
     setSelectedSituations([]);
     setOnlyStockGain(false);
@@ -601,13 +647,81 @@ export function MyNoteClient({
         </button>
       </div>
 
-      {/* キャラクター別タブ */}
-      <section aria-label="キャラクター選択タブ" className="mb-4">
+      {/* キャラクター切替（登録あり優先・横スクロールタブバー＋全キャラ選択ドロップダウン併用） */}
+      <section
+        aria-label="キャラクター選択タブ"
+        className="mb-4 space-y-2 rounded-xl border border-slate-200 bg-white p-2.5 shadow-xs sm:p-3 dark:border-[#2E2447] dark:bg-[#1B152B]"
+      >
+        {/* 上段：表示切替（登録ありのみ / 全キャラ）＋直接選択ドロップダウン */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            {charactersWithEntries.length > 0 ? (
+              <div
+                role="group"
+                aria-label="キャラクター表示範囲切替"
+                className="inline-flex rounded-lg bg-slate-100 p-0.5 text-[11px] font-semibold dark:bg-[#251D3A]"
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowAllCharacters(false)}
+                  aria-pressed={!showAllCharacters}
+                  className={`rounded-md px-2.5 py-1 transition-colors ${
+                    !showAllCharacters
+                      ? "bg-white text-blue-700 shadow-2xs dark:bg-[#7C3AED] dark:text-white"
+                      : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
+                  }`}
+                >
+                  登録ありのみ ({charactersWithEntries.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAllCharacters(true)}
+                  aria-pressed={showAllCharacters}
+                  className={`rounded-md px-2.5 py-1 transition-colors ${
+                    showAllCharacters
+                      ? "bg-white text-blue-700 shadow-2xs dark:bg-[#7C3AED] dark:text-white"
+                      : "text-slate-600 hover:text-slate-900 dark:text-[#A99EC4] dark:hover:text-[#F4F1FF]"
+                  }`}
+                >
+                  全キャラ ({characters.length})
+                </button>
+              </div>
+            ) : (
+              <span className="text-[11px] font-medium text-slate-500 dark:text-[#A99EC4]">
+                全 {characters.length} キャラ（登録済み 0）
+              </span>
+            )}
+          </div>
+
+          <label className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-[#A99EC4]">
+            <span className="hidden sm:inline">キャラ移動</span>
+            <select
+              aria-label="全キャラクターから選択"
+              value={selectedCharacterId}
+              onChange={(e) => handleSelectCharacter(e.target.value)}
+              className="max-w-[165px] rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-800 focus:border-blue-500 focus:bg-white focus:outline-none sm:max-w-[200px] dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:focus:border-[#8B5CF6]"
+            >
+              {characters.map((char) => {
+                const count =
+                  (savedCombosByChar[char.id]?.length ?? 0) +
+                  (privateNotesByChar[char.id]?.length ?? 0);
+                return (
+                  <option key={char.id} value={char.id}>
+                    {char.nameJa}（{count}件）
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+        </div>
+
+        {/* 下段：スマホ幅でも1行で収まる横スクロールタブバー */}
         <div
           role="tablist"
-          className="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xs sm:grid-cols-4 dark:border-[#2E2447] dark:bg-[#1B152B]"
+          aria-label="キャラクター別タブ"
+          className="flex items-center gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5"
         >
-          {characters.map((char) => {
+          {visibleTabCharacters.map((char) => {
             const isSelected = char.id === selectedCharacterId;
             const totalCount =
               (savedCombosByChar[char.id]?.length ?? 0) +
@@ -619,18 +733,18 @@ export function MyNoteClient({
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => handleSelectCharacter(char.id)}
-                className={`flex items-center justify-between gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all sm:text-sm ${
+                className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all sm:text-sm ${
                   isSelected
                     ? "bg-blue-600 text-white shadow-xs dark:bg-[#7C3AED]"
-                    : "text-slate-700 hover:bg-slate-100 dark:text-[#CFC6E8] dark:hover:bg-[#251D3A]"
+                    : "border border-slate-200/80 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                 }`}
               >
-                <span className="truncate">{char.nameJa}</span>
+                <span>{char.nameJa}</span>
                 <span
-                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                  className={`rounded-full px-1.5 py-0.2 text-[11px] font-bold ${
                     isSelected
                       ? "bg-white/20 text-white"
-                      : "bg-slate-100 text-slate-600 dark:bg-[#251D3A] dark:text-[#A99EC4]"
+                      : "bg-white text-slate-600 dark:bg-[#1B152B] dark:text-[#A99EC4]"
                   }`}
                 >
                   {totalCount}

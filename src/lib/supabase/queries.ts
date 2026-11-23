@@ -196,68 +196,114 @@ export async function fetchGameVersions(): Promise<GameVersion[]> {
   return ((data ?? []) as GameVersionRow[]).map(mapGameVersion);
 }
 
+/**
+ * Supabase (PostgREST) のデフォルト取得上限（1回あたり最大1,000件）を超えても
+ * 全件を漏れなく取得するためのページネーションヘルパー。
+ * ページ境界での重複・欠落を防ぐため、呼び出し元のクエリでは必ず一意な列（id 等）を
+ * 最終ソートキーに含めること。
+ */
+const SUPABASE_PAGE_SIZE = 1000;
+
+async function fetchAllPages<T>(
+  fetchPage: (
+    from: number,
+    to: number
+  ) => PromiseLike<{ data: unknown[] | null; error: { message: string } | null }>,
+  errorPrefix: string
+): Promise<T[]> {
+  const allRows: T[] = [];
+  let from = 0;
+
+  while (true) {
+    const to = from + SUPABASE_PAGE_SIZE - 1;
+    const { data, error } = await fetchPage(from, to);
+
+    if (error) {
+      throw new Error(`${errorPrefix}: ${error.message}`);
+    }
+
+    const batch = (data ?? []) as T[];
+    allRows.push(...batch);
+
+    if (batch.length < SUPABASE_PAGE_SIZE) {
+      break;
+    }
+    from += SUPABASE_PAGE_SIZE;
+  }
+
+  return allRows;
+}
+
 export async function fetchMovesForCharacter(
   characterId: string
 ): Promise<Move[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("moves")
-    .select("*")
-    .or(`character_id.eq.${characterId},character_id.is.null`)
-    .order("sort_order", { ascending: true });
+  const rows = await fetchAllPages<MoveRow>(
+    (from, to) =>
+      supabase
+        .from("moves")
+        .select("*")
+        .or(`character_id.eq.${characterId},character_id.is.null`)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to),
+    "技マスタの取得に失敗しました"
+  );
 
-  if (error) {
-    throw new Error(`技マスタの取得に失敗しました: ${error.message}`);
-  }
-
-  return ((data ?? []) as MoveRow[]).map(mapMove);
+  return rows.map(mapMove);
 }
 
 export async function fetchAllMoves(): Promise<Move[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("moves")
-    .select("*")
-    .order("sort_order", { ascending: true });
+  const rows = await fetchAllPages<MoveRow>(
+    (from, to) =>
+      supabase
+        .from("moves")
+        .select("*")
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to),
+    "技マスタの取得に失敗しました"
+  );
 
-  if (error) {
-    throw new Error(`技マスタの取得に失敗しました: ${error.message}`);
-  }
-
-  return ((data ?? []) as MoveRow[]).map(mapMove);
+  return rows.map(mapMove);
 }
 
 export async function fetchCombosByCharacter(
   characterId: string
 ): Promise<Combo[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("combos")
-    .select("*")
-    .eq("character_id", characterId)
-    .order("likes_count", { ascending: false })
-    .order("created_at", { ascending: false });
+  const rows = await fetchAllPages<ComboRow>(
+    (from, to) =>
+      supabase
+        .from("combos")
+        .select("*")
+        .eq("character_id", characterId)
+        .order("likes_count", { ascending: false })
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to),
+    "コンボ一覧の取得に失敗しました"
+  );
 
-  if (error) {
-    throw new Error(`コンボ一覧の取得に失敗しました: ${error.message}`);
-  }
-
-  return ((data ?? []) as ComboRow[]).map(mapCombo);
+  return rows.map(mapCombo);
 }
 
 export async function fetchAllCombos(): Promise<Combo[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("combos")
-    .select("*")
-    .order("likes_count", { ascending: false })
-    .order("created_at", { ascending: false });
+  const rows = await fetchAllPages<ComboRow>(
+    (from, to) =>
+      supabase
+        .from("combos")
+        .select("*")
+        .order("likes_count", { ascending: false })
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to),
+    "コンボ一覧の取得に失敗しました"
+  );
 
-  if (error) {
-    throw new Error(`コンボ一覧の取得に失敗しました: ${error.message}`);
-  }
-
-  return ((data ?? []) as ComboRow[]).map(mapCombo);
+  return rows.map(mapCombo);
 }
 
 const UUID_REGEX =
@@ -292,19 +338,21 @@ export async function fetchComboCountsByCharacter(): Promise<
   Record<string, CharacterComboCounts>
 > {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("combos")
-    .select("character_id, control_type");
-
-  if (error) {
-    throw new Error(`コンボ件数の取得に失敗しました: ${error.message}`);
-  }
-
-  const counts: Record<string, CharacterComboCounts> = {};
-  for (const row of (data ?? []) as {
+  const rows = await fetchAllPages<{
     character_id: string;
     control_type: ControlType;
-  }[]) {
+  }>(
+    (from, to) =>
+      supabase
+        .from("combos")
+        .select("character_id, control_type")
+        .order("id", { ascending: true })
+        .range(from, to),
+    "コンボ件数の取得に失敗しました"
+  );
+
+  const counts: Record<string, CharacterComboCounts> = {};
+  for (const row of rows) {
     if (!counts[row.character_id]) {
       counts[row.character_id] = { total: 0, classic: 0, modern: 0 };
     }

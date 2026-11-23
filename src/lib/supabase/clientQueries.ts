@@ -221,3 +221,66 @@ export async function fetchClientCombosByIds(ids: string[]): Promise<Combo[]> {
 
   return results;
 }
+
+/**
+ * ログイン中ユーザーが管理者（public.admin_users）かどうかを判定する。
+ * 優先して RPC (`public.is_admin`) を呼び出し、未適用環境や一時エラー時は
+ * `admin_users` の自ユーザー行参照へフォールバックする。
+ */
+export async function fetchClientIsAdmin(userId?: string): Promise<boolean> {
+  const supabase = createClient();
+
+  const { data: rpcData, error: rpcError } = await supabase.rpc("is_admin");
+  if (!rpcError && typeof rpcData === "boolean") {
+    return rpcData;
+  }
+
+  let targetUserId = userId;
+  if (!targetUserId) {
+    const { data: userData } = await supabase.auth.getUser();
+    targetUserId = userData.user?.id;
+  }
+  if (!targetUserId) {
+    return false;
+  }
+
+  const { data: row, error: selectError } = await supabase
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", targetUserId)
+    .maybeSingle();
+
+  if (selectError) {
+    return false;
+  }
+
+  return Boolean(row);
+}
+
+/**
+ * 指定IDの公開コンボを削除する。
+ * 認可は DB の RLS ポリシー（投稿者本人 OR 管理者）で強制される。
+ * 関連する `combo_likes` は FK の ON DELETE CASCADE により自動削除される。
+ */
+export async function deleteCombo(comboId: string): Promise<void> {
+  if (!UUID_REGEX.test(comboId)) {
+    throw new Error("不正なコンボIDです。");
+  }
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("combos")
+    .delete()
+    .eq("id", comboId)
+    .select("id");
+
+  if (error) {
+    throw new Error(`コンボの削除に失敗しました: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error(
+      "コンボの削除に失敗しました。削除権限がないか、すでに削除されている可能性があります。"
+    );
+  }
+}

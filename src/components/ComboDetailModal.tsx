@@ -44,7 +44,11 @@ interface ComboDetailModalProps {
   likesCount: number;
   canDelete?: boolean;
   isDeleting?: boolean;
-  /** 投稿者本人のコンボにのみ渡される編集リンク */
+  /** 管理者が他ユーザー（またはシード）のコンボを操作しているか */
+  isAdminAction?: boolean;
+  /** 上位に別の確認モーダルが開いている間は Escape 閉じを無効化 */
+  disableEscapeClose?: boolean;
+  /** 投稿者本人または管理者に渡される編集リンク */
   editHref?: string;
   /** 共有リンク生成用のキャラクターslug */
   characterSlug?: string;
@@ -88,6 +92,8 @@ export function ComboDetailModal({
   likesCount,
   canDelete = false,
   isDeleting = false,
+  isAdminAction = false,
+  disableEscapeClose = false,
   editHref,
   characterSlug,
   onToggleSave,
@@ -96,9 +102,6 @@ export function ComboDetailModal({
   onChangeNotationMode,
   onClose,
 }: ComboDetailModalProps) {
-  const [confirmingComboId, setConfirmingComboId] = useState<string | null>(
-    null
-  );
   const [copiedTarget, setCopiedTarget] = useState<"recipe" | "link" | null>(
     null
   );
@@ -110,17 +113,15 @@ export function ComboDetailModal({
   }, [copiedTarget]);
 
   useEffect(() => {
-    if (!combo) return;
+    if (!combo || disableEscapeClose) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [combo, onClose]);
+  }, [combo, disableEscapeClose, onClose]);
 
   if (!combo) return null;
-
-  const isConfirmingDelete = confirmingComboId === combo.id;
 
   const moves = combo.moveIds
     .map((id) => moveMap[id])
@@ -432,50 +433,43 @@ export function ComboDetailModal({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {editHref && !isConfirmingDelete && (
+              {editHref && (
                 <Link
                   href={editHref}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
+                  title={
+                    isAdminAction
+                      ? "管理者権限でこのコンボを編集"
+                      : "このコンボを編集"
+                  }
+                  className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                    isAdminAction
+                      ? "border-amber-200 bg-amber-50/70 text-amber-800 hover:border-amber-300 hover:bg-amber-100/80 dark:border-amber-400/35 dark:bg-amber-500/15 dark:text-amber-200 dark:hover:border-amber-400/60 dark:hover:bg-amber-500/25"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
+                  }`}
                 >
                   <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span>編集</span>
+                  <span>{isAdminAction ? "管理者編集" : "編集"}</span>
                 </Link>
               )}
               {canDelete && onDelete && (
-                <>
-                  {isConfirmingDelete ? (
-                    <div className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 dark:border-rose-400/35 dark:bg-rose-500/20">
-                      <span className="text-[11px] font-semibold text-rose-700 dark:text-rose-200">
-                        削除しますか？
-                      </span>
-                      <button
-                        type="button"
-                        disabled={isDeleting}
-                        onClick={() => onDelete(combo)}
-                        className="rounded bg-rose-600 px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
-                      >
-                        {isDeleting ? "削除中..." : "削除する"}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isDeleting}
-                        onClick={() => setConfirmingComboId(null)}
-                        className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#E2DCF5] dark:hover:bg-[#30264A]"
-                      >
-                        中止
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingComboId(combo.id)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-400/35 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>削除</span>
-                    </button>
-                  )}
-                </>
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => onDelete(combo)}
+                  title={
+                    isAdminAction
+                      ? "管理者権限でこのコンボを削除"
+                      : "このコンボを削除"
+                  }
+                  className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                    isAdminAction
+                      ? "border-rose-300 bg-rose-50/70 text-rose-700 hover:bg-rose-100/80 dark:border-rose-400/45 dark:bg-rose-500/20 dark:text-rose-200 dark:hover:bg-rose-500/30"
+                      : "border-rose-200 bg-white text-rose-600 hover:bg-rose-50 dark:border-rose-400/35 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
+                  }`}
+                >
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>{isAdminAction ? "管理者削除" : "削除"}</span>
+                </button>
               )}
 
               <button

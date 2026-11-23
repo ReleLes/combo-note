@@ -10,6 +10,7 @@ import {
   LogOut,
   Moon,
   PlusCircle,
+  Shield,
   Sun,
   User,
   Users,
@@ -21,7 +22,7 @@ import { useTheme } from "@/components/ThemeProvider";
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isLoading, signOut } = useAuth();
+  const { user, isAdmin, isLoading, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -135,7 +136,17 @@ export function Header() {
             </button>
 
             {!isLoading && user ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                {isAdmin && (
+                  <span
+                    title="管理者権限でログイン中"
+                    aria-label="管理者権限（ADMIN）"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-md border border-amber-300/80 bg-amber-50 px-1.5 py-1 text-[10px] font-bold tracking-wider text-amber-800 sm:px-2 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200"
+                  >
+                    <Shield className="h-3 w-3 shrink-0" aria-hidden="true" />
+                    <span className="hidden sm:inline">ADMIN</span>
+                  </span>
+                )}
                 <span
                   title={user.email ?? "ログイン中"}
                   className="hidden max-w-[140px] items-center gap-1 truncate rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700 md:inline-flex dark:bg-[#251D3A] dark:text-[#E2DCF5]"

@@ -21,12 +21,13 @@ import type {
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
 import { formatMoveText, getStarterMoveId } from "@/lib/comboUtils";
-import { createClient } from "@/lib/supabase/client";
+import { deleteCombo } from "@/lib/supabase/clientQueries";
 import { useAuth } from "@/components/AuthProvider";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
 import { useComboLikes } from "@/hooks/useComboLikes";
 import { ComboCard } from "./ComboCard";
 import { ComboDetailModal } from "./ComboDetailModal";
+import { DeleteComboConfirmModal } from "./DeleteComboConfirmModal";
 
 type SortKey = "popular" | "newest" | "damage";
 
@@ -51,7 +52,7 @@ export function CharacterComboListClient({
   initialComboId,
 }: CharacterComboListClientProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   // 上部コントロール状態（LocalStorage永続化）
   const { controlType, notationMode, setControlType, setNotationMode } =
@@ -59,6 +60,10 @@ export function CharacterComboListClient({
   const { isSaved, toggleSavedCombo, removeSavedCombo } = useSavedCombos();
   const { isLiked, getLikesCount, toggleLike } = useComboLikes(combos);
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
+  const [deleteTargetCombo, setDeleteTargetCombo] = useState<Combo | null>(
+    null
+  );
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // 絞り込み・並び替え状態
@@ -291,30 +296,39 @@ export function CharacterComboListClient({
     }
   };
 
-  const handleDeleteCombo = async (combo: Combo) => {
-    if (!user || user.id !== combo.authorId || isDeleting) return;
-    setIsDeleting(true);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("combos")
-        .delete()
-        .eq("id", combo.id)
-        .eq("author_id", user.id);
+  const handleRequestDeleteCombo = (combo: Combo) => {
+    setDeleteError(null);
+    setDeleteTargetCombo(combo);
+  };
 
-      if (error) {
-        throw error;
-      }
+  const handleConfirmDeleteCombo = async (combo: Combo) => {
+    const canDeleteCombo = Boolean(
+      user && (user.id === combo.authorId || isAdmin)
+    );
+    if (!canDeleteCombo || isDeleting) return;
+
+    const isAdminDelete = Boolean(
+      user && user.id !== combo.authorId && isAdmin
+    );
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteCombo(combo.id);
 
       setDeletedIds((prev) => new Set(prev).add(combo.id));
       removeSavedCombo(combo.id);
-      setActiveCombo(null);
-      setNotice({ message: "コンボを削除しました。" });
+      setDeleteTargetCombo(null);
+      setActiveCombo((prev) => (prev?.id === combo.id ? null : prev));
+      setNotice({
+        message: isAdminDelete
+          ? "管理者権限で公開コンボを削除しました。"
+          : "公開コンボを削除しました。",
+      });
       router.refresh();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "コンボの削除に失敗しました。";
-      setNotice({ message });
+      setDeleteError(message);
     } finally {
       setIsDeleting(false);
     }
@@ -706,29 +720,34 @@ export function CharacterComboListClient({
       {/* コンボ一覧 */}
       {filteredCombos.length > 0 ? (
         <div className="space-y-3">
-          {filteredCombos.map((combo) => (
-            <ComboCard
-              key={combo.id}
-              combo={combo}
-              moveMap={moveMap}
-              situationMap={situationMap}
-              version={versionMap[combo.versionId]}
-              stockMeta={character.stockMeta}
-              notationMode={notationMode}
-              isSaved={isSaved(combo.id)}
-              isLiked={isLiked(combo.id)}
-              likesCount={getLikesCount(combo)}
-              editHref={
-                user && user.id === combo.authorId
-                  ? `/combos/${combo.id}/edit`
-                  : undefined
-              }
-              characterSlug={character.slug}
-              onToggleSave={handleToggleSave}
-              onToggleLike={handleToggleLike}
-              onSelect={setActiveCombo}
-            />
-          ))}
+          {filteredCombos.map((combo) => {
+            const isOwner = Boolean(user && user.id === combo.authorId);
+            const canManage = Boolean(user && (isOwner || isAdmin));
+            const isAdminAction = Boolean(user && !isOwner && isAdmin);
+            return (
+              <ComboCard
+                key={combo.id}
+                combo={combo}
+                moveMap={moveMap}
+                situationMap={situationMap}
+                version={versionMap[combo.versionId]}
+                stockMeta={character.stockMeta}
+                notationMode={notationMode}
+                isSaved={isSaved(combo.id)}
+                isLiked={isLiked(combo.id)}
+                likesCount={getLikesCount(combo)}
+                editHref={canManage ? `/combos/${combo.id}/edit` : undefined}
+                onDeleteRequest={
+                  canManage ? handleRequestDeleteCombo : undefined
+                }
+                isAdminAction={isAdminAction}
+                characterSlug={character.slug}
+                onToggleSave={handleToggleSave}
+                onToggleLike={handleToggleLike}
+                onSelect={setActiveCombo}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-12 text-center dark:border-[#3A2E58] dark:bg-[#1B152B]">
@@ -762,17 +781,23 @@ export function CharacterComboListClient({
         isSaved={activeCombo ? isSaved(activeCombo.id) : false}
         isLiked={activeCombo ? isLiked(activeCombo.id) : false}
         likesCount={activeCombo ? getLikesCount(activeCombo) : 0}
-        canDelete={Boolean(user && activeCombo && user.id === activeCombo.authorId)}
+        canDelete={Boolean(
+          user && activeCombo && (user.id === activeCombo.authorId || isAdmin)
+        )}
         isDeleting={isDeleting}
+        isAdminAction={Boolean(
+          user && activeCombo && user.id !== activeCombo.authorId && isAdmin
+        )}
+        disableEscapeClose={Boolean(deleteTargetCombo)}
         editHref={
-          user && activeCombo && user.id === activeCombo.authorId
+          user && activeCombo && (user.id === activeCombo.authorId || isAdmin)
             ? `/combos/${activeCombo.id}/edit`
             : undefined
         }
         characterSlug={character.slug}
         onToggleSave={handleToggleSave}
         onToggleLike={handleToggleLike}
-        onDelete={handleDeleteCombo}
+        onDelete={handleRequestDeleteCombo}
         onChangeNotationMode={setNotationMode}
         onClose={() => {
           setActiveCombo(null);
@@ -784,6 +809,25 @@ export function CharacterComboListClient({
             url.searchParams.delete("combo");
             window.history.replaceState(null, "", url.pathname + url.search);
           }
+        }}
+      />
+
+      {/* コンボ削除確認モーダル */}
+      <DeleteComboConfirmModal
+        combo={deleteTargetCombo}
+        isAdminAction={Boolean(
+          user &&
+            deleteTargetCombo &&
+            user.id !== deleteTargetCombo.authorId &&
+            isAdmin
+        )}
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
+        onConfirm={handleConfirmDeleteCombo}
+        onClose={() => {
+          if (isDeleting) return;
+          setDeleteTargetCombo(null);
+          setDeleteError(null);
         }}
       />
 

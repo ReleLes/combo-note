@@ -12,6 +12,7 @@ import {
   Pencil,
   ShieldCheck,
   Star,
+  Trash2,
 } from "lucide-react";
 import type {
   CharacterStockMeta,
@@ -39,8 +40,12 @@ interface ComboCardProps {
   isSaved: boolean;
   isLiked: boolean;
   likesCount: number;
-  /** 投稿者本人のコンボにのみ渡される編集リンク */
+  /** 投稿者本人または管理者に渡される編集リンク */
   editHref?: string;
+  /** 投稿者本人または管理者に渡される削除トリガー */
+  onDeleteRequest?: (combo: Combo) => void;
+  /** 管理者が他ユーザー（またはシード）のコンボを操作しているか */
+  isAdminAction?: boolean;
   /** 共有リンク生成用のキャラクターslug */
   characterSlug?: string;
   onToggleSave: (comboId: string) => void;
@@ -80,6 +85,8 @@ export function ComboCard({
   isLiked,
   likesCount,
   editHref,
+  onDeleteRequest,
+  isAdminAction = false,
   characterSlug,
   onToggleSave,
   onToggleLike,
@@ -168,13 +175,52 @@ export function ComboCard({
             <Link
               href={editHref}
               onClick={(e) => e.stopPropagation()}
-              aria-label="このコンボを編集"
-              title="編集"
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
+              aria-label={
+                isAdminAction
+                  ? "管理者権限でこのコンボを編集"
+                  : "このコンボを編集"
+              }
+              title={
+                isAdminAction
+                  ? "管理者権限でこのコンボを編集"
+                  : "このコンボを編集"
+              }
+              className={`inline-flex items-center gap-1 rounded-lg border px-1.5 py-1 text-[11px] font-semibold transition-colors sm:px-2 ${
+                isAdminAction
+                  ? "border-amber-200 bg-amber-50/70 text-amber-800 hover:border-amber-300 hover:bg-amber-100/80 dark:border-amber-400/35 dark:bg-amber-500/15 dark:text-amber-200 dark:hover:border-amber-400/60 dark:hover:bg-amber-500/25"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
+              }`}
             >
               <Pencil className="h-3 w-3" aria-hidden="true" />
               <span>編集</span>
             </Link>
+          )}
+          {onDeleteRequest && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteRequest(combo);
+              }}
+              aria-label={
+                isAdminAction
+                  ? "管理者権限でこのコンボを削除"
+                  : "このコンボを削除"
+              }
+              title={
+                isAdminAction
+                  ? "管理者権限でこのコンボを削除"
+                  : "このコンボを削除"
+              }
+              className={`inline-flex items-center gap-1 rounded-lg border px-1.5 py-1 text-[11px] font-semibold transition-colors sm:px-2 ${
+                isAdminAction
+                  ? "border-rose-300 bg-rose-50/70 text-rose-700 hover:bg-rose-100/80 dark:border-rose-400/45 dark:bg-rose-500/20 dark:text-rose-200 dark:hover:bg-rose-500/30"
+                  : "border-rose-200 bg-white text-rose-600 hover:bg-rose-50 dark:border-rose-400/35 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
+              }`}
+            >
+              <Trash2 className="h-3 w-3" aria-hidden="true" />
+              <span>削除</span>
+            </button>
           )}
           <button
             type="button"

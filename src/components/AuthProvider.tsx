@@ -10,22 +10,32 @@ import {
 } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { fetchClientIsAdmin } from "@/lib/supabase/clientQueries";
 
 interface AuthContextValue {
   user: User | null;
+  isAdmin: boolean;
   isLoading: boolean;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
+  isAdmin: false,
   isLoading: true,
   signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [adminState, setAdminState] = useState<{
+    userId: string | null;
+    isAdmin: boolean;
+  }>({
+    userId: null,
+    isAdmin: false,
+  });
 
   useEffect(() => {
     const supabase = createClient();
@@ -36,12 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then(({ data }) => {
         if (!mounted) return;
         setUser(data.user ?? null);
-        setIsLoading(false);
+        setIsAuthLoading(false);
       })
       .catch(() => {
         if (!mounted) return;
         setUser(null);
-        setIsLoading(false);
+        setIsAuthLoading(false);
       });
 
     const {
@@ -49,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setUser(session?.user ?? null);
-      setIsLoading(false);
+      setIsAuthLoading(false);
     });
 
     return () => {
@@ -58,19 +68,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const currentUserId = user?.id ?? null;
+
+  useEffect(() => {
+    if (!currentUserId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchClientIsAdmin(currentUserId)
+      .then((result) => {
+        if (cancelled) return;
+        setAdminState({
+          userId: currentUserId,
+          isAdmin: result,
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAdminState({
+          userId: currentUserId,
+          isAdmin: false,
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId]);
+
   const signOut = useCallback(async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     setUser(null);
+    setAdminState({ userId: null, isAdmin: false });
   }, []);
+
+  const isAdminResolvedForCurrentUser =
+    !currentUserId || adminState.userId === currentUserId;
+  const isAdmin = Boolean(
+    currentUserId && adminState.userId === currentUserId && adminState.isAdmin
+  );
+  const isLoading = isAuthLoading || !isAdminResolvedForCurrentUser;
 
   const value = useMemo(
     () => ({
       user,
+      isAdmin,
       isLoading,
       signOut,
     }),
-    [user, isLoading, signOut]
+    [user, isAdmin, isLoading, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

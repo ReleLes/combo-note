@@ -8,6 +8,7 @@ import {
   Lock,
   LogIn,
   Pencil,
+  Shield,
   ShieldAlert,
 } from "lucide-react";
 import type { Character, Combo, GameVersion, Move } from "@/types/combo";
@@ -35,12 +36,16 @@ export function ComboEditClient({
   versions,
 }: ComboEditClientProps) {
   const router = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user, isAdmin, isLoading } = useAuth();
   const { setControlType: savePreferredControlType } = usePreferences();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+
+  const isOwner = Boolean(user && combo && combo.authorId === user.id);
+  const canEdit = Boolean(user && combo && (isOwner || isAdmin));
+  const isAdminEdit = Boolean(user && combo && !isOwner && isAdmin);
 
   const targetCharacter = combo
     ? characters.find((c) => c.id === combo.characterId)
@@ -53,13 +58,15 @@ export function ComboEditClient({
     : "キャラ一覧へ戻る";
 
   const handleSubmit = async (payload: ComboFormSubmitPayload) => {
-    if (!user || !combo || isSubmitting) return;
+    if (!user || !combo || !canEdit || isSubmitting) return;
 
     setSubmitError(null);
     setIsSubmitting(true);
     const supabase = createClient();
 
     try {
+      // 管理者が他ユーザーのコンボを編集した際も author_id / author_name は上書きしない。
+      // 認可は DB の RLS ポリシー（auth.uid() = author_id OR public.is_admin()）で強制する。
       const { data: updatedRow, error: updateError } = await supabase
         .from("combos")
         .update({
@@ -79,7 +86,6 @@ export function ComboEditClient({
           updated_at: new Date().toISOString(),
         })
         .eq("id", combo.id)
-        .eq("author_id", user.id)
         .select("id")
         .maybeSingle();
 
@@ -157,8 +163,8 @@ export function ComboEditClient({
     );
   }
 
-  // コンボが存在しない、または投稿者本人ではない場合
-  if (!combo || combo.authorId !== user.id) {
+  // コンボが存在しない、または投稿者本人・管理者ではない場合
+  if (!combo || !canEdit) {
     return (
       <div className="mx-auto w-full max-w-lg px-3 py-10 sm:px-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-xs dark:border-[#2E2447] dark:bg-[#1B152B]">
@@ -215,6 +221,18 @@ export function ComboEditClient({
         <p className="mt-0.5 text-xs text-slate-500 dark:text-[#A99EC4]">
           レシピ・状況タグ・ゲージ・補足メモを修正して保存できます。
         </p>
+        {isAdminEdit && (
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-xs text-amber-900 dark:border-amber-400/35 dark:bg-amber-500/15 dark:text-amber-200">
+            <Shield
+              className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300"
+              aria-hidden="true"
+            />
+            <span>
+              <strong>管理者権限で編集しています。</strong>
+              元の投稿者（{combo.authorName ?? "シード／投稿者"}）の情報は変更されません。
+            </span>
+          </div>
+        )}
       </div>
 
       <ComboForm

@@ -28,8 +28,8 @@ import {
   usePrivateNotes,
   useSavedCombos,
 } from "@/hooks/useComboNoteStorage";
-import { createClient } from "@/lib/supabase/client";
 import {
+  deleteCombo,
   fetchClientCombosByIds,
   fetchClientMovesForCharacter,
   fetchClientMovesForCharacters,
@@ -45,6 +45,7 @@ import {
 } from "@/lib/myNoteBackup";
 import { ComboCard } from "./ComboCard";
 import { ComboDetailModal } from "./ComboDetailModal";
+import { DeleteComboConfirmModal } from "./DeleteComboConfirmModal";
 import { MyNoteImportModal } from "./MyNoteImportModal";
 import { PrivateNoteCard } from "./PrivateNoteCard";
 import { PrivateNoteFormModal } from "./PrivateNoteFormModal";
@@ -63,7 +64,7 @@ export function MyNoteClient({
   versions,
 }: MyNoteClientProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { notationMode, setControlType, setNotationMode } = usePreferences();
   const {
     savedComboIds,
@@ -239,6 +240,10 @@ export function MyNoteClient({
 
   const { isLiked, getLikesCount, toggleLike } = useComboLikes(savedCombos);
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
+  const [deleteTargetCombo, setDeleteTargetCombo] = useState<Combo | null>(
+    null
+  );
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>(
@@ -483,30 +488,39 @@ export function MyNoteClient({
     }
   };
 
-  const handleDeleteCombo = async (combo: Combo) => {
-    if (!user || user.id !== combo.authorId || isDeleting) return;
-    setIsDeleting(true);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("combos")
-        .delete()
-        .eq("id", combo.id)
-        .eq("author_id", user.id);
+  const handleRequestDeleteCombo = (combo: Combo) => {
+    setDeleteError(null);
+    setDeleteTargetCombo(combo);
+  };
 
-      if (error) {
-        throw error;
-      }
+  const handleConfirmDeleteCombo = async (combo: Combo) => {
+    const canDeleteCombo = Boolean(
+      user && (user.id === combo.authorId || isAdmin)
+    );
+    if (!canDeleteCombo || isDeleting) return;
+
+    const isAdminDelete = Boolean(
+      user && user.id !== combo.authorId && isAdmin
+    );
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteCombo(combo.id);
 
       setDeletedIds((prev) => new Set(prev).add(combo.id));
       removeSavedCombo(combo.id);
-      setActiveCombo(null);
-      setNotice({ message: "コンボを削除しました。" });
+      setDeleteTargetCombo(null);
+      setActiveCombo((prev) => (prev?.id === combo.id ? null : prev));
+      setNotice({
+        message: isAdminDelete
+          ? "管理者権限で公開コンボを削除しました。"
+          : "公開コンボを削除しました。",
+      });
       router.refresh();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "コンボの削除に失敗しました。";
-      setNotice({ message });
+      setDeleteError(message);
     } finally {
       setIsDeleting(false);
     }
@@ -940,24 +954,34 @@ export function MyNoteClient({
 
           {filteredSavedCombos.length > 0 ? (
             <div className="space-y-3">
-              {filteredSavedCombos.map((combo) => (
-                <ComboCard
-                  key={combo.id}
-                  combo={combo}
-                  moveMap={moveMap}
-                  situationMap={currentSituationMap}
-                  version={versionMap[combo.versionId]}
-                  stockMeta={activeCharacter?.stockMeta}
-                  notationMode={notationMode}
-                  isSaved={isSaved(combo.id)}
-                  isLiked={isLiked(combo.id)}
-                  likesCount={getLikesCount(combo)}
-                  characterSlug={activeCharacter?.slug}
-                  onToggleSave={handleToggleSave}
-                  onToggleLike={handleToggleLike}
-                  onSelect={setActiveCombo}
-                />
-              ))}
+              {filteredSavedCombos.map((combo) => {
+                const isOwner = Boolean(user && user.id === combo.authorId);
+                const canManage = Boolean(user && (isOwner || isAdmin));
+                const isAdminAction = Boolean(user && !isOwner && isAdmin);
+                return (
+                  <ComboCard
+                    key={combo.id}
+                    combo={combo}
+                    moveMap={moveMap}
+                    situationMap={currentSituationMap}
+                    version={versionMap[combo.versionId]}
+                    stockMeta={activeCharacter?.stockMeta}
+                    notationMode={notationMode}
+                    isSaved={isSaved(combo.id)}
+                    isLiked={isLiked(combo.id)}
+                    likesCount={getLikesCount(combo)}
+                    editHref={canManage ? `/combos/${combo.id}/edit` : undefined}
+                    onDeleteRequest={
+                      canManage ? handleRequestDeleteCombo : undefined
+                    }
+                    isAdminAction={isAdminAction}
+                    characterSlug={activeCharacter?.slug}
+                    onToggleSave={handleToggleSave}
+                    onToggleLike={handleToggleLike}
+                    onSelect={setActiveCombo}
+                  />
+                );
+              })}
             </div>
           ) : currentSavedCombos.length > 0 ? (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center dark:border-[#3A2E58] dark:bg-[#1B152B]">
@@ -1100,14 +1124,44 @@ export function MyNoteClient({
         isSaved={activeCombo ? isSaved(activeCombo.id) : false}
         isLiked={activeCombo ? isLiked(activeCombo.id) : false}
         likesCount={activeCombo ? getLikesCount(activeCombo) : 0}
-        canDelete={Boolean(user && activeCombo && user.id === activeCombo.authorId)}
+        canDelete={Boolean(
+          user && activeCombo && (user.id === activeCombo.authorId || isAdmin)
+        )}
         isDeleting={isDeleting}
+        isAdminAction={Boolean(
+          user && activeCombo && user.id !== activeCombo.authorId && isAdmin
+        )}
+        disableEscapeClose={Boolean(deleteTargetCombo)}
+        editHref={
+          user && activeCombo && (user.id === activeCombo.authorId || isAdmin)
+            ? `/combos/${activeCombo.id}/edit`
+            : undefined
+        }
         characterSlug={activeCharacter?.slug}
         onToggleSave={handleToggleSave}
         onToggleLike={handleToggleLike}
-        onDelete={handleDeleteCombo}
+        onDelete={handleRequestDeleteCombo}
         onChangeNotationMode={setNotationMode}
         onClose={() => setActiveCombo(null)}
+      />
+
+      {/* コンボ削除確認モーダル */}
+      <DeleteComboConfirmModal
+        combo={deleteTargetCombo}
+        isAdminAction={Boolean(
+          user &&
+            deleteTargetCombo &&
+            user.id !== deleteTargetCombo.authorId &&
+            isAdmin
+        )}
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
+        onConfirm={handleConfirmDeleteCombo}
+        onClose={() => {
+          if (isDeleting) return;
+          setDeleteTargetCombo(null);
+          setDeleteError(null);
+        }}
       />
 
       {/* 非公開メモ作成・編集モーダル */}

@@ -38,6 +38,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <AuthProvider>
             <Header />
             <main className="flex flex-1 flex-col">{children}</main>
+            <footer className="mt-auto border-t border-slate-200/80 py-4 text-center text-[11px] leading-relaxed text-slate-500 dark:border-[#2D2346] dark:text-[#8E82B3]">
+              <div className="mx-auto max-w-5xl px-4">
+                本アプリは個人制作の非公式ファンツールです。ゲーム名・キャラクター名等の権利は各権利者に帰属します。
+              </div>
+            </footer>
           </AuthProvider>
         </ThemeProvider>
       </body>

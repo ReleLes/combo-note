@@ -274,6 +274,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(101, 163, 13, 0.45)",
     watermark: "ALEX",
   },
+  // ヤスミン：アクアブルー／サンパギータゴールド系
+  yasmine: {
+    accent: "#0EA5E9",
+    secondary: "#FDE047",
+    gradientFrom: "#0C4A6E",
+    gradientTo: "#1E1B4B",
+    glow: "rgba(14, 165, 233, 0.50)",
+    badgeBg: "rgba(14, 165, 233, 0.24)",
+    badgeBorder: "rgba(253, 224, 71, 0.45)",
+    watermark: "YASMINE",
+  },
+  // アルジュン：アンバーブロンズ／インディゴスレート系
+  arjun: {
+    accent: "#F97316",
+    secondary: "#6366F1",
+    gradientFrom: "#431407",
+    gradientTo: "#1E1B4B",
+    glow: "rgba(249, 115, 22, 0.50)",
+    badgeBg: "rgba(249, 115, 22, 0.24)",
+    badgeBorder: "rgba(99, 102, 241, 0.45)",
+    watermark: "ARJUN",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
@@ -313,6 +335,8 @@ export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
   aki: ["あき", "アキ", "a.k.i.", "a.k.i", "aki"],
   elena: ["えれな", "エレナ"],
   alex: ["あれっくす", "アレックス", "あれくす"],
+  yasmine: ["やすみん", "ヤスミン", "yasmin", "yasmine"],
+  arjun: ["あるじゅん", "アルジュン", "arjun"],
 };
 
 /**

@@ -193,6 +193,45 @@ export const CHARACTER_STOCK_RULES: Readonly<
       return { consume, gain };
     },
   },
+  yasmine: {
+    characterId: "yasmine",
+    shortLabel: "バヤニ",
+    label: "バヤニ・モード",
+    maxCount: 1,
+    badgeClassName:
+      "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-400/35 dark:bg-sky-500/20 dark:text-amber-200",
+    situationKey: "yasmine_bayani",
+    evaluateMove: (move) => {
+      let consume = 0;
+      let gain = 0;
+
+      // 消費（-1）: [強化版] 弱/中/強/OD アロン（ナカタゴン・ラカス中専用版は解除されないため除外）
+      if (
+        move.category === "special" &&
+        isEnhancedMove(move) &&
+        !move.notationName.includes("ナカタゴン")
+      ) {
+        consume += 1;
+      }
+
+      // 獲得（+1・上限1）: 通常版アロン（弱/中/強/OD）、SA1 ヒワン・ン・カラヒタン、SA2 ナカタゴン・ラカス
+      if (
+        move.category === "special" &&
+        move.notationName.includes("アロン") &&
+        !isEnhancedMove(move)
+      ) {
+        gain += 1;
+      } else if (
+        move.category === "super" &&
+        (move.notationName.includes("ヒワン・ン・カラヒタン") ||
+          move.notationName.includes("ナカタゴン・ラカス"))
+      ) {
+        gain += 1;
+      }
+
+      return { consume, gain };
+    },
+  },
 };
 
 export function hasStockCalculator(characterId: string): boolean {

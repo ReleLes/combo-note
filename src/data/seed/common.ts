@@ -206,6 +206,27 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 22,
     isActive: true,
   },
+  {
+    id: "yasmine",
+    slug: "yasmine",
+    nameJa: "ヤスミン",
+    nameEn: "Yasmine",
+    sortOrder: 23,
+    isActive: true,
+    stockMeta: {
+      label: "バヤニ・モード",
+      shortLabel: "バヤニ",
+      maxCount: 1,
+    },
+  },
+  {
+    id: "arjun",
+    slug: "arjun",
+    nameJa: "アルジュン",
+    nameEn: "Arjun",
+    sortOrder: 24,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -388,6 +409,30 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-red-100 text-red-800 dark:bg-red-500/25 dark:text-lime-200 dark:border dark:border-red-400/35",
     characterId: "alex",
     sortOrder: 112,
+  },
+  {
+    key: "yasmine_bayani",
+    label: "バヤニ・モード",
+    badgeClassName:
+      "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-amber-200 dark:border dark:border-sky-400/35",
+    characterId: "yasmine",
+    sortOrder: 113,
+  },
+  {
+    key: "yasmine_nakatagong_lakas",
+    label: "ナカタゴン・ラカス",
+    badgeClassName:
+      "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-yellow-200 dark:border dark:border-amber-400/35",
+    characterId: "yasmine",
+    sortOrder: 114,
+  },
+  {
+    key: "arjun_giant_rock",
+    label: "岩設置中",
+    badgeClassName:
+      "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/35",
+    characterId: "arjun",
+    sortOrder: 115,
   },
 ];
 

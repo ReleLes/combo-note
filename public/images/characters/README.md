@@ -29,6 +29,8 @@
 - A.K.I.: `aki.webp` / `aki.png` / `aki.jpg`
 - エレナ: `elena.webp` / `elena.png` / `elena.jpg`
 - アレックス: `alex.webp` / `alex.png` / `alex.jpg`
+- ヤスミン: `yasmine.webp` / `yasmine.png` / `yasmine.jpg`
+- アルジュン: `arjun.webp` / `arjun.png` / `arjun.jpg`
 
 ## 検出優先順位
 

@@ -132,6 +132,28 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   // アレックス: OD パワードロップからのハイパーボム派生（親技ODパワードロップで既に +2 消費済み・追加消費なし）
   "alex_hyperbomb",
   "alex_m_hyperbomb",
+  // ヤスミン: OD ダロイ・ン・トゥビグからの OD アロン派生、および OD ムカ・ン・ランギットからの OD ウラン／OD クロッグ派生（親技で既に +2 消費済み・追加消費なし）
+  "yasmine_aron_od",
+  "yasmine_aron_od_ex",
+  "yasmine_aron_od_sa2",
+  "yasmine_m_aron_od",
+  "yasmine_m_aron_od_ex",
+  "yasmine_m_aron_od_sa2",
+  "yasmine_ulan_od_from_od",
+  "yasmine_kulog_od_from_od",
+  "yasmine_m_ulan_od_from_od",
+  "yasmine_m_kulog_od_from_od",
+  // アルジュン: OD 大義の巨腕からの OD 追撃、OD 厳酷な岩肩からの OD 過剰な正義、OD 息吹の円筒からの OD 息吹の震撼（親技で既に +2 消費済み・追加消費なし）
+  "arjun_236odp_followup",
+  "arjun_m_236od_followup",
+  "arjun_kajo_od",
+  "arjun_m_kajo_od",
+  "arjun_shinkan_od_l",
+  "arjun_shinkan_od_m",
+  "arjun_shinkan_od_h",
+  "arjun_m_shinkan_od_l",
+  "arjun_m_shinkan_od_m",
+  "arjun_m_shinkan_od_h",
 ]);
 
 /**

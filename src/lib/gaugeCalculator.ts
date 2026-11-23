@@ -18,6 +18,13 @@ export interface RecipeGaugeCostResult {
  * 二重カウントを防ぐため、これらの技は必ず Dゲージ消費 0 として扱う。
  */
 export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
+  // 豪鬼: OD 金剛灼火（2段目）および OD 百鬼襲からの専用派生（親技で既に +2 消費済み）
+  "akuma_214odp_2",
+  "akuma_m_od_2sp_2",
+  "akuma_hyakki_zanku",
+  "akuma_hyakki_rasen",
+  "akuma_m_hyakki_zanku",
+  "akuma_m_hyakki_rasen",
   // ジュリ: OD 疾空閃からの派生（親技で既に +2 消費済み）
   "juri_shiku_odkk",
   "juri_m_shiku_od",

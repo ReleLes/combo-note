@@ -94,6 +94,22 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 8,
     isActive: true,
   },
+  {
+    id: "cammy",
+    slug: "cammy",
+    nameJa: "キャミィ",
+    nameEn: "Cammy",
+    sortOrder: 9,
+    isActive: true,
+  },
+  {
+    id: "chun-li",
+    slug: "chun-li",
+    nameJa: "春麗",
+    nameEn: "Chun-Li",
+    sortOrder: 10,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [

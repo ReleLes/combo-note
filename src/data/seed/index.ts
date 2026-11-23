@@ -24,6 +24,8 @@ import { maiSeedData } from "./characters/mai";
 import { ryuSeedData } from "./characters/ryu";
 import { kenSeedData } from "./characters/ken";
 import { lukeSeedData } from "./characters/luke";
+import { cammySeedData } from "./characters/cammy";
+import { chunLiSeedData } from "./characters/chun-li";
 
 const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   akuma: akumaSeedData,
@@ -34,6 +36,8 @@ const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   ryu: ryuSeedData,
   ken: kenSeedData,
   luke: lukeSeedData,
+  cammy: cammySeedData,
+  "chun-li": chunLiSeedData,
 };
 
 export {

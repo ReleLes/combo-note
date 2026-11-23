@@ -51,6 +51,21 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "luke_avenger_od_imp",
   "luke_m_avenger_od_nc",
   "luke_m_avenger_od_imp",
+  // キャミィ: OD フーリガンコンビネーションからの各種派生（親技で既に +2 消費済み・追加消費なし）
+  "cammy_hooligan_od_razor",
+  "cammy_hooligan_od_strike",
+  "cammy_hooligan_od_reverse",
+  "cammy_hooligan_od_fatal",
+  "cammy_hooligan_od_silent",
+  "cammy_m_hooligan_od_razor",
+  "cammy_m_hooligan_od_strike",
+  "cammy_m_hooligan_od_reverse",
+  "cammy_m_hooligan_od_fatal",
+  "cammy_m_hooligan_od_silent",
+  // 春麗: OD 百裂脚からの追加派生（百裂連脚は親技で既に +2 消費済み・公式仕様どおり追加消費なし）
+  "chunli_hyaku_renkyaku",
+  "chunli_m_hyaku_renkyaku",
+  "chunli_m_sp_hyaku_renkyaku",
 ]);
 
 /**

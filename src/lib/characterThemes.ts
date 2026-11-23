@@ -120,6 +120,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(250, 204, 21, 0.45)",
     watermark: "LUKE",
   },
+  // キャミィ：エメラルドグリーン／レッド系
+  cammy: {
+    accent: "#10B981",
+    secondary: "#EF4444",
+    gradientFrom: "#064E3B",
+    gradientTo: "#121826",
+    glow: "rgba(16, 185, 129, 0.48)",
+    badgeBg: "rgba(16, 185, 129, 0.24)",
+    badgeBorder: "rgba(239, 68, 68, 0.45)",
+    watermark: "CAMMY",
+  },
+  // 春麗：シアンブルー／ロイヤルゴールド系
+  "chun-li": {
+    accent: "#0EA5E9",
+    secondary: "#EAB308",
+    gradientFrom: "#0C4A6E",
+    gradientTo: "#14122B",
+    glow: "rgba(14, 165, 233, 0.48)",
+    badgeBg: "rgba(14, 165, 233, 0.24)",
+    badgeBorder: "rgba(234, 179, 8, 0.45)",
+    watermark: "CHUN-LI",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {

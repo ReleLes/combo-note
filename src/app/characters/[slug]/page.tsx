@@ -1,5 +1,6 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getSituationsForCharacter } from "@/data/seed";
+import { getCharacterBySlug, getSituationsForCharacter } from "@/data/seed";
 import {
   buildMoveMap,
   fetchActiveCharacters,
@@ -17,6 +18,58 @@ export const dynamic = "force-dynamic";
 interface CharacterPageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ combo?: string | string[] }>;
+}
+
+export async function generateMetadata({
+  params,
+}: Pick<CharacterPageProps, "params">): Promise<Metadata> {
+  const { slug } = await params;
+  let character: Character | null = getCharacterBySlug(slug) ?? null;
+
+  if (!character) {
+    try {
+      character = await fetchCharacterBySlug(slug);
+    } catch {
+      character = null;
+    }
+  }
+
+  if (!character) {
+    return {
+      title: "キャラクターが見つかりません",
+    };
+  }
+
+  const pageTitle = `${character.nameJa}（${character.nameEn}）のコンボ一覧`;
+  const fullTitle = `${pageTitle} | コンボノート`;
+  const description = `ストリートファイター6（SF6）${character.nameJa}（${character.nameEn}）のクラシック／モダン両対応コンボ一覧。状況別フィルタ・テンキー／コマンド／技名の3表記ワンタップ切替に対応。`;
+
+  return {
+    title: pageTitle,
+    description,
+    openGraph: {
+      type: "website",
+      locale: "ja_JP",
+      siteName: "コンボノート",
+      url: `/characters/${character.slug}`,
+      title: fullTitle,
+      description,
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: fullTitle,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      images: ["/og-image.png"],
+    },
+  };
 }
 
 export default async function CharacterPage({

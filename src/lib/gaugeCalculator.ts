@@ -66,6 +66,11 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "chunli_hyaku_renkyaku",
   "chunli_m_hyaku_renkyaku",
   "chunli_m_sp_hyaku_renkyaku",
+  // ガイル: OD ソニックブレイドからの通常派生（ODソニッククロス1）および SA2 中の OD ソニックブレイク（親技で既に +2 消費済み・追加消費なし）
+  "guile_cross_od_from_od",
+  "guile_m_cross_od_from_od",
+  "guile_break_od",
+  "guile_m_break_od",
 ]);
 
 /**
@@ -101,6 +106,10 @@ export const MOVE_DRIVE_COST_OVERRIDES: Readonly<Record<string, number>> = {
   luke_m_sp_fatal_shot: 1, // フェイタルショット（モダンSP）
   luke_m_sp_ddt: 1, // DDT（モダンSP）
   luke_m_sp_slam_dunk: 1, // スラムダンク（モダンSP）
+  // ガイル: OD ソニックブレイドからの追撃強化派生（OD ソニッククロス2・壁やられ）は追加で Dゲージ 1本消費（計3本）
+  guile_cross_od2: 1,
+  guile_m_cross_od2: 1,
+  guile_m_sp_cross_od2: 1,
 };
 
 /**

@@ -142,6 +142,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(234, 179, 8, 0.45)",
     watermark: "CHUN-LI",
   },
+  // ガイル：ミリタリーオリーブグリーン／アンバーゴールド系
+  guile: {
+    accent: "#84CC16",
+    secondary: "#F59E0B",
+    gradientFrom: "#1A2E05",
+    gradientTo: "#141914",
+    glow: "rgba(132, 204, 22, 0.48)",
+    badgeBg: "rgba(132, 204, 22, 0.24)",
+    badgeBorder: "rgba(245, 158, 11, 0.45)",
+    watermark: "GUILE",
+  },
+  // ザンギエフ：バーミリオンレッド／ブロンズゴールド系
+  zangief: {
+    accent: "#DC2626",
+    secondary: "#D97706",
+    gradientFrom: "#450A0A",
+    gradientTo: "#1C120E",
+    glow: "rgba(220, 38, 38, 0.48)",
+    badgeBg: "rgba(220, 38, 38, 0.24)",
+    badgeBorder: "rgba(217, 119, 6, 0.45)",
+    watermark: "ZANGIEF",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {

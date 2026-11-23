@@ -17,6 +17,8 @@
 - ルーク: `luke.webp` / `luke.png` / `luke.jpg`
 - キャミィ: `cammy.webp` / `cammy.png` / `cammy.jpg`
 - 春麗: `chun-li.webp` / `chun-li.png` / `chun-li.jpg`
+- ガイル: `guile.webp` / `guile.png` / `guile.jpg`
+- ザンギエフ: `zangief.webp` / `zangief.png` / `zangief.jpg`
 
 ## 検出優先順位
 

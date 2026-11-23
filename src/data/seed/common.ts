@@ -110,6 +110,22 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 10,
     isActive: true,
   },
+  {
+    id: "guile",
+    slug: "guile",
+    nameJa: "ガイル",
+    nameEn: "Guile",
+    sortOrder: 11,
+    isActive: true,
+  },
+  {
+    id: "zangief",
+    slug: "zangief",
+    nameJa: "ザンギエフ",
+    nameEn: "Zangief",
+    sortOrder: 12,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -252,6 +268,14 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200 dark:border dark:border-sky-400/30",
     characterId: "ryu",
     sortOrder: 107,
+  },
+  {
+    key: "guile_solid_puncher",
+    label: "ソリッドパンチャー",
+    badgeClassName:
+      "bg-lime-100 text-lime-800 dark:bg-lime-500/20 dark:text-lime-200 dark:border dark:border-lime-400/30",
+    characterId: "guile",
+    sortOrder: 108,
   },
 ];
 

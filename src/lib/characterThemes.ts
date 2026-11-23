@@ -362,6 +362,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(59, 130, 246, 0.45)",
     watermark: "E.HONDA",
   },
+  // ダルシム：サフランオレンジ／ターコイズ系
+  dhalsim: {
+    accent: "#F97316",
+    secondary: "#14B8A6",
+    gradientFrom: "#431407",
+    gradientTo: "#042F2E",
+    glow: "rgba(249, 115, 22, 0.50)",
+    badgeBg: "rgba(249, 115, 22, 0.24)",
+    badgeBorder: "rgba(20, 184, 166, 0.45)",
+    watermark: "DHALSIM",
+  },
+  // リリー：ウィンドエメラルド／スカイブルー系
+  lily: {
+    accent: "#10B981",
+    secondary: "#38BDF8",
+    gradientFrom: "#064E3B",
+    gradientTo: "#0C4A6E",
+    glow: "rgba(16, 185, 129, 0.50)",
+    badgeBg: "rgba(16, 185, 129, 0.24)",
+    badgeBorder: "rgba(56, 189, 248, 0.45)",
+    watermark: "LILY",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
@@ -409,6 +431,8 @@ export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
   manon: ["まのん", "マノン"],
   blanka: ["ぶらんか", "ブランカ"],
   ehonda: ["ほんだ", "ホンダ", "えどもんどほんだ", "エドモンドホンダ", "e.honda", "honda"],
+  dhalsim: ["だるしむ", "ダルシム"],
+  lily: ["りりー", "リリー"],
 };
 
 /**

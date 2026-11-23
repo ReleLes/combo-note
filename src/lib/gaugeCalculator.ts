@@ -256,6 +256,9 @@ export const MOVE_DRIVE_COST_OVERRIDES: Readonly<Record<string, number>> = {
   // テリー: SA2 ツインゲイザーは公式仕様どおり Dゲージを 3本消費（SAゲージ追加消費なし）
   terry_sa2_twin: 3,
   terry_m_sa2_twin: 3,
+  // リリー: 風纏いコンドルダイブ後の OD コンドルダイブ（派生）は公式仕様どおり Dゲージ 10000（1本）消費
+  lily_dive_followup_od: 1,
+  lily_m_dive_followup_od: 1,
 };
 
 /**

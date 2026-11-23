@@ -37,6 +37,8 @@
 - マノン: `manon.webp` / `manon.png` / `manon.jpg`
 - ブランカ: `blanka.webp` / `blanka.png` / `blanka.jpg`
 - エドモンド本田: `ehonda.webp` / `ehonda.png` / `ehonda.jpg`
+- ダルシム: `dhalsim.webp` / `dhalsim.png` / `dhalsim.jpg`
+- リリー: `lily.webp` / `lily.png` / `lily.jpg`
 
 ## 検出優先順位
 

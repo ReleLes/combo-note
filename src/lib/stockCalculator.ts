@@ -301,6 +301,48 @@ export const CHARACTER_STOCK_RULES: Readonly<
       return { consume, gain };
     },
   },
+  lily: {
+    characterId: "lily",
+    shortLabel: "風纏い",
+    label: "風纏い",
+    maxCount: 3,
+    badgeClassName:
+      "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/35 dark:bg-sky-500/20 dark:text-emerald-200",
+    situationKey: "lily_windclad",
+    evaluateMove: (move) => {
+      let consume = 0;
+      let gain = 0;
+
+      // 消費（-1）: [強化版] コンドルスパイア・トマホークバスター・コンドルダイブ（派生含む）・SA2（クラシック・モダン共通）
+      if (
+        (move.category === "special" || move.category === "super") &&
+        isEnhancedMove(move)
+      ) {
+        consume += 1;
+      }
+
+      // 獲得: コンドルウィンド系（弱単発は攻撃のみで0、中/強/OD単発/ホールド+1は +1、ホールド+2/ODホールドは +2、ホールド+3は +3）
+      if (move.category === "special" && move.notationName.includes("コンドルウィンド")) {
+        if (move.notationName.includes("+3")) {
+          gain += 3;
+        } else if (
+          move.notationName.includes("+2") ||
+          (move.notationName.includes("OD") && move.notationName.includes("ホールド"))
+        ) {
+          gain += 2;
+        } else if (
+          move.notationName.includes("弱 コンドルウィンド") &&
+          !move.notationName.includes("ホールド")
+        ) {
+          gain += 0;
+        } else {
+          gain += 1;
+        }
+      }
+
+      return { consume, gain };
+    },
+  },
 };
 
 export function hasStockCalculator(characterId: string): boolean {

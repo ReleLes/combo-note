@@ -287,6 +287,29 @@ export const SEED_CHARACTERS: Character[] = [
       maxCount: 1,
     },
   },
+  {
+    id: "dhalsim",
+    slug: "dhalsim",
+    nameJa: "ダルシム",
+    nameEn: "Dhalsim",
+    sortOrder: 31,
+    isActive: true,
+  },
+  {
+    id: "lily",
+    slug: "lily",
+    nameJa: "リリー",
+    nameEn: "Lily",
+    sortOrder: 32,
+    isActive: true,
+    stockMeta: {
+      label: "風纏い",
+      shortLabel: "風纏い",
+      maxCount: 3,
+      gainOptions: [0, 1, 2, 3],
+      gainHint: "中/強コンドルウィンドで +1 / ODホールドで +2 / 溜めで最大 +3 獲得",
+    },
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -533,6 +556,14 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 dark:border dark:border-rose-400/35",
     characterId: "ehonda",
     sortOrder: 120,
+  },
+  {
+    key: "lily_windclad",
+    label: "風纏い",
+    badgeClassName:
+      "bg-emerald-100 text-emerald-800 dark:bg-sky-500/20 dark:text-emerald-200 dark:border dark:border-emerald-400/35",
+    characterId: "lily",
+    sortOrder: 121,
   },
 ];
 

@@ -46,6 +46,8 @@ import { marisaSeedData } from "./characters/marisa";
 import { manonSeedData } from "./characters/manon";
 import { blankaSeedData } from "./characters/blanka";
 import { ehondaSeedData } from "./characters/ehonda";
+import { dhalsimSeedData } from "./characters/dhalsim";
+import { lilySeedData } from "./characters/lily";
 
 const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   akuma: akumaSeedData,
@@ -78,6 +80,8 @@ const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   manon: manonSeedData,
   blanka: blankaSeedData,
   ehonda: ehondaSeedData,
+  dhalsim: dhalsimSeedData,
+  lily: lilySeedData,
 };
 
 export {

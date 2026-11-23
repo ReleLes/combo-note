@@ -37,15 +37,15 @@ export function CharacterSelectGridClient({
   const isFiltering = searchQuery.trim().length > 0;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-10 xl:max-w-6xl">
+    <div className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-6 sm:py-7">
       {/* 見出し＋キャラクター検索バー */}
-      <section className="mb-5 sm:mb-7">
+      <section className="mb-4 sm:mb-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-[#F4F1FF]">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-[#F4F1FF]">
               キャラクターを選択
             </h1>
-            <p className="mt-1.5 text-sm text-slate-600 dark:text-[#A99EC4]">
+            <p className="mt-1 text-xs text-slate-600 sm:text-sm dark:text-[#A99EC4]">
               練習中や対戦の合間に、状況別の定番コンボをすぐ確認できます。
             </p>
           </div>
@@ -76,7 +76,7 @@ export function CharacterSelectGridClient({
                 </button>
               )}
             </div>
-            <div className="mt-1.5 flex items-center justify-between px-0.5 text-[11px] text-slate-500 dark:text-[#A99EC4]">
+            <div className="mt-1 flex items-center justify-between px-0.5 text-[11px] text-slate-500 dark:text-[#A99EC4]">
               <span>
                 {isFiltering ? (
                   <>
@@ -103,11 +103,11 @@ export function CharacterSelectGridClient({
         </div>
       </section>
 
-      {/* キャラクターポートレートグリッド or 0件表示 */}
+      {/* 横長コンパクトバナーカードグリッド（スマホ2列 / タブレット3列 / PC4列） */}
       {filteredItems.length > 0 ? (
         <section
           aria-label="キャラクター一覧"
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+          className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4"
         >
           {filteredItems.map(
             ({
@@ -133,131 +133,131 @@ export function CharacterSelectGridClient({
                   key={character.id}
                   href={`/characters/${character.slug}`}
                   style={cardStyle}
-                  className="group relative flex aspect-[3/4] min-h-[240px] flex-col justify-end overflow-hidden rounded-2xl border border-slate-900/15 bg-[#120D20] shadow-md shadow-slate-900/10 transition-all duration-300 hover:-translate-y-1 hover:border-[var(--char-accent)] hover:shadow-[0_14px_34px_-10px_var(--char-glow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--char-accent)] active:scale-[0.985] sm:min-h-[300px] dark:border-white/12 dark:shadow-lg dark:shadow-black/45"
+                  className="group relative flex min-h-[80px] items-center overflow-hidden rounded-xl border border-slate-900/15 bg-[#110C1D] shadow-sm shadow-slate-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--char-accent)] hover:shadow-[0_10px_24px_-8px_var(--char-glow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--char-accent)] active:scale-[0.985] sm:min-h-[88px] lg:min-h-[92px] dark:border-white/12 dark:shadow-md dark:shadow-black/45"
                 >
-                  {/* 背景レイヤー：ポートレート画像 or テーマカラーフォールバック */}
-                  <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
-                        alt={`${character.nameJa}（${character.nameEn}）`}
-                        fill
-                        sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1279px) 25vw, 20vw"
-                        className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
-                      />
-                    ) : (
-                      <div
-                        className="relative h-full w-full"
-                        style={{
-                          background:
-                            "linear-gradient(150deg, var(--char-from) 0%, var(--char-to) 68%, #090612 100%)",
-                        }}
-                      >
-                        {/* 上部ラジアルグロー */}
-                        <div
-                          className="absolute -top-12 -right-10 h-44 w-44 rounded-full opacity-35 blur-3xl transition-opacity duration-500 group-hover:opacity-55"
-                          style={{
-                            background:
-                              "radial-gradient(circle, var(--char-accent) 0%, transparent 70%)",
-                          }}
-                        />
-                        <div
-                          className="absolute top-1/3 -left-10 h-36 w-36 rounded-full opacity-20 blur-2xl"
-                          style={{
-                            background:
-                              "radial-gradient(circle, var(--char-secondary) 0%, transparent 70%)",
-                          }}
-                        />
-
-                        {/* 繊細な斜めストライプテクスチャ */}
-                        <div
-                          className="absolute inset-0 opacity-75"
-                          style={{
-                            backgroundImage:
-                              "repeating-linear-gradient(-35deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 2px, transparent 2px, transparent 14px)",
-                          }}
-                        />
-
-                        {/* スト6風・斜めの光スラッシュライン */}
-                        <div
-                          className="absolute top-[24%] -left-8 h-[2px] w-[140%] -rotate-12 opacity-45 transition-opacity duration-300 group-hover:opacity-80"
-                          style={{
-                            background:
-                              "linear-gradient(90deg, transparent 0%, var(--char-accent) 45%, var(--char-secondary) 75%, transparent 100%)",
-                          }}
-                        />
-                        <div
-                          className="absolute top-[29%] -left-8 h-px w-[130%] -rotate-12 opacity-25"
-                          style={{
-                            background:
-                              "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 55%, transparent 100%)",
-                          }}
-                        />
-
-                        {/* 大文字・極太・低不透明度の斜め英字透かし */}
-                        <div
-                          aria-hidden="true"
-                          className="absolute inset-x-0 top-[14%] flex select-none items-center justify-center overflow-hidden px-1"
-                        >
-                          <span className="-rotate-12 whitespace-nowrap text-center text-[2.4rem] font-black italic leading-none tracking-[-0.04em] text-white/[0.11] transition-all duration-500 group-hover:scale-105 group-hover:text-white/[0.16] sm:text-[3.1rem]">
-                            {watermarkText}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 視認性確保用：テーマ色混じりの下部ダークオーバーレイ */}
+                  {/* ベース背景：キャラ別テーマカラーの斜めグラデーション */}
                   <div
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0"
                     style={{
                       background:
-                        "linear-gradient(to top, rgba(8, 5, 16, 0.96) 0%, rgba(12, 8, 24, 0.80) 38%, rgba(12, 8, 24, 0.24) 68%, rgba(12, 8, 24, 0.06) 100%)",
+                        "linear-gradient(122deg, #0D0919 0%, var(--char-from) 56%, var(--char-to) 100%)",
+                    }}
+                  />
+
+                  {/* 斜めストライプ＆光スラッシュのスト6バナーテクスチャ */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 opacity-70"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(-35deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 12px)",
                     }}
                   />
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 opacity-20 transition-opacity duration-300 group-hover:opacity-35"
+                    className="pointer-events-none absolute top-[18%] -left-6 h-[1.5px] w-[135%] -rotate-6 opacity-35 transition-opacity duration-300 group-hover:opacity-70"
                     style={{
                       background:
-                        "linear-gradient(to top, var(--char-from) 0%, transparent 100%)",
+                        "linear-gradient(90deg, transparent 0%, var(--char-accent) 48%, var(--char-secondary) 80%, transparent 100%)",
                     }}
                   />
 
-                  {/* 上部コーナーのアクセント＆遷移アイコン */}
-                  <div className="pointer-events-none absolute top-0 right-0 left-0 z-10 flex items-start justify-between p-2.5 sm:p-3">
-                    <span
+                  {/* 右側ビジュアルエリア：ポートレート画像 or 英字透かしフォールバック */}
+                  {imageUrl ? (
+                    <div
                       aria-hidden="true"
-                      className="mt-1 h-1 w-8 -skew-x-12 rounded-full opacity-90 transition-all duration-300 group-hover:w-12"
+                      className="pointer-events-none absolute inset-y-0 right-0 w-[46%] overflow-hidden sm:w-[44%]"
                       style={{
-                        background:
-                          "linear-gradient(90deg, var(--char-accent), var(--char-secondary))",
+                        WebkitMaskImage:
+                          "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.72) 32%, black 62%)",
+                        maskImage:
+                          "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.72) 32%, black 62%)",
                       }}
-                    />
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-black/35 text-white/75 backdrop-blur-xs transition-all duration-300 group-hover:border-[var(--char-accent)] group-hover:bg-black/55 group-hover:text-white">
-                      <ChevronRight
-                        className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
-                        aria-hidden="true"
+                    >
+                      <Image
+                        src={imageUrl}
+                        alt={`${character.nameJa}（${character.nameEn}）`}
+                        fill
+                        sizes="(max-width: 639px) 25vw, (max-width: 1023px) 16vw, 12vw"
+                        className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-108"
                       />
-                    </span>
-                  </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* 右側ラジアルグロー */}
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-8 -right-6 h-28 w-28 rounded-full opacity-35 blur-2xl transition-opacity duration-300 group-hover:opacity-60"
+                        style={{
+                          background:
+                            "radial-gradient(circle, var(--char-accent) 0%, transparent 70%)",
+                        }}
+                      />
+                      {/* 右寄せの半透明英字透かし */}
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-y-0 right-1 flex select-none items-center justify-end overflow-hidden pl-4"
+                      >
+                        <span className="-rotate-6 whitespace-nowrap text-right text-[1.85rem] font-black italic leading-none tracking-[-0.04em] text-white/[0.11] transition-all duration-300 group-hover:scale-105 group-hover:text-white/[0.18] sm:text-[2.2rem]">
+                          {watermarkText}
+                        </span>
+                      </div>
+                    </>
+                  )}
 
-                  {/* 下部情報エリア */}
-                  <div className="relative z-10 flex flex-col gap-2 p-3 sm:p-3.5">
+                  {/* 左側テキスト可読性確保用の横方向ダークフェード */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, rgba(10, 7, 20, 0.90) 0%, rgba(12, 9, 24, 0.72) 50%, rgba(12, 9, 24, 0.24) 78%, rgba(12, 9, 24, 0.08) 100%)",
+                    }}
+                  />
+
+                  {/* 左端のスト6風アクセントライン */}
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-0 w-[3px] opacity-85 transition-opacity duration-200 group-hover:opacity-100"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, var(--char-accent) 0%, var(--char-secondary) 100%)",
+                    }}
+                  />
+
+                  {/* 左側：情報エリア */}
+                  <div
+                    className={`relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-1 py-2 pl-3 sm:py-2.5 sm:pl-3.5 ${
+                      imageUrl ? "pr-[34%] sm:pr-[36%]" : "pr-7 sm:pr-8"
+                    }`}
+                  >
                     {/* 1. キャラ日本語名＋英語名 */}
                     <div className="min-w-0">
-                      <h2 className="truncate text-base font-extrabold leading-tight tracking-tight text-white drop-shadow-xs sm:text-lg">
+                      <h2 className="truncate text-[13px] font-extrabold leading-tight tracking-tight text-white drop-shadow-xs sm:text-[15px]">
                         {character.nameJa}
                       </h2>
-                      <p className="mt-0.5 truncate text-[10px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[11px]">
+                      <p className="mt-0.5 truncate text-[9px] font-bold uppercase leading-none tracking-[0.12em] text-white/70 sm:text-[10px]">
                         {character.nameEn}
                       </p>
                     </div>
 
-                    {/* 2. キャラ固有タグバッジ */}
+                    {/* 2. 登録コンボ件数（1行コンパクト表示） */}
+                    <div className="flex items-baseline gap-1.5 text-[10px] leading-none text-white/80 sm:text-[11px]">
+                      <span className="shrink-0">
+                        <strong className="font-bold text-white">
+                          {counts.total}
+                        </strong>
+                        件
+                      </span>
+                      <span className="truncate font-mono text-[9px] text-white/65 sm:text-[10px]">
+                        C:{counts.classic} / M:{counts.modern}
+                      </span>
+                    </div>
+
+                    {/* 3. キャラ固有バッジ（該当キャラのみ極小ピル表示） */}
                     {traitBadges.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
+                      <div className="mt-0.5 flex flex-wrap gap-1">
                         {traitBadges.map((label) => (
                           <span
                             key={label}
@@ -265,38 +265,22 @@ export function CharacterSelectGridClient({
                               backgroundColor: "var(--char-badge-bg)",
                               borderColor: "var(--char-badge-border)",
                             }}
-                            className="inline-flex max-w-full items-center truncate rounded-md border px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white/95 backdrop-blur-xs"
+                            className="inline-flex max-w-full items-center truncate rounded border px-1.5 py-[1px] text-[9px] font-semibold leading-tight text-white/95 backdrop-blur-xs sm:text-[10px]"
                           >
                             {label}
                           </span>
                         ))}
                       </div>
                     )}
-
-                    {/* 3. 登録コンボ件数 */}
-                    <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-t border-white/15 pt-2 text-[11px] text-white/80">
-                      <span>
-                        登録{" "}
-                        <strong className="font-bold text-white">
-                          {counts.total}
-                        </strong>
-                        件
-                      </span>
-                      <span className="font-mono text-[10px] text-white/70">
-                        C:{counts.classic} / M:{counts.modern}
-                      </span>
-                    </div>
                   </div>
 
-                  {/* 最下部のスト6風アクセントバー */}
+                  {/* 右上コーナーの控えめな遷移アイコン */}
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-0 bottom-0 h-1 opacity-75 transition-opacity duration-300 group-hover:opacity-100"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, var(--char-accent) 0%, var(--char-secondary) 100%)",
-                    }}
-                  />
+                    className="pointer-events-none absolute top-2 right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white/75 backdrop-blur-xs transition-all duration-200 group-hover:border-[var(--char-accent)] group-hover:bg-black/65 group-hover:text-white sm:h-6 sm:w-6"
+                  >
+                    <ChevronRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5" />
+                  </span>
                 </Link>
               );
             }

@@ -1,44 +1,44 @@
 -- =============================================================================
 -- コンボノート (Combo Note) 初期シードデータ投入 SQL
--- 対象: 32キャラクター（豪鬼・ジュリ・イングリッド・C.ヴァイパー・舞・リュウ・ケン・ルーク・キャミィ・春麗・ガイル・ザンギエフ・ベガ・JP・エド・テリー・サガット・ディージェイ・ラシード・A.K.I.・エレナ・アレックス・ヤスミン・アルジュン・ジェイミー・キンバリー・マリーザ・マノン・ブランカ・エドモンド本田・ダルシム・リリー）
+-- 対象: 32キャラクター（スト6公式実装順: ルーク〜アルジュン）
 -- ※ ON CONFLICT DO NOTHING により何度実行しても冪等に動作します
 -- =============================================================================
 
--- 1. キャラクターマスタ
+-- 1. キャラクターマスタ（スト6公式実装順: sort_order 1〜32）
 insert into public.characters (id, slug, name_ja, name_en, sort_order, is_active, stock_label, stock_short_label, stock_max_count)
 values
-  ('akuma', 'akuma', '豪鬼', 'Akuma', 1, true, null, null, null),
-  ('juri', 'juri', 'ジュリ', 'Juri', 2, true, '風破ストック', '風破', 3),
-  ('ingrid', 'ingrid', 'イングリッド', 'Ingrid', 3, true, 'サンシンボル', 'サンシンボル', 4),
-  ('c-viper', 'c-viper', 'C.ヴァイパー', 'C. Viper', 4, true, null, null, null),
-  ('mai', 'mai', '舞', 'Mai', 5, true, '焔ストック', '焔', 5),
-  ('ryu', 'ryu', 'リュウ', 'Ryu', 6, true, '電刃練気', '電刃', 1),
-  ('ken', 'ken', 'ケン', 'Ken', 7, true, null, null, null),
-  ('luke', 'luke', 'ルーク', 'Luke', 8, true, null, null, null),
-  ('cammy', 'cammy', 'キャミィ', 'Cammy', 9, true, null, null, null),
-  ('chun-li', 'chun-li', '春麗', 'Chun-Li', 10, true, null, null, null),
-  ('guile', 'guile', 'ガイル', 'Guile', 11, true, null, null, null),
-  ('zangief', 'zangief', 'ザンギエフ', 'Zangief', 12, true, null, null, null),
-  ('vega', 'vega', 'ベガ', 'M. Bison', 13, true, null, null, null),
-  ('jp', 'jp', 'JP', 'JP', 14, true, null, null, null),
-  ('ed', 'ed', 'エド', 'Ed', 15, true, null, null, null),
-  ('terry', 'terry', 'テリー', 'Terry', 16, true, null, null, null),
-  ('sagat', 'sagat', 'サガット', 'Sagat', 17, true, null, null, null),
-  ('deejay', 'deejay', 'ディージェイ', 'Dee Jay', 18, true, null, null, null),
+  ('luke', 'luke', 'ルーク', 'Luke', 1, true, null, null, null),
+  ('jamie', 'jamie', 'ジェイミー', 'Jamie', 2, true, null, null, null),
+  ('manon', 'manon', 'マノン', 'Manon', 3, true, null, null, null),
+  ('kimberly', 'kimberly', 'キンバリー', 'Kimberly', 4, true, '細工手裏剣', '手裏剣', 3),
+  ('marisa', 'marisa', 'マリーザ', 'Marisa', 5, true, null, null, null),
+  ('lily', 'lily', 'リリー', 'Lily', 6, true, '風纏い', '風纏い', 3),
+  ('jp', 'jp', 'JP', 'JP', 7, true, null, null, null),
+  ('juri', 'juri', 'ジュリ', 'Juri', 8, true, '風破ストック', '風破', 3),
+  ('deejay', 'deejay', 'ディージェイ', 'Dee Jay', 9, true, null, null, null),
+  ('cammy', 'cammy', 'キャミィ', 'Cammy', 10, true, null, null, null),
+  ('ryu', 'ryu', 'リュウ', 'Ryu', 11, true, '電刃練気', '電刃', 1),
+  ('ehonda', 'ehonda', 'エドモンド本田', 'E. Honda', 12, true, '相撲魂', '相撲魂', 1),
+  ('blanka', 'blanka', 'ブランカ', 'Blanka', 13, true, null, null, null),
+  ('guile', 'guile', 'ガイル', 'Guile', 14, true, null, null, null),
+  ('ken', 'ken', 'ケン', 'Ken', 15, true, null, null, null),
+  ('chun-li', 'chun-li', '春麗', 'Chun-Li', 16, true, null, null, null),
+  ('zangief', 'zangief', 'ザンギエフ', 'Zangief', 17, true, null, null, null),
+  ('dhalsim', 'dhalsim', 'ダルシム', 'Dhalsim', 18, true, null, null, null),
   ('rashid', 'rashid', 'ラシード', 'Rashid', 19, true, null, null, null),
   ('aki', 'aki', 'A.K.I.', 'A.K.I.', 20, true, null, null, null),
-  ('elena', 'elena', 'エレナ', 'Elena', 21, true, null, null, null),
-  ('alex', 'alex', 'アレックス', 'Alex', 22, true, null, null, null),
-  ('yasmine', 'yasmine', 'ヤスミン', 'Yasmine', 23, true, 'バヤニ・モード', 'バヤニ', 1),
-  ('arjun', 'arjun', 'アルジュン', 'Arjun', 24, true, null, null, null),
-  ('jamie', 'jamie', 'ジェイミー', 'Jamie', 25, true, null, null, null),
-  ('kimberly', 'kimberly', 'キンバリー', 'Kimberly', 26, true, '細工手裏剣', '手裏剣', 3),
-  ('marisa', 'marisa', 'マリーザ', 'Marisa', 27, true, null, null, null),
-  ('manon', 'manon', 'マノン', 'Manon', 28, true, null, null, null),
-  ('blanka', 'blanka', 'ブランカ', 'Blanka', 29, true, null, null, null),
-  ('ehonda', 'ehonda', 'エドモンド本田', 'E. Honda', 30, true, '相撲魂', '相撲魂', 1),
-  ('dhalsim', 'dhalsim', 'ダルシム', 'Dhalsim', 31, true, null, null, null),
-  ('lily', 'lily', 'リリー', 'Lily', 32, true, '風纏い', '風纏い', 3)
+  ('ed', 'ed', 'エド', 'Ed', 21, true, null, null, null),
+  ('akuma', 'akuma', '豪鬼', 'Akuma', 22, true, null, null, null),
+  ('vega', 'vega', 'ベガ', 'M. Bison', 23, true, null, null, null),
+  ('terry', 'terry', 'テリー', 'Terry', 24, true, null, null, null),
+  ('mai', 'mai', '舞', 'Mai', 25, true, '焔ストック', '焔', 5),
+  ('elena', 'elena', 'エレナ', 'Elena', 26, true, null, null, null),
+  ('sagat', 'sagat', 'サガット', 'Sagat', 27, true, null, null, null),
+  ('c-viper', 'c-viper', 'C.ヴァイパー', 'C. Viper', 28, true, null, null, null),
+  ('alex', 'alex', 'アレックス', 'Alex', 29, true, null, null, null),
+  ('ingrid', 'ingrid', 'イングリッド', 'Ingrid', 30, true, 'サンシンボル', 'サンシンボル', 4),
+  ('yasmine', 'yasmine', 'ヤスミン', 'Yasmine', 31, true, 'バヤニ・モード', 'バヤニ', 1),
+  ('arjun', 'arjun', 'アルジュン', 'Arjun', 32, true, null, null, null)
 on conflict (id) do nothing;
 
 -- 2. バージョンマスタ

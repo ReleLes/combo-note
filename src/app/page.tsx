@@ -16,7 +16,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const CHARACTER_IMAGE_EXTENSIONS = [".webp", ".png", ".jpg"] as const;
+const CHARACTER_IMAGE_EXTENSIONS = [".webp", ".png", ".jpg", ".jpeg"] as const;
 const CHARACTER_IMAGE_DIR = path.join(
   process.cwd(),
   "public",

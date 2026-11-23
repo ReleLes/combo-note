@@ -115,6 +115,52 @@ export const CHARACTER_STOCK_RULES: Readonly<
       return { consume, gain };
     },
   },
+  ingrid: {
+    characterId: "ingrid",
+    shortLabel: "サンシンボル",
+    label: "サンシンボル",
+    maxCount: 4,
+    badgeClassName:
+      "border-cyan-200 bg-cyan-50 text-cyan-800 dark:border-cyan-400/30 dark:bg-cyan-500/20 dark:text-cyan-200",
+    situationKey: "ingrid_sun_symbol",
+    evaluateMove: (move) => {
+      let consume = 0;
+      let gain = 0;
+
+      // 消費（Lv2: -1 / Lv3: -2）: [強化版] サンフレア・ソーラーフレア・SA1 サンシャイン・SA2 サンオーダー
+      if (
+        (move.category === "special" || move.category === "super") &&
+        isEnhancedMove(move)
+      ) {
+        if (
+          move.notationName.includes("(Lv3)") ||
+          move.notationNumpad.includes("[強化2]")
+        ) {
+          consume += 2;
+        } else {
+          consume += 1;
+        }
+      }
+
+      // 獲得（+1 / 弱サンフレアホールド +2）: 弱 サンフレア・弱 ソーラーフレア
+      if (
+        move.category === "special" &&
+        (move.notationName.includes("弱 サンフレア") ||
+          move.notationName.includes("弱 ソーラーフレア"))
+      ) {
+        if (
+          move.notationName.includes("ホールド") ||
+          move.notationNumpad.includes("(H)")
+        ) {
+          gain += 2;
+        } else {
+          gain += 1;
+        }
+      }
+
+      return { consume, gain };
+    },
+  },
 };
 
 export function hasStockCalculator(characterId: string): boolean {

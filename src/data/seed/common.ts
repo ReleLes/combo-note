@@ -185,6 +185,14 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     sortOrder: 104,
   },
   {
+    key: "ingrid_sun_symbol",
+    label: "サンシンボル",
+    badgeClassName:
+      "bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-200 dark:border dark:border-cyan-400/30",
+    characterId: "ingrid",
+    sortOrder: 106,
+  },
+  {
     key: "mai_flame_stock",
     label: "焔ストック",
     badgeClassName:

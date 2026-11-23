@@ -1,0 +1,395 @@
+-- =============================================================================
+-- Migration: 010_add_ken_luke.sql
+-- 目的: 7人目「ケン（ken）」・8人目「ルーク（luke）」のキャラクターマスタおよび
+--       全技マスタ（ケン全140技＋ルーク全143技＝計283技・
+--       公式フレームデータ＆コマンドリスト準拠・CA除外）を
+--       既存の Supabase 本番 DB へ安全・冪等に UPSERT する
+-- 前提: 001_add_throw_category.sql を先に適用済みであること
+-- =============================================================================
+
+-- 1. キャラクターマスタへケン・ルークを追加・更新
+insert into public.characters (
+  id,
+  slug,
+  name_ja,
+  name_en,
+  sort_order,
+  is_active,
+  stock_label,
+  stock_short_label,
+  stock_max_count
+)
+values
+  ('ken', 'ken', 'ケン', 'Ken', 7, true, null, null, null),
+  ('luke', 'luke', 'ルーク', 'Luke', 8, true, null, null, null)
+on conflict (id) do update set
+  slug = excluded.slug,
+  name_ja = excluded.name_ja,
+  name_en = excluded.name_en,
+  sort_order = excluded.sort_order,
+  is_active = excluded.is_active,
+  stock_label = excluded.stock_label,
+  stock_short_label = excluded.stock_short_label,
+  stock_max_count = excluded.stock_max_count;
+
+-- 2. ケン・ルーク全技マスタ（計283技）を UPSERT
+insert into public.moves (
+  id,
+  character_id,
+  control_type,
+  category,
+  notation_numpad,
+  notation_command,
+  notation_name,
+  sort_order,
+  startup_frames,
+  hit_advantage,
+  cancel_types
+)
+values
+
+  -- =========================================================================
+  -- ケン（ken）全140技（クラシック63種＋モダン77種）
+  -- =========================================================================
+
+  -- 1. 通常技（クラシック 19種: 立ち 10〜15 / しゃがみ 20〜25 / ジャンプ 30〜36）
+  ('ken_5lp', 'ken', 'classic', 'normal', '5弱P', '弱P', '立ち弱P（ジャブ）', 10, 4, 4, array['C']),
+  ('ken_5lk', 'ken', 'classic', 'normal', '5弱K', '弱K', '立ち弱K（ローキック）', 11, 5, 0, array['C']),
+  ('ken_5mp', 'ken', 'classic', 'normal', '5中P', '中P', '立ち中P（顎撥）', 12, 5, 4, array['C']),
+  ('ken_5mk', 'ken', 'classic', 'normal', '5中K', '中K', '立ち中K（上段横蹴り）', 13, 8, 3, array['SA']),
+  ('ken_5hp', 'ken', 'classic', 'normal', '5強P', '強P', '立ち強P（正拳突き）', 14, 10, 3, array['C']),
+  ('ken_5hk', 'ken', 'classic', 'normal', '5強K', '強K', '立ち強K（一文字蹴り）', 15, 12, 1, '{}'::text[]),
+  ('ken_2lp', 'ken', 'classic', 'normal', '2弱P', '↓+弱P', 'しゃがみ弱P（ジャブ）', 20, 4, 5, array['C']),
+  ('ken_2lk', 'ken', 'classic', 'normal', '2弱K', '↓+弱K', 'しゃがみ弱K（キック）', 21, 5, 1, '{}'::text[]),
+  ('ken_2mp', 'ken', 'classic', 'normal', '2中P', '↓+中P', 'しゃがみ中P（ストレート）', 22, 6, 5, array['C']),
+  ('ken_2mk', 'ken', 'classic', 'normal', '2中K', '↓+中K', 'しゃがみ中K（くるぶしキック）', 23, 7, -2, array['C']),
+  ('ken_2hp', 'ken', 'classic', 'normal', '2強P', '↓+強P', 'しゃがみ強P（突き上げアッパー）', 24, 8, 3, array['C']),
+  ('ken_2hk', 'ken', 'classic', 'normal', '2強K', '↓+強K', 'しゃがみ強K（回転足払い）', 25, 8, null, '{}'::text[]),
+  ('ken_jlp', 'ken', 'classic', 'normal', 'J弱P', '空中で弱P', 'ジャンプ弱P（肘打ち）', 30, 5, null, '{}'::text[]),
+  ('ken_jlk', 'ken', 'classic', 'normal', 'J弱K', '空中で弱K', 'ジャンプ弱K（ひざ蹴り）', 31, 6, null, '{}'::text[]),
+  ('ken_jmp', 'ken', 'classic', 'normal', 'J中P', '空中で中P', 'ジャンプ中P（ストレート）', 32, 6, null, array['C']),
+  ('ken_jmk', 'ken', 'classic', 'normal', 'J中K', '空中で中K', 'ジャンプ中K（ひざ落とし）', 33, 7, null, '{}'::text[]),
+  ('ken_jhp', 'ken', 'classic', 'normal', 'J強P', '空中で強P', 'ジャンプ強P（打ち下ろしストレート）', 34, 9, null, '{}'::text[]),
+  ('ken_jhk', 'ken', 'classic', 'normal', 'J強K', '空中で強K', 'ジャンプ強K（飛び蹴り）', 35, 10, null, '{}'::text[]),
+  ('ken_njhk', 'ken', 'classic', 'normal', '垂直J強K', '垂直J中強K', '垂直ジャンプ強K（飛び旋風脚）', 36, 6, null, '{}'::text[]),
+
+  -- 2. 特殊技（クラシック 7種: 40〜46）
+  ('ken_funjin', 'ken', 'classic', 'unique', '奮迅脚', 'KK', '奮迅脚', 40, null, null, '{}'::text[]),
+  ('ken_funjin_stop', 'ken', 'classic', 'unique', '奮迅急停止', '奮迅中弱K', '急停止（奮迅脚派生）', 41, null, null, '{}'::text[]),
+  ('ken_funjin_shiden', 'ken', 'classic', 'unique', '紫電カカト', '奮迅中中K', '紫電カカト落とし（奮迅脚派生）', 42, 18, 3, array['SA3']),
+  ('ken_funjin_kick', 'ken', 'classic', 'unique', '踏み込み前蹴り', '奮迅中強K', '踏み込み前蹴り（奮迅脚派生）', 43, 8, 1, array['SA']),
+  ('ken_tc_5mp_5hp', 'ken', 'classic', 'unique', '5中P>強P', '中P>強P', '顎撥二連', 44, 11, null, array['C']),
+  ('ken_tc_5mk_2', 'ken', 'classic', 'unique', '5中K>中K', '中K>中K', '閃光連脚（2段目）', 45, 11, null, '{}'::text[]),
+  ('ken_tc_5mk_3', 'ken', 'classic', 'unique', '5中K>中K>強K', '中K>中K>強K', '閃光連脚（3段目）', 46, 13, null, '{}'::text[]),
+
+  -- 3. 必殺技（クラシック 32種: 50〜81）
+  ('ken_236lp', 'ken', 'classic', 'special', '236弱P', '↓↘→+弱P', '弱 波動拳', 50, 16, -1, array['SA3']),
+  ('ken_236mp', 'ken', 'classic', 'special', '236中P', '↓↘→+中P', '中 波動拳', 51, 14, -3, array['SA3']),
+  ('ken_236hp', 'ken', 'classic', 'special', '236強P', '↓↘→+強P', '強 波動拳', 52, 12, -5, array['SA3']),
+  ('ken_236odp', 'ken', 'classic', 'special', 'OD236PP', '↓↘→+PP', 'OD 波動拳', 53, 12, 2, array['SA2']),
+  ('ken_623lp', 'ken', 'classic', 'special', '623弱P', '→↓↘+弱P', '弱 昇龍拳', 54, 5, null, array['SA3']),
+  ('ken_623mp', 'ken', 'classic', 'special', '623中P', '→↓↘+中P', '中 昇龍拳', 55, 6, null, array['SA3']),
+  ('ken_623hp', 'ken', 'classic', 'special', '623強P', '→↓↘+強P', '強 昇龍拳', 56, 7, null, array['SA3']),
+  ('ken_623odp', 'ken', 'classic', 'special', 'OD623PP', '→↓↘+PP', 'OD 昇龍拳', 57, 6, null, '{}'::text[]),
+  ('ken_funjin_shoryu', 'ken', 'classic', 'special', '奮迅623P', '奮迅中→↓↘+P', '【奮迅脚】昇龍拳', 58, 8, null, array['SA3']),
+  ('ken_214lk', 'ken', 'classic', 'special', '214弱K', '↓↙←+弱K', '弱 竜巻旋風脚', 59, 4, null, '{}'::text[]),
+  ('ken_214mk', 'ken', 'classic', 'special', '214中K', '↓↙←+中K', '中 竜巻旋風脚', 60, 14, null, '{}'::text[]),
+  ('ken_214hk', 'ken', 'classic', 'special', '214強K', '↓↙←+強K', '強 竜巻旋風脚', 61, 16, null, '{}'::text[]),
+  ('ken_214odk', 'ken', 'classic', 'special', 'OD214KK', '↓↙←+KK', 'OD 竜巻旋風脚', 62, 9, null, '{}'::text[]),
+  ('ken_funjin_tatsu', 'ken', 'classic', 'special', '奮迅214K', '奮迅中↓↙←+K', '【奮迅脚】竜巻旋風脚', 63, 13, 3, '{}'::text[]),
+  ('ken_air_214k', 'ken', 'classic', 'special', '空中214K', '前J中↓↙←+K', '空中竜巻旋風脚', 64, 11, null, '{}'::text[]),
+  ('ken_air_214odk', 'ken', 'classic', 'special', 'OD空中214KK', '前J中↓↙←+KK', 'OD 空中竜巻旋風脚', 65, 11, null, '{}'::text[]),
+  ('ken_623lk', 'ken', 'classic', 'special', '623弱K', '→↓↘+弱K', '弱 龍尾脚', 66, 18, 2, '{}'::text[]),
+  ('ken_623mk', 'ken', 'classic', 'special', '623中K', '→↓↘+中K', '中 龍尾脚', 67, 23, 3, '{}'::text[]),
+  ('ken_623hk', 'ken', 'classic', 'special', '623強K', '→↓↘+強K', '強 龍尾脚', 68, 28, 3, '{}'::text[]),
+  ('ken_623odk', 'ken', 'classic', 'special', 'OD623KK', '→↓↘+KK', 'OD 龍尾脚', 69, 9, 1, '{}'::text[]),
+  ('ken_funjin_ryubi', 'ken', 'classic', 'special', '奮迅623K', '奮迅中→↓↘+K', '【奮迅脚】龍尾脚', 70, 9, 2, '{}'::text[]),
+  ('ken_236lk', 'ken', 'classic', 'special', '236弱K', '↓↘→+弱K', '弱 迅雷脚', 71, 12, 1, array['SA3']),
+  ('ken_236mk', 'ken', 'classic', 'special', '236中K', '↓↘→+中K', '中 迅雷脚', 72, 16, 2, array['SA3']),
+  ('ken_236hk', 'ken', 'classic', 'special', '236強K', '↓↘→+強K', '強 迅雷脚', 73, 25, null, array['SA3']),
+  ('ken_236odk', 'ken', 'classic', 'special', 'OD236KK', '↓↘→+KK', 'OD 迅雷脚', 74, 13, -4, array['SA2']),
+  ('ken_jinrai_l', 'ken', 'classic', 'special', '風鎌蹴り', '迅雷中→+弱K', '風鎌蹴り（迅雷派生）', 75, 6, 3, array['SA3']),
+  ('ken_jinrai_m', 'ken', 'classic', 'special', '轟雷落とし', '迅雷中→+中K', '轟雷落とし（迅雷派生）', 76, 18, 3, array['SA3']),
+  ('ken_jinrai_h', 'ken', 'classic', 'special', '閃火脚', '迅雷中→+強K', '閃火脚（迅雷派生）', 77, 10, null, array['SA3']),
+  ('ken_jinrai_od_l', 'ken', 'classic', 'special', 'OD風鎌蹴り', 'OD迅雷中→+弱K', 'OD 風鎌蹴り（OD迅雷派生）', 78, 6, 3, array['SA2']),
+  ('ken_jinrai_od_m', 'ken', 'classic', 'special', 'OD轟雷落とし', 'OD迅雷中→+中K', 'OD 轟雷落とし（OD迅雷派生）', 79, 17, -3, array['SA2']),
+  ('ken_jinrai_od_h', 'ken', 'classic', 'special', 'OD閃火脚', 'OD迅雷中→+強K', 'OD 閃火脚（OD迅雷派生）', 80, 10, null, array['SA2']),
+  ('ken_jinrai_kasai', 'ken', 'classic', 'special', '火砕蹴', 'OD迅雷派生後→+K', '火砕蹴（OD迅雷追撃）', 81, 15, null, array['SA2']),
+
+  -- 4. スーパーアーツ（クラシック 3種: 90〜92、CA除外）
+  ('ken_sa1', 'ken', 'classic', 'super', 'SA1', '↓↙←↓↙←+K', 'SA1 龍尾烈脚', 90, 7, null, '{}'::text[]),
+  ('ken_sa2', 'ken', 'classic', 'super', 'SA2', '↓↘→↓↘→+K', 'SA2 疾風迅雷脚', 91, 6, null, '{}'::text[]),
+  ('ken_sa3', 'ken', 'classic', 'super', 'SA3', '↓↘→↓↘→+P', 'SA3 神龍烈破', 92, 7, null, '{}'::text[]),
+
+  -- 5. 通常投げ（クラシック 2種: 95〜96）
+  ('ken_throw_f', 'ken', 'classic', 'throw', '前投げ', '弱P+弱K', '掴み膝蹴り（前投げ）', 95, 5, null, '{}'::text[]),
+  ('ken_throw_b', 'ken', 'classic', 'throw', '後ろ投げ', '←+弱P+弱K', '地獄車（後ろ投げ）', 96, 5, null, '{}'::text[]),
+
+  -- 6. モダン通常技（12種: 110〜121）
+  ('ken_m_5l', 'ken', 'modern', 'normal', '5弱', '弱', '立ち弱（立ち弱P）', 110, 4, 4, array['C']),
+  ('ken_m_5m', 'ken', 'modern', 'normal', '5中', '中', '立ち中（立ち中K）', 111, 8, 3, array['SA']),
+  ('ken_m_5h', 'ken', 'modern', 'normal', '5強', '強', '立ち強（立ち強K）', 112, 12, 1, '{}'::text[]),
+  ('ken_m_2l', 'ken', 'modern', 'normal', '2弱', '↓+弱', 'しゃがみ弱（しゃがみ弱K）', 113, 5, 1, '{}'::text[]),
+  ('ken_m_2l_2', 'ken', 'modern', 'normal', '2弱>2弱', '↓+弱>↓+弱', 'しゃがみ弱連打（しゃがみ弱P）', 114, 4, 5, array['C']),
+  ('ken_m_2m', 'ken', 'modern', 'normal', '2中', '↓+中', 'しゃがみ中（しゃがみ中K）', 115, 7, -2, array['C']),
+  ('ken_m_2h', 'ken', 'modern', 'normal', '2強', '↓+強', 'しゃがみ強（しゃがみ強P）', 116, 8, 3, array['C']),
+  ('ken_m_3h', 'ken', 'modern', 'normal', '3強', '↘+強', '右下強（回転足払い）', 117, 8, null, '{}'::text[]),
+  ('ken_m_jl', 'ken', 'modern', 'normal', 'J弱', '空中で弱', 'ジャンプ弱（ジャンプ弱P）', 118, 5, null, '{}'::text[]),
+  ('ken_m_jm', 'ken', 'modern', 'normal', 'J中', '空中で中', 'ジャンプ中（ジャンプ中P）', 119, 6, null, array['C']),
+  ('ken_m_jh', 'ken', 'modern', 'normal', 'J強', '空中で強', 'ジャンプ強（ジャンプ強K）', 120, 10, null, '{}'::text[]),
+  ('ken_m_njh', 'ken', 'modern', 'normal', '垂直J強', '垂直J中強', '垂直ジャンプ強（飛び旋風脚）', 121, 6, null, '{}'::text[]),
+
+  -- 7. モダン特殊技・アシスト（17種: 125〜141）
+  ('ken_m_auto_l', 'ken', 'modern', 'unique', 'A弱(単発)', 'アシスト弱', 'アシスト弱（単発・立ち弱K）', 125, 5, 0, array['C']),
+  ('ken_m_auto_m', 'ken', 'modern', 'unique', 'A中(単発)', 'アシスト中', 'アシスト中（単発・立ち中P）', 126, 5, 4, array['C']),
+  ('ken_m_auto_h', 'ken', 'modern', 'unique', 'A強(単発)', 'アシスト強', 'アシスト強（単発・立ち強P）', 127, 10, 3, array['C']),
+  ('ken_m_j_auto_l', 'ken', 'modern', 'unique', 'JA弱', '空中でアシスト弱', 'ジャンプアシスト弱（ジャンプ弱K）', 128, 6, null, '{}'::text[]),
+  ('ken_m_j_auto_m', 'ken', 'modern', 'unique', 'JA中', '空中でアシスト中', 'ジャンプアシスト中（ジャンプ中K）', 129, 7, null, '{}'::text[]),
+  ('ken_m_j_auto_h', 'ken', 'modern', 'unique', 'JA強', '空中でアシスト強', 'ジャンプアシスト強（ジャンプ強P）', 130, 9, null, '{}'::text[]),
+  ('ken_m_auto_l_combo', 'ken', 'modern', 'unique', 'A弱コンボ', 'アシスト弱連打', 'アシストコンボ1（弱）', 131, 5, null, '{}'::text[]),
+  ('ken_m_auto_2l_combo', 'ken', 'modern', 'unique', '連打A弱コンボ', '↓+アシスト弱連打', '連打キャンセルアシストコンボ', 132, 4, null, '{}'::text[]),
+  ('ken_m_auto_m_combo', 'ken', 'modern', 'unique', 'A中コンボ', 'アシスト中連打', 'アシストコンボ2（中）', 133, 5, null, '{}'::text[]),
+  ('ken_m_auto_h_combo', 'ken', 'modern', 'unique', 'A強コンボ', 'アシスト強連打', 'アシストコンボ3（強）', 134, 10, null, '{}'::text[]),
+  ('ken_m_funjin', 'ken', 'modern', 'unique', '奮迅脚', '中+強', '奮迅脚', 135, null, null, '{}'::text[]),
+  ('ken_m_funjin_stop', 'ken', 'modern', 'unique', '奮迅急停止', '奮迅中弱', '急停止（奮迅脚派生）', 136, null, null, '{}'::text[]),
+  ('ken_m_funjin_shiden', 'ken', 'modern', 'unique', '紫電カカト', '奮迅中中', '紫電カカト落とし（奮迅脚派生）', 137, 18, 3, array['SA3']),
+  ('ken_m_funjin_kick', 'ken', 'modern', 'unique', '踏み込み前蹴り', '奮迅中強', '踏み込み前蹴り（奮迅脚派生）', 138, 8, 1, array['SA']),
+  ('ken_m_tc_am', 'ken', 'modern', 'unique', 'A中>A中', 'アシスト中>アシスト中', '顎撥二連', 139, 11, null, array['C']),
+  ('ken_m_tc_5m_2', 'ken', 'modern', 'unique', '5中>中', '中>中', '閃光連脚（2段目）', 140, 11, null, '{}'::text[]),
+  ('ken_m_tc_5m_3', 'ken', 'modern', 'unique', '5中>中>中', '中>中>中', '閃光連脚（3段目）', 141, 13, null, '{}'::text[]),
+
+  -- 8. モダン必殺技：ワンボタンSP＆OD版（20種: 145〜164）
+  ('ken_m_sp', 'ken', 'modern', 'special', 'N必', 'SP', '強 波動拳（N必）', 145, 12, -5, array['SA3']),
+  ('ken_m_od_sp', 'ken', 'modern', 'special', 'A+N必', 'A+SP', 'OD 波動拳（A+N必）', 146, 12, 2, array['SA2']),
+  ('ken_m_6sp', 'ken', 'modern', 'special', '前必', '→+SP', '中 昇龍拳（前必）', 147, 6, null, array['SA3']),
+  ('ken_m_od_6sp', 'ken', 'modern', 'special', 'A+前必', 'A+→+SP', 'OD 昇龍拳（A+前必）', 148, 6, null, '{}'::text[]),
+  ('ken_m_sp_funjin_shoryu', 'ken', 'modern', 'special', '奮迅前必', '奮迅中→+SP', '【奮迅脚】昇龍拳（奮迅前必）', 149, 8, null, array['SA3']),
+  ('ken_m_sp_funjin_tatsu', 'ken', 'modern', 'special', '奮迅下必', '奮迅中↓+SP', '【奮迅脚】竜巻旋風脚（奮迅下必）', 150, 13, 3, '{}'::text[]),
+  ('ken_m_air_sp', 'ken', 'modern', 'special', '空必', '前J中SP', '空中竜巻旋風脚（空必）', 151, 11, null, '{}'::text[]),
+  ('ken_m_od_air_sp', 'ken', 'modern', 'special', 'A+空必', '前J中A+SP', 'OD 空中竜巻旋風脚（A+空必）', 152, 11, null, '{}'::text[]),
+  ('ken_m_4sp', 'ken', 'modern', 'special', '後必', '←+SP', '強 龍尾脚（後必）', 153, 28, 3, '{}'::text[]),
+  ('ken_m_od_4sp', 'ken', 'modern', 'special', 'A+後必', 'A+←+SP', 'OD 龍尾脚（A+後必）', 154, 9, 1, '{}'::text[]),
+  ('ken_m_sp_funjin_ryubi', 'ken', 'modern', 'special', '奮迅後必', '奮迅中←+SP', '【奮迅脚】龍尾脚（奮迅後必）', 155, 9, 2, '{}'::text[]),
+  ('ken_m_2sp', 'ken', 'modern', 'special', '下必', '↓+SP', '中 迅雷脚（下必）', 156, 16, 2, array['SA3']),
+  ('ken_m_od_2sp', 'ken', 'modern', 'special', 'A+下必', 'A+↓+SP', 'OD 迅雷脚（A+下必）', 157, 13, -4, array['SA2']),
+  ('ken_m_sp_jinrai_l', 'ken', 'modern', 'special', '迅雷後必', '迅雷中←+SP', '風鎌蹴り（迅雷後必）', 158, 6, 3, array['SA3']),
+  ('ken_m_sp_jinrai_m', 'ken', 'modern', 'special', '迅雷下必', '迅雷中↓+SP', '轟雷落とし（迅雷下必）', 159, 18, 3, array['SA3']),
+  ('ken_m_sp_jinrai_h', 'ken', 'modern', 'special', '迅雷N必', '迅雷中SP', '閃火脚（迅雷N必）', 160, 10, null, array['SA3']),
+  ('ken_m_sp_jinrai_od_l', 'ken', 'modern', 'special', 'OD迅雷後必', 'OD迅雷中←+SP', 'OD 風鎌蹴り（OD迅雷後必）', 161, 6, 3, array['SA2']),
+  ('ken_m_sp_jinrai_od_m', 'ken', 'modern', 'special', 'OD迅雷下必', 'OD迅雷中↓+SP', 'OD 轟雷落とし（OD迅雷下必）', 162, 17, -3, array['SA2']),
+  ('ken_m_sp_jinrai_od_h', 'ken', 'modern', 'special', 'OD迅雷N必', 'OD迅雷中SP', 'OD 閃火脚（OD迅雷N必）', 163, 10, null, array['SA2']),
+  ('ken_m_sp_jinrai_kasai', 'ken', 'modern', 'special', '火砕蹴(SP)', 'OD迅雷派生後SP', '火砕蹴（OD迅雷追撃・SP）', 164, 15, null, array['SA2']),
+
+  -- 9. モダン必殺技：コマンド入力版（23種: 170〜192）
+  ('ken_m_623l', 'ken', 'modern', 'special', '623弱', '→↓↘+弱', '弱 昇龍拳', 170, 5, null, array['SA3']),
+  ('ken_m_623m', 'ken', 'modern', 'special', '623中', '→↓↘+中', '中 昇龍拳', 171, 6, null, array['SA3']),
+  ('ken_m_623h', 'ken', 'modern', 'special', '623強', '→↓↘+強', '強 昇龍拳', 172, 7, null, array['SA3']),
+  ('ken_m_623od', 'ken', 'modern', 'special', 'OD623', '→↓↘+攻撃×2', 'OD 昇龍拳', 173, 6, null, '{}'::text[]),
+  ('ken_m_funjin_shoryu', 'ken', 'modern', 'special', '奮迅623攻撃', '奮迅中→↓↘+攻撃', '【奮迅脚】昇龍拳', 174, 8, null, array['SA3']),
+  ('ken_m_214l', 'ken', 'modern', 'special', '214弱', '↓↙←+弱', '弱 竜巻旋風脚', 175, 4, null, '{}'::text[]),
+  ('ken_m_214m', 'ken', 'modern', 'special', '214中', '↓↙←+中', '中 竜巻旋風脚', 176, 14, null, '{}'::text[]),
+  ('ken_m_214h', 'ken', 'modern', 'special', '214強', '↓↙←+強', '強 竜巻旋風脚', 177, 16, null, '{}'::text[]),
+  ('ken_m_214od', 'ken', 'modern', 'special', 'OD214', '↓↙←+攻撃×2', 'OD 竜巻旋風脚', 178, 9, null, '{}'::text[]),
+  ('ken_m_funjin_tatsu', 'ken', 'modern', 'special', '奮迅214攻撃', '奮迅中↓↙←+攻撃', '【奮迅脚】竜巻旋風脚', 179, 13, 3, '{}'::text[]),
+  ('ken_m_air_214', 'ken', 'modern', 'special', '空中214', '前J中↓↙←+攻撃', '空中竜巻旋風脚', 180, 11, null, '{}'::text[]),
+  ('ken_m_air_214od', 'ken', 'modern', 'special', 'OD空中214', '前J中↓↙←+攻撃×2', 'OD 空中竜巻旋風脚', 181, 11, null, '{}'::text[]),
+  ('ken_m_236l', 'ken', 'modern', 'special', '236弱', '↓↘→+弱', '弱 迅雷脚', 182, 12, 1, array['SA3']),
+  ('ken_m_236m', 'ken', 'modern', 'special', '236中', '↓↘→+中', '中 迅雷脚', 183, 16, 2, array['SA3']),
+  ('ken_m_236h', 'ken', 'modern', 'special', '236強', '↓↘→+強', '強 迅雷脚', 184, 25, null, array['SA3']),
+  ('ken_m_236od', 'ken', 'modern', 'special', 'OD236', '↓↘→+攻撃×2', 'OD 迅雷脚', 185, 13, -4, array['SA2']),
+  ('ken_m_jinrai_l', 'ken', 'modern', 'special', '風鎌蹴り', '迅雷中→+弱', '風鎌蹴り（迅雷派生）', 186, 6, 3, array['SA3']),
+  ('ken_m_jinrai_m', 'ken', 'modern', 'special', '轟雷落とし', '迅雷中→+中', '轟雷落とし（迅雷派生）', 187, 18, 3, array['SA3']),
+  ('ken_m_jinrai_h', 'ken', 'modern', 'special', '閃火脚', '迅雷中→+強', '閃火脚（迅雷派生）', 188, 10, null, array['SA3']),
+  ('ken_m_jinrai_od_l', 'ken', 'modern', 'special', 'OD風鎌蹴り', 'OD迅雷中→+弱', 'OD 風鎌蹴り（OD迅雷派生）', 189, 6, 3, array['SA2']),
+  ('ken_m_jinrai_od_m', 'ken', 'modern', 'special', 'OD轟雷落とし', 'OD迅雷中→+中', 'OD 轟雷落とし（OD迅雷派生）', 190, 17, -3, array['SA2']),
+  ('ken_m_jinrai_od_h', 'ken', 'modern', 'special', 'OD閃火脚', 'OD迅雷中→+強', 'OD 閃火脚（OD迅雷派生）', 191, 10, null, array['SA2']),
+  ('ken_m_jinrai_kasai', 'ken', 'modern', 'special', '火砕蹴', 'OD迅雷派生後→+攻撃', '火砕蹴（OD迅雷追撃）', 192, 15, null, array['SA2']),
+
+  -- 10. モダンスーパーアーツ（3種: 200〜202、CA除外）
+  ('ken_m_sa1', 'ken', 'modern', 'super', 'SA1', 'SP+強', 'SA1 龍尾烈脚', 200, 7, null, '{}'::text[]),
+  ('ken_m_sa2', 'ken', 'modern', 'super', 'SA2', '←+SP+強', 'SA2 疾風迅雷脚', 201, 6, null, '{}'::text[]),
+  ('ken_m_sa3', 'ken', 'modern', 'super', 'SA3', '↓+SP+強', 'SA3 神龍烈破', 202, 7, null, '{}'::text[]),
+
+  -- 11. モダン通常投げ（2種: 205〜206）
+  ('ken_m_throw_f', 'ken', 'modern', 'throw', '前投げ', '弱+中', '掴み膝蹴り（前投げ）', 205, 5, null, '{}'::text[]),
+  ('ken_m_throw_b', 'ken', 'modern', 'throw', '後ろ投げ', '←+弱+中', '地獄車（後ろ投げ）', 206, 5, null, '{}'::text[]),
+
+  -- =========================================================================
+  -- ルーク（luke）全143技（クラシック64種＋モダン79種）
+  -- =========================================================================
+
+  -- 1. 通常技（クラシック 18種: 立ち 10〜15 / しゃがみ 20〜25 / ジャンプ 30〜35）
+  ('luke_5lp', 'luke', 'classic', 'normal', '5弱P', '弱P', '立ち弱P（ファーストスティンガー）', 10, 7, 2, array['C']),
+  ('luke_5lk', 'luke', 'classic', 'normal', '5弱K', '弱K', '立ち弱K（レッグハント）', 11, 5, 3, array['C']),
+  ('luke_5mp', 'luke', 'classic', 'normal', '5中P', '中P', '立ち中P（トリガーフィスト）', 12, 9, 2, array['SA']),
+  ('luke_5mk', 'luke', 'classic', 'normal', '5中K', '中K', '立ち中K（アンブッシュスピア）', 13, 8, 1, '{}'::text[]),
+  ('luke_5hp', 'luke', 'classic', 'normal', '5強P', '強P', '立ち強P（クラッシャー）', 14, 10, 1, array['C']),
+  ('luke_5hk', 'luke', 'classic', 'normal', '5強K', '強K', '立ち強K（キャノンボール）', 15, 10, 2, '{}'::text[]),
+  ('luke_2lp', 'luke', 'classic', 'normal', '2弱P', '↓+弱P', 'しゃがみ弱P（ファストジャブ）', 20, 4, 4, array['C']),
+  ('luke_2lk', 'luke', 'classic', 'normal', '2弱K', '↓+弱K', 'しゃがみ弱K（アンクルスナイプ）', 21, 5, 0, '{}'::text[]),
+  ('luke_2mp', 'luke', 'classic', 'normal', '2中P', '↓+中P', 'しゃがみ中P（スラッグショット）', 22, 6, 5, array['C']),
+  ('luke_2mk', 'luke', 'classic', 'normal', '2中K', '↓+中K', 'しゃがみ中K（カーフスカッシュ）', 23, 8, -2, array['C']),
+  ('luke_2hp', 'luke', 'classic', 'normal', '2強P', '↓+強P', 'しゃがみ強P（アンチエアランチャー）', 24, 7, 1, array['C']),
+  ('luke_2hk', 'luke', 'classic', 'normal', '2強K', '↓+強K', 'しゃがみ強K（トレンチブレイク）', 25, 10, null, '{}'::text[]),
+  ('luke_jlp', 'luke', 'classic', 'normal', 'J弱P', '空中で弱P', 'ジャンプ弱P（ワンバレット）', 30, 5, null, '{}'::text[]),
+  ('luke_jlk', 'luke', 'classic', 'normal', 'J弱K', '空中で弱K', 'ジャンプ弱K（デルタニー）', 31, 6, null, '{}'::text[]),
+  ('luke_jmp', 'luke', 'classic', 'normal', 'J中P', '空中で中P', 'ジャンプ中P（エア・インターセプター）', 32, 8, null, array['C']),
+  ('luke_jmk', 'luke', 'classic', 'normal', 'J中K', '空中で中K', 'ジャンプ中K（バーチカルテイル）', 33, 7, null, '{}'::text[]),
+  ('luke_jhp', 'luke', 'classic', 'normal', 'J強P', '空中で強P', 'ジャンプ強P（ガンメタルハンマー）', 34, 9, null, '{}'::text[]),
+  ('luke_jhk', 'luke', 'classic', 'normal', 'J強K', '空中で強K', 'ジャンプ強K（ヘブンリーストライク）', 35, 10, null, '{}'::text[]),
+
+  -- 2. 特殊技（クラシック 11種: 40〜50）
+  ('luke_6mp', 'luke', 'classic', 'unique', '6中P', '→+中P', 'ローハイド', 40, 21, 2, '{}'::text[]),
+  ('luke_4hp', 'luke', 'classic', 'unique', '4強P', '←+強P', 'サプレッサー', 41, 16, 3, array['C']),
+  ('luke_4hk', 'luke', 'classic', 'unique', '4強K', '←+強K', 'アウトローキック', 42, 12, 4, '{}'::text[]),
+  ('luke_6hp', 'luke', 'classic', 'unique', '6強P', '→+強P', 'ダブルインパクト（1段目）', 43, 16, 3, '{}'::text[]),
+  ('luke_6hp_2', 'luke', 'classic', 'unique', '6強P>強P', '→+強P>強P', 'ダブルインパクト（2段目）', 44, 11, null, array['C']),
+  ('luke_tc_lp_2', 'luke', 'classic', 'unique', '5弱P>中P', '弱P>中P', 'トリプルインパクト（2段目）', 45, 8, -2, '{}'::text[]),
+  ('luke_tc_lp_3', 'luke', 'classic', 'unique', '5弱P>中P>強P', '弱P>中P>強P', 'トリプルインパクト（3段目）', 46, 10, null, array['C']),
+  ('luke_tc_2mk', 'luke', 'classic', 'unique', '2中K>2強P', '↓+中K>↓+強P', 'ノーズブレイカー', 47, 9, 2, '{}'::text[]),
+  ('luke_tc_mp_2', 'luke', 'classic', 'unique', '5中P>中P', '中P>中P', 'スナップバックコンボ（2段目）', 48, 12, 0, array['SA']),
+  ('luke_tc_mp_3', 'luke', 'classic', 'unique', '5中P>中P>中P', '中P>中P>中P', 'スナップバックコンボ（3段目）', 49, 11, -6, '{}'::text[]),
+  ('luke_tc_mp_4', 'luke', 'classic', 'unique', '5中P>中P>中P>中P', '中P>中P>中P>中P', 'スナップバックコンボ（4段目）', 50, 11, null, '{}'::text[]),
+
+  -- 3. 必殺技（クラシック 30種: 55〜84）
+  ('luke_236lp', 'luke', 'classic', 'special', '236弱P', '↓↘→+弱P', '弱 サンドブラスト', 55, 14, -3, array['SA3']),
+  ('luke_236mp', 'luke', 'classic', 'special', '236中P', '↓↘→+中P', '中 サンドブラスト', 56, 17, 0, array['SA3']),
+  ('luke_236hp', 'luke', 'classic', 'special', '236強P', '↓↘→+強P', '強 サンドブラスト', 57, 20, 3, array['SA3']),
+  ('luke_236odp', 'luke', 'classic', 'special', 'OD236PP', '↓↘→+PP', 'OD サンドブラスト', 58, 16, null, array['SA2']),
+  ('luke_fatal_shot', 'luke', 'classic', 'special', 'フェイタルショット', 'ODサンドブラスト後PP', 'フェイタルショット', 59, 8, null, array['SA2']),
+  ('luke_214lp', 'luke', 'classic', 'special', '214弱P', '↓↙←+弱P', '弱 フラッシュナックル', 60, 13, null, array['SA3']),
+  ('luke_214lp_h', 'luke', 'classic', 'special', '214弱P(H)', '↓↙←+弱Pホールド', '弱 フラッシュナックル（ホールド）', 61, 26, null, array['SA3']),
+  ('luke_214lp_j', 'luke', 'classic', 'special', '214弱P(ジャスト)', '↓↙←+弱Pジャスト', '弱 フラッシュナックル（ジャスト）', 62, 26, null, array['SA3']),
+  ('luke_214mp', 'luke', 'classic', 'special', '214中P', '↓↙←+中P', '中 フラッシュナックル', 63, 19, 3, array['SA3']),
+  ('luke_214mp_h', 'luke', 'classic', 'special', '214中P(H)', '↓↙←+中Pホールド', '中 フラッシュナックル（ホールド）', 64, 29, null, array['SA3']),
+  ('luke_214mp_j', 'luke', 'classic', 'special', '214中P(ジャスト)', '↓↙←+中Pジャスト', '中 フラッシュナックル（ジャスト）', 65, 29, null, array['SA3']),
+  ('luke_214hp', 'luke', 'classic', 'special', '214強P', '↓↙←+強P', '強 フラッシュナックル', 66, 22, null, array['SA3']),
+  ('luke_214hp_h', 'luke', 'classic', 'special', '214強P(H)', '↓↙←+強Pホールド', '強 フラッシュナックル（ホールド）', 67, 33, null, array['SA3']),
+  ('luke_214hp_j', 'luke', 'classic', 'special', '214強P(ジャスト)', '↓↙←+強Pジャスト', '強 フラッシュナックル（ジャスト）', 68, 33, null, array['SA3']),
+  ('luke_214odp', 'luke', 'classic', 'special', 'OD214PP', '↓↙←+PP', 'OD フラッシュナックル', 69, 15, null, array['SA2']),
+  ('luke_ddt', 'luke', 'classic', 'special', 'DDT', 'ODフラッシュナックル後PP', 'DDT', 70, 1, null, '{}'::text[]),
+  ('luke_air_214p', 'luke', 'classic', 'special', '空中214P', '垂直/前J中↓↙←+P', 'エアフラッシュナックル', 71, 14, null, '{}'::text[]),
+  ('luke_air_214p_h', 'luke', 'classic', 'special', '空中214P(H)', '垂直/前J中↓↙←+Pホールド', 'エアフラッシュナックル（ホールド）', 72, 23, null, '{}'::text[]),
+  ('luke_air_214odp', 'luke', 'classic', 'special', 'OD空中214PP', '垂直/前J中↓↙←+PP', 'OD エアフラッシュナックル', 73, 14, null, '{}'::text[]),
+  ('luke_236k', 'luke', 'classic', 'special', '236K', '↓↘→+K', 'アベンジャー', 74, null, null, '{}'::text[]),
+  ('luke_236odk', 'luke', 'classic', 'special', 'OD236KK', '↓↘→+KK', 'OD アベンジャー', 75, null, null, '{}'::text[]),
+  ('luke_avenger_nc', 'luke', 'classic', 'special', 'ノーチェイサー', 'アベンジャー中P', 'ノーチェイサー（アベンジャー派生）', 76, 12, null, array['SA3']),
+  ('luke_avenger_od_nc', 'luke', 'classic', 'special', 'ODノーチェイサー', 'ODアベンジャー中P', 'OD ノーチェイサー（ODアベンジャー派生）', 77, 12, null, array['SA2']),
+  ('luke_avenger_imp', 'luke', 'classic', 'special', 'インパラー', 'アベンジャー中K', 'インパラー（アベンジャー派生）', 78, 13, null, '{}'::text[]),
+  ('luke_avenger_od_imp', 'luke', 'classic', 'special', 'ODインパラー', 'ODアベンジャー中K', 'OD インパラー（ODアベンジャー派生）', 79, 13, null, '{}'::text[]),
+  ('luke_623lp', 'luke', 'classic', 'special', '623弱P', '→↓↘+弱P', '弱 ライジングアッパー', 80, 5, null, array['SA3']),
+  ('luke_623mp', 'luke', 'classic', 'special', '623中P', '→↓↘+中P', '中 ライジングアッパー', 81, 6, null, array['SA3']),
+  ('luke_623hp', 'luke', 'classic', 'special', '623強P', '→↓↘+強P', '強 ライジングアッパー', 82, 9, null, array['SA3']),
+  ('luke_623odp', 'luke', 'classic', 'special', 'OD623PP', '→↓↘+PP', 'OD ライジングアッパー', 83, 6, null, '{}'::text[]),
+  ('luke_slam_dunk', 'luke', 'classic', 'special', 'スラムダンク', 'ODライジングアッパー後PP', 'スラムダンク', 84, 16, null, '{}'::text[]),
+
+  -- 4. スーパーアーツ（クラシック 3種: 90〜92、CA除外）
+  ('luke_sa1', 'luke', 'classic', 'super', 'SA1', '↓↘→↓↘→+P', 'SA1 バルカンブラスト', 90, 6, null, '{}'::text[]),
+  ('luke_sa2', 'luke', 'classic', 'super', 'SA2', '↓↙←↓↙←+P', 'SA2 イレイザー', 91, 5, null, '{}'::text[]),
+  ('luke_sa3', 'luke', 'classic', 'super', 'SA3', '↓↘→↓↘→+K', 'SA3 ペイルライダー', 92, 10, null, '{}'::text[]),
+
+  -- 5. 通常投げ（クラシック 2種: 95〜96）
+  ('luke_throw_f', 'luke', 'classic', 'throw', '前投げ', '弱P+弱K', 'スウィーパー（前投げ）', 95, 5, null, '{}'::text[]),
+  ('luke_throw_b', 'luke', 'classic', 'throw', '後ろ投げ', '←+弱P+弱K', 'スクラッパー（後ろ投げ）', 96, 5, null, '{}'::text[]),
+
+  -- 6. モダン通常技（10種: 110〜119）
+  ('luke_m_5l', 'luke', 'modern', 'normal', '5弱', '弱', '立ち弱（立ち弱P）', 110, 7, 2, array['C']),
+  ('luke_m_5m', 'luke', 'modern', 'normal', '5中', '中', '立ち中（立ち中P）', 111, 9, 2, array['SA']),
+  ('luke_m_5h', 'luke', 'modern', 'normal', '5強', '強', '立ち強（立ち強K）', 112, 10, 2, '{}'::text[]),
+  ('luke_m_2l', 'luke', 'modern', 'normal', '2弱', '↓+弱', 'しゃがみ弱（しゃがみ弱P）', 113, 4, 4, array['C']),
+  ('luke_m_2m', 'luke', 'modern', 'normal', '2中', '↓+中', 'しゃがみ中（しゃがみ中K）', 114, 8, -2, array['C']),
+  ('luke_m_2h', 'luke', 'modern', 'normal', '2強', '↓+強', 'しゃがみ強（しゃがみ強P）', 115, 7, 1, array['C']),
+  ('luke_m_3h', 'luke', 'modern', 'normal', '3強', '↘+強', '右下強（トレンチブレイク）', 116, 10, null, '{}'::text[]),
+  ('luke_m_jl', 'luke', 'modern', 'normal', 'J弱', '空中で弱', 'ジャンプ弱（ジャンプ弱P）', 117, 5, null, '{}'::text[]),
+  ('luke_m_jm', 'luke', 'modern', 'normal', 'J中', '空中で中', 'ジャンプ中（ジャンプ中P）', 118, 8, null, array['C']),
+  ('luke_m_jh', 'luke', 'modern', 'normal', 'J強', '空中で強', 'ジャンプ強（ジャンプ強K）', 119, 10, null, '{}'::text[]),
+
+  -- 7. モダン特殊技・アシスト（20種: 125〜144）
+  ('luke_m_auto_l', 'luke', 'modern', 'unique', 'A弱(単発)', 'アシスト弱', 'アシスト弱（単発・しゃがみ弱K）', 125, 5, 0, '{}'::text[]),
+  ('luke_m_auto_m', 'luke', 'modern', 'unique', 'A中(単発)', 'アシスト中', 'アシスト中（単発・しゃがみ中P）', 126, 6, 5, array['C']),
+  ('luke_m_auto_h', 'luke', 'modern', 'unique', 'A強(単発)', 'アシスト強', 'アシスト強（単発・立ち強P）', 127, 10, 1, array['C']),
+  ('luke_m_j_auto_l', 'luke', 'modern', 'unique', 'JA弱', '空中でアシスト弱', 'ジャンプアシスト弱（ジャンプ弱K）', 128, 6, null, '{}'::text[]),
+  ('luke_m_j_auto_m', 'luke', 'modern', 'unique', 'JA中', '空中でアシスト中', 'ジャンプアシスト中（ジャンプ中K）', 129, 7, null, '{}'::text[]),
+  ('luke_m_j_auto_h', 'luke', 'modern', 'unique', 'JA強', '空中でアシスト強', 'ジャンプアシスト強（ジャンプ強P）', 130, 9, null, '{}'::text[]),
+  ('luke_m_auto_l_combo', 'luke', 'modern', 'unique', 'A弱コンボ', 'アシスト弱連打', 'アシストコンボ1（弱）', 131, 5, null, '{}'::text[]),
+  ('luke_m_auto_2l_combo', 'luke', 'modern', 'unique', '連打A弱コンボ', '↓+アシスト弱連打', '連打キャンセルアシストコンボ', 132, 4, null, '{}'::text[]),
+  ('luke_m_auto_m_combo', 'luke', 'modern', 'unique', 'A中コンボ', 'アシスト中連打', 'アシストコンボ2（中）', 133, 6, null, '{}'::text[]),
+  ('luke_m_auto_h_combo', 'luke', 'modern', 'unique', 'A強コンボ', 'アシスト強連打', 'アシストコンボ3（強）', 134, 10, null, '{}'::text[]),
+  ('luke_m_6m', 'luke', 'modern', 'unique', '6中', '→+中', 'ローハイド', 135, 21, 2, '{}'::text[]),
+  ('luke_m_4h', 'luke', 'modern', 'unique', '4強', '←+強', 'サプレッサー', 136, 16, 3, array['C']),
+  ('luke_m_6h', 'luke', 'modern', 'unique', '6強', '→+強', 'ダブルインパクト（1段目）', 137, 16, 3, '{}'::text[]),
+  ('luke_m_6h_2', 'luke', 'modern', 'unique', '6強>強', '→+強>強', 'ダブルインパクト（2段目）', 138, 11, null, array['C']),
+  ('luke_m_tc_l_2', 'luke', 'modern', 'unique', '5弱>弱', '弱>弱', 'トリプルインパクト（2段目）', 139, 8, -2, '{}'::text[]),
+  ('luke_m_tc_l_3', 'luke', 'modern', 'unique', '5弱>弱>弱', '弱>弱>弱', 'トリプルインパクト（3段目）', 140, 10, null, array['C']),
+  ('luke_m_tc_2m', 'luke', 'modern', 'unique', '2中>2中', '↓+中>↓+中', 'ノーズブレイカー', 141, 9, 2, '{}'::text[]),
+  ('luke_m_tc_m_2', 'luke', 'modern', 'unique', '5中>中', '中>中', 'スナップバックコンボ（2段目）', 142, 12, 0, array['SA']),
+  ('luke_m_tc_m_3', 'luke', 'modern', 'unique', '5中>中>中', '中>中>中', 'スナップバックコンボ（3段目）', 143, 11, -6, '{}'::text[]),
+  ('luke_m_tc_m_4', 'luke', 'modern', 'unique', '5中>中>中>中', '中>中>中>中', 'スナップバックコンボ（4段目）', 144, 11, null, '{}'::text[]),
+
+  -- 8. モダン必殺技：ワンボタンSP＆OD・アベンジャー派生（20種: 150〜169）
+  ('luke_m_sp', 'luke', 'modern', 'special', 'N必', 'SP', '中 サンドブラスト（N必）', 150, 17, 0, array['SA3']),
+  ('luke_m_od_sp', 'luke', 'modern', 'special', 'A+N必', 'A+SP', 'OD サンドブラスト（A+N必）', 151, 16, null, array['SA2']),
+  ('luke_m_sp_fatal_shot', 'luke', 'modern', 'special', 'フェイタル(SP)', 'ODサンドブラスト後SP', 'フェイタルショット（SP）', 152, 8, null, array['SA2']),
+  ('luke_m_4sp', 'luke', 'modern', 'special', '後必', '←+SP', '中 フラッシュナックル（後必）', 153, 19, 3, array['SA3']),
+  ('luke_m_4sp_h', 'luke', 'modern', 'special', '後必(H)', '←+SPホールド', '中 フラッシュナックル（ホールド・後必）', 154, 29, null, array['SA3']),
+  ('luke_m_4sp_j', 'luke', 'modern', 'special', '後必(ジャスト)', '←+SPジャスト', '中 フラッシュナックル（ジャスト・後必）', 155, 29, null, array['SA3']),
+  ('luke_m_od_4sp', 'luke', 'modern', 'special', 'A+後必', 'A+←+SP', 'OD フラッシュナックル（A+後必）', 156, 15, null, array['SA2']),
+  ('luke_m_sp_ddt', 'luke', 'modern', 'special', 'DDT(SP)', 'ODフラッシュナックル後SP', 'DDT（SP）', 157, 1, null, '{}'::text[]),
+  ('luke_m_air_sp', 'luke', 'modern', 'special', '空必', '垂直/前J中SP', 'エアフラッシュナックル（空必）', 158, 14, null, '{}'::text[]),
+  ('luke_m_air_sp_h', 'luke', 'modern', 'special', '空必(H)', '垂直/前J中SPホールド', 'エアフラッシュナックル（ホールド・空必）', 159, 23, null, '{}'::text[]),
+  ('luke_m_od_air_sp', 'luke', 'modern', 'special', 'A+空必', '垂直/前J中A+SP', 'OD エアフラッシュナックル（A+空必）', 160, 14, null, '{}'::text[]),
+  ('luke_m_2sp', 'luke', 'modern', 'special', '下必', '↓+SP', 'アベンジャー（下必）', 161, null, null, '{}'::text[]),
+  ('luke_m_od_2sp', 'luke', 'modern', 'special', 'A+下必', 'A+↓+SP', 'OD アベンジャー（A+下必）', 162, null, null, '{}'::text[]),
+  ('luke_m_avenger_nc', 'luke', 'modern', 'special', 'ノーチェイサー', 'アベンジャー中攻撃', 'ノーチェイサー（アベンジャー派生）', 163, 12, null, array['SA3']),
+  ('luke_m_avenger_od_nc', 'luke', 'modern', 'special', 'ODノーチェイサー', 'ODアベンジャー中攻撃', 'OD ノーチェイサー（ODアベンジャー派生）', 164, 12, null, array['SA2']),
+  ('luke_m_avenger_imp', 'luke', 'modern', 'special', 'インパラー', 'アベンジャー中↓+攻撃', 'インパラー（アベンジャー派生）', 165, 13, null, '{}'::text[]),
+  ('luke_m_avenger_od_imp', 'luke', 'modern', 'special', 'ODインパラー', 'ODアベンジャー中↓+攻撃', 'OD インパラー（ODアベンジャー派生）', 166, 13, null, '{}'::text[]),
+  ('luke_m_6sp', 'luke', 'modern', 'special', '前必', '→+SP', '中 ライジングアッパー（前必）', 167, 6, null, array['SA3']),
+  ('luke_m_od_6sp', 'luke', 'modern', 'special', 'A+前必', 'A+→+SP', 'OD ライジングアッパー（A+前必）', 168, 6, null, '{}'::text[]),
+  ('luke_m_sp_slam_dunk', 'luke', 'modern', 'special', 'スラムダンク(SP)', 'ODライジングアッパー後SP', 'スラムダンク（SP）', 169, 16, null, '{}'::text[]),
+
+  -- 9. モダン必殺技：コマンド入力版（24種: 175〜198）
+  ('luke_m_236l', 'luke', 'modern', 'special', '236弱', '↓↘→+弱', '弱 サンドブラスト', 175, 14, -3, array['SA3']),
+  ('luke_m_236m', 'luke', 'modern', 'special', '236中', '↓↘→+中', '中 サンドブラスト', 176, 17, 0, array['SA3']),
+  ('luke_m_236h', 'luke', 'modern', 'special', '236強', '↓↘→+強', '強 サンドブラスト', 177, 20, 3, array['SA3']),
+  ('luke_m_236od', 'luke', 'modern', 'special', 'OD236', '↓↘→+攻撃×2', 'OD サンドブラスト', 178, 16, null, array['SA2']),
+  ('luke_m_fatal_shot', 'luke', 'modern', 'special', 'フェイタルショット', 'ODサンドブラスト後攻撃×2', 'フェイタルショット', 179, 8, null, array['SA2']),
+  ('luke_m_214l', 'luke', 'modern', 'special', '214弱', '↓↙←+弱', '弱 フラッシュナックル', 180, 13, null, array['SA3']),
+  ('luke_m_214l_h', 'luke', 'modern', 'special', '214弱(H)', '↓↙←+弱ホールド', '弱 フラッシュナックル（ホールド）', 181, 26, null, array['SA3']),
+  ('luke_m_214l_j', 'luke', 'modern', 'special', '214弱(ジャスト)', '↓↙←+弱ジャスト', '弱 フラッシュナックル（ジャスト）', 182, 26, null, array['SA3']),
+  ('luke_m_214m', 'luke', 'modern', 'special', '214中', '↓↙←+中', '中 フラッシュナックル', 183, 19, 3, array['SA3']),
+  ('luke_m_214m_h', 'luke', 'modern', 'special', '214中(H)', '↓↙←+中ホールド', '中 フラッシュナックル（ホールド）', 184, 29, null, array['SA3']),
+  ('luke_m_214m_j', 'luke', 'modern', 'special', '214中(ジャスト)', '↓↙←+中ジャスト', '中 フラッシュナックル（ジャスト）', 185, 29, null, array['SA3']),
+  ('luke_m_214h', 'luke', 'modern', 'special', '214強', '↓↙←+強', '強 フラッシュナックル', 186, 22, null, array['SA3']),
+  ('luke_m_214h_h', 'luke', 'modern', 'special', '214強(H)', '↓↙←+強ホールド', '強 フラッシュナックル（ホールド）', 187, 33, null, array['SA3']),
+  ('luke_m_214h_j', 'luke', 'modern', 'special', '214強(ジャスト)', '↓↙←+強ジャスト', '強 フラッシュナックル（ジャスト）', 188, 33, null, array['SA3']),
+  ('luke_m_214od', 'luke', 'modern', 'special', 'OD214', '↓↙←+攻撃×2', 'OD フラッシュナックル', 189, 15, null, array['SA2']),
+  ('luke_m_ddt', 'luke', 'modern', 'special', 'DDT', 'ODフラッシュナックル後攻撃×2', 'DDT', 190, 1, null, '{}'::text[]),
+  ('luke_m_air_214', 'luke', 'modern', 'special', '空中214', '垂直/前J中↓↙←+攻撃', 'エアフラッシュナックル', 191, 14, null, '{}'::text[]),
+  ('luke_m_air_214_h', 'luke', 'modern', 'special', '空中214(H)', '垂直/前J中↓↙←+攻撃ホールド', 'エアフラッシュナックル（ホールド）', 192, 23, null, '{}'::text[]),
+  ('luke_m_air_214od', 'luke', 'modern', 'special', 'OD空中214', '垂直/前J中↓↙←+攻撃×2', 'OD エアフラッシュナックル', 193, 14, null, '{}'::text[]),
+  ('luke_m_623l', 'luke', 'modern', 'special', '623弱', '→↓↘+弱', '弱 ライジングアッパー', 194, 5, null, array['SA3']),
+  ('luke_m_623m', 'luke', 'modern', 'special', '623中', '→↓↘+中', '中 ライジングアッパー', 195, 6, null, array['SA3']),
+  ('luke_m_623h', 'luke', 'modern', 'special', '623強', '→↓↘+強', '強 ライジングアッパー', 196, 9, null, array['SA3']),
+  ('luke_m_623od', 'luke', 'modern', 'special', 'OD623', '→↓↘+攻撃×2', 'OD ライジングアッパー', 197, 6, null, '{}'::text[]),
+  ('luke_m_slam_dunk', 'luke', 'modern', 'special', 'スラムダンク', 'ODライジングアッパー後攻撃×2', 'スラムダンク', 198, 16, null, '{}'::text[]),
+
+  -- 10. モダンスーパーアーツ（3種: 205〜207、CA除外）
+  ('luke_m_sa1', 'luke', 'modern', 'super', 'SA1', 'SP+強', 'SA1 バルカンブラスト', 205, 6, null, '{}'::text[]),
+  ('luke_m_sa2', 'luke', 'modern', 'super', 'SA2', '←+SP+強', 'SA2 イレイザー', 206, 5, null, '{}'::text[]),
+  ('luke_m_sa3', 'luke', 'modern', 'super', 'SA3', '↓+SP+強', 'SA3 ペイルライダー', 207, 10, null, '{}'::text[]),
+
+  -- 11. モダン通常投げ（2種: 210〜211）
+  ('luke_m_throw_f', 'luke', 'modern', 'throw', '前投げ', '弱+中', 'スウィーパー（前投げ）', 210, 5, null, '{}'::text[]),
+  ('luke_m_throw_b', 'luke', 'modern', 'throw', '後ろ投げ', '←+弱+中', 'スクラッパー（後ろ投げ）', 211, 5, null, '{}'::text[])
+on conflict (id) do update set
+  character_id = excluded.character_id,
+  control_type = excluded.control_type,
+  category = excluded.category,
+  notation_numpad = excluded.notation_numpad,
+  notation_command = excluded.notation_command,
+  notation_name = excluded.notation_name,
+  sort_order = excluded.sort_order,
+  startup_frames = excluded.startup_frames,
+  hit_advantage = excluded.hit_advantage,
+  cancel_types = excluded.cancel_types;

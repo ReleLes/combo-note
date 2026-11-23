@@ -98,6 +98,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(125, 211, 252, 0.45)",
     watermark: "RYU",
   },
+  // ケン：炎のクリムゾン／ゴールドオレンジ系
+  ken: {
+    accent: "#EF4444",
+    secondary: "#F59E0B",
+    gradientFrom: "#4C0519",
+    gradientTo: "#1F1014",
+    glow: "rgba(239, 68, 68, 0.48)",
+    badgeBg: "rgba(239, 68, 68, 0.24)",
+    badgeBorder: "rgba(245, 158, 11, 0.45)",
+    watermark: "KEN",
+  },
+  // ルーク：コバルトブルー／イエロー系
+  luke: {
+    accent: "#3B82F6",
+    secondary: "#FACC15",
+    gradientFrom: "#0C2A5A",
+    gradientTo: "#11162B",
+    glow: "rgba(59, 130, 246, 0.48)",
+    badgeBg: "rgba(59, 130, 246, 0.24)",
+    badgeBorder: "rgba(250, 204, 21, 0.45)",
+    watermark: "LUKE",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {

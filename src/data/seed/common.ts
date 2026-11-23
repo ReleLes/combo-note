@@ -78,6 +78,22 @@ export const SEED_CHARACTERS: Character[] = [
       maxCount: 1,
     },
   },
+  {
+    id: "ken",
+    slug: "ken",
+    nameJa: "ケン",
+    nameEn: "Ken",
+    sortOrder: 7,
+    isActive: true,
+  },
+  {
+    id: "luke",
+    slug: "luke",
+    nameJa: "ルーク",
+    nameEn: "Luke",
+    sortOrder: 8,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [

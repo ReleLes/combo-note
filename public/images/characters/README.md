@@ -13,6 +13,8 @@
 - C.ヴァイパー: `c-viper.webp` / `c-viper.png` / `c-viper.jpg`
 - 舞: `mai.webp` / `mai.png` / `mai.jpg`
 - リュウ: `ryu.webp` / `ryu.png` / `ryu.jpg`
+- ケン: `ken.webp` / `ken.png` / `ken.jpg`
+- ルーク: `luke.webp` / `luke.png` / `luke.jpg`
 
 ## 検出優先順位
 

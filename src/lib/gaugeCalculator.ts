@@ -33,6 +33,24 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "mai_midare_ex",
   "mai_m_midare",
   "mai_m_midare_ex",
+  // ケン: OD 迅雷脚からの追加派生（OD風鎌蹴り・OD轟雷落とし・OD閃火脚・火砕蹴は親技で既に +2 消費済み・追加消費なし）
+  "ken_jinrai_od_l",
+  "ken_jinrai_od_m",
+  "ken_jinrai_od_h",
+  "ken_jinrai_kasai",
+  "ken_m_jinrai_od_l",
+  "ken_m_jinrai_od_m",
+  "ken_m_jinrai_od_h",
+  "ken_m_jinrai_kasai",
+  "ken_m_sp_jinrai_od_l",
+  "ken_m_sp_jinrai_od_m",
+  "ken_m_sp_jinrai_od_h",
+  "ken_m_sp_jinrai_kasai",
+  // ルーク: OD アベンジャーからの追加派生（ODノーチェイサー・ODインパラーは親技で既に +2 消費済み・追加消費なし）
+  "luke_avenger_od_nc",
+  "luke_avenger_od_imp",
+  "luke_m_avenger_od_nc",
+  "luke_m_avenger_od_imp",
 ]);
 
 /**
@@ -58,6 +76,16 @@ export const MOVE_DRIVE_COST_OVERRIDES: Readonly<Record<string, number>> = {
   cviper_m_chase: 1, // チェイスナックル（モダン）
   cviper_double_burn: 1, // ダブルバーン
   cviper_m_double_burn: 1, // ダブルバーン（モダン）
+  // ルーク: OD必殺技からの追加派生で、発動時にDゲージを10000（1本）追加消費する技（親技ODで+2、派生で+1＝計3本）
+  luke_fatal_shot: 1, // フェイタルショット（ODサンドブラスト後）
+  luke_ddt: 1, // DDT（ODフラッシュナックル後）
+  luke_slam_dunk: 1, // スラムダンク（ODライジングアッパー後）
+  luke_m_fatal_shot: 1, // フェイタルショット（モダン）
+  luke_m_ddt: 1, // DDT（モダン）
+  luke_m_slam_dunk: 1, // スラムダンク（モダン）
+  luke_m_sp_fatal_shot: 1, // フェイタルショット（モダンSP）
+  luke_m_sp_ddt: 1, // DDT（モダンSP）
+  luke_m_sp_slam_dunk: 1, // スラムダンク（モダンSP）
 };
 
 /**

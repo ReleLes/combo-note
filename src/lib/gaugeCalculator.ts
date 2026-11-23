@@ -184,6 +184,24 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "kimberly_m_koku_od",
   "kimberly_m_izuna_od",
   "kimberly_m_hoko_od",
+  // マリーザ: OD ディマカイルス（2段目）および OD スクトゥムからの各種派生（親技で既に +2 消費済み・追加消費なし）
+  "marisa_dimachaerus_od_2",
+  "marisa_scutum_od_counter",
+  "marisa_tonitrus_1",
+  "marisa_tonitrus_2",
+  "marisa_procella",
+  "marisa_enfold",
+  "marisa_m_dimachaerus_od_2",
+  "marisa_m_scutum_od_counter",
+  "marisa_m_tonitrus_1",
+  "marisa_m_tonitrus_2",
+  "marisa_m_procella",
+  "marisa_m_enfold",
+  // マノン: OD ランヴェルセからの OD グラン・フェッテおよびフェイント派生（親技ODランヴェルセで既に +2 消費済み・追加消費なし）
+  "manon_grand_fouette_od",
+  "manon_renverse_feint",
+  "manon_m_grand_fouette_od",
+  "manon_m_renverse_feint",
 ]);
 
 /**

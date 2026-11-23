@@ -33,6 +33,8 @@
 - アルジュン: `arjun.webp` / `arjun.png` / `arjun.jpg`
 - ジェイミー: `jamie.webp` / `jamie.png` / `jamie.jpg`
 - キンバリー: `kimberly.webp` / `kimberly.png` / `kimberly.jpg`
+- マリーザ: `marisa.webp` / `marisa.png` / `marisa.jpg`
+- マノン: `manon.webp` / `manon.png` / `manon.jpg`
 
 ## 検出優先順位
 

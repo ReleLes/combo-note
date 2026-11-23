@@ -250,6 +250,22 @@ export const SEED_CHARACTERS: Character[] = [
       gainHint: "召雷細工で +1 / OD召雷細工で +3 獲得",
     },
   },
+  {
+    id: "marisa",
+    slug: "marisa",
+    nameJa: "マリーザ",
+    nameEn: "Marisa",
+    sortOrder: 27,
+    isActive: true,
+  },
+  {
+    id: "manon",
+    slug: "manon",
+    nameJa: "マノン",
+    nameEn: "Manon",
+    sortOrder: 28,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -472,6 +488,14 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-pink-100 text-pink-800 dark:bg-fuchsia-500/20 dark:text-pink-200 dark:border dark:border-pink-400/35",
     characterId: "kimberly",
     sortOrder: 117,
+  },
+  {
+    key: "manon_medal",
+    label: "メダル",
+    badgeClassName:
+      "bg-rose-100 text-rose-800 dark:bg-indigo-500/25 dark:text-rose-200 dark:border dark:border-rose-400/35",
+    characterId: "manon",
+    sortOrder: 118,
   },
 ];
 

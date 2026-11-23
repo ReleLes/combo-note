@@ -202,6 +202,18 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "manon_renverse_feint",
   "manon_m_grand_fouette_od",
   "manon_m_renverse_feint",
+  // ブランカ: OD ブランカちゃん爆弾（起動・射出）およびローリングキャノン派生（親技OD電撃／ODローリング等で既に +2 消費済み・追加消費なし）
+  "blanka_bomb_shot_od",
+  "blanka_m_bomb_shot_od",
+  "blanka_rolling_cannon",
+  "blanka_m_rolling_cannon",
+  // エドモンド本田: OD 相撲ステップからの OD 鉄砲（1・2段目）および OD 大砲派生（親技OD相撲ステップで既に +2 消費済み・追加消費なし）
+  "ehonda_teppo_od_1",
+  "ehonda_teppo_od_2",
+  "ehonda_taiho_od",
+  "ehonda_m_teppo_od_1",
+  "ehonda_m_teppo_od_2",
+  "ehonda_m_taiho_od",
 ]);
 
 /**

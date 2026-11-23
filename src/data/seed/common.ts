@@ -266,6 +266,27 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 28,
     isActive: true,
   },
+  {
+    id: "blanka",
+    slug: "blanka",
+    nameJa: "ブランカ",
+    nameEn: "Blanka",
+    sortOrder: 29,
+    isActive: true,
+  },
+  {
+    id: "ehonda",
+    slug: "ehonda",
+    nameJa: "エドモンド本田",
+    nameEn: "E. Honda",
+    sortOrder: 30,
+    isActive: true,
+    stockMeta: {
+      label: "相撲魂",
+      shortLabel: "相撲魂",
+      maxCount: 1,
+    },
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -496,6 +517,22 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-rose-100 text-rose-800 dark:bg-indigo-500/25 dark:text-rose-200 dark:border dark:border-rose-400/35",
     characterId: "manon",
     sortOrder: 118,
+  },
+  {
+    key: "blanka_lightning_beast",
+    label: "ライトニングビースト",
+    badgeClassName:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-yellow-200 dark:border dark:border-emerald-400/35",
+    characterId: "blanka",
+    sortOrder: 119,
+  },
+  {
+    key: "ehonda_sumo_spirit",
+    label: "相撲魂",
+    badgeClassName:
+      "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 dark:border dark:border-rose-400/35",
+    characterId: "ehonda",
+    sortOrder: 120,
   },
 ];
 

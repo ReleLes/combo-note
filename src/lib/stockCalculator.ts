@@ -271,6 +271,36 @@ export const CHARACTER_STOCK_RULES: Readonly<
       return { consume, gain };
     },
   },
+  ehonda: {
+    characterId: "ehonda",
+    shortLabel: "相撲魂",
+    label: "相撲魂",
+    maxCount: 1,
+    badgeClassName:
+      "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-400/35 dark:bg-rose-500/20 dark:text-rose-200",
+    situationKey: "ehonda_sumo_spirit",
+    evaluateMove: (move) => {
+      let consume = 0;
+      let gain = 0;
+
+      // 消費（-1）: [強化版] 弱/中/強/OD 百裂張り手（肩屋入り）（クラシック・モダン共通）
+      if (move.category === "special" && isEnhancedMove(move)) {
+        consume += 1;
+      }
+
+      // 獲得（+1・上限1）: 肩屋入り（相撲魂）（クラシック 22K / モダン 22中・強）
+      if (
+        move.category === "special" &&
+        !isEnhancedMove(move) &&
+        (move.notationName.includes("肩屋入り") ||
+          move.notationName.includes("相撲魂"))
+      ) {
+        gain += 1;
+      }
+
+      return { consume, gain };
+    },
+  },
 };
 
 export function hasStockCalculator(characterId: string): boolean {

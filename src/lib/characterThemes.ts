@@ -340,6 +340,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(99, 102, 241, 0.45)",
     watermark: "MANON",
   },
+  // ブランカ：エレクトリックグリーン／サンダーイエロー系
+  blanka: {
+    accent: "#22C55E",
+    secondary: "#FACC15",
+    gradientFrom: "#052E16",
+    gradientTo: "#29250A",
+    glow: "rgba(34, 197, 94, 0.50)",
+    badgeBg: "rgba(34, 197, 94, 0.24)",
+    badgeBorder: "rgba(250, 204, 21, 0.45)",
+    watermark: "BLANKA",
+  },
+  // エドモンド本田：歌舞伎クリムゾン／藍ブルー系
+  ehonda: {
+    accent: "#E11D48",
+    secondary: "#3B82F6",
+    gradientFrom: "#4C0519",
+    gradientTo: "#0F172A",
+    glow: "rgba(225, 29, 72, 0.50)",
+    badgeBg: "rgba(225, 29, 72, 0.24)",
+    badgeBorder: "rgba(59, 130, 246, 0.45)",
+    watermark: "E.HONDA",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
@@ -385,6 +407,8 @@ export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
   kimberly: ["きんばりー", "キンバリー"],
   marisa: ["まりーざ", "マリーザ"],
   manon: ["まのん", "マノン"],
+  blanka: ["ぶらんか", "ブランカ"],
+  ehonda: ["ほんだ", "ホンダ", "えどもんどほんだ", "エドモンドホンダ", "e.honda", "honda"],
 };
 
 /**

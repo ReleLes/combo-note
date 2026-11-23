@@ -35,6 +35,8 @@
 - キンバリー: `kimberly.webp` / `kimberly.png` / `kimberly.jpg`
 - マリーザ: `marisa.webp` / `marisa.png` / `marisa.jpg`
 - マノン: `manon.webp` / `manon.png` / `manon.jpg`
+- ブランカ: `blanka.webp` / `blanka.png` / `blanka.jpg`
+- エドモンド本田: `ehonda.webp` / `ehonda.png` / `ehonda.jpg`
 
 ## 検出優先順位
 

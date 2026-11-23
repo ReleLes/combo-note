@@ -232,6 +232,45 @@ export const CHARACTER_STOCK_RULES: Readonly<
       return { consume, gain };
     },
   },
+  kimberly: {
+    characterId: "kimberly",
+    shortLabel: "手裏剣",
+    label: "細工手裏剣",
+    maxCount: 3,
+    badgeClassName:
+      "border-pink-200 bg-pink-50 text-pink-800 dark:border-pink-400/35 dark:bg-fuchsia-500/20 dark:text-pink-200",
+    situationKey: "kimberly_shuriken",
+    evaluateMove: (move) => {
+      let consume = 0;
+      let gain = 0;
+
+      // 獲得: 召雷細工 (+1) / OD 召雷細工 (+3・上限3)
+      if (move.category === "special" && move.notationName.includes("召雷細工")) {
+        if (move.notationName.includes("OD") || move.id.includes("_od")) {
+          gain += 3;
+        } else {
+          gain += 1;
+        }
+      }
+
+      // 消費: 乱れ細工手裏剣 (-2) / 細工手裏剣 (-1) / SA1 武神乱拍子・雷譜 (-1)
+      if (move.category === "special" && move.notationName.includes("乱れ細工手裏剣")) {
+        consume += 2;
+      } else if (
+        move.category === "special" &&
+        move.notationName.includes("細工手裏剣")
+      ) {
+        consume += 1;
+      } else if (
+        move.category === "super" &&
+        move.notationName.includes("武神乱拍子・雷譜")
+      ) {
+        consume += 1;
+      }
+
+      return { consume, gain };
+    },
+  },
 };
 
 export function hasStockCalculator(characterId: string): boolean {

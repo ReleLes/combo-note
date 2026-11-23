@@ -227,6 +227,29 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 24,
     isActive: true,
   },
+  {
+    id: "jamie",
+    slug: "jamie",
+    nameJa: "ジェイミー",
+    nameEn: "Jamie",
+    sortOrder: 25,
+    isActive: true,
+  },
+  {
+    id: "kimberly",
+    slug: "kimberly",
+    nameJa: "キンバリー",
+    nameEn: "Kimberly",
+    sortOrder: 26,
+    isActive: true,
+    stockMeta: {
+      label: "細工手裏剣",
+      shortLabel: "手裏剣",
+      maxCount: 3,
+      gainOptions: [0, 1, 3],
+      gainHint: "召雷細工で +1 / OD召雷細工で +3 獲得",
+    },
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -433,6 +456,22 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/35",
     characterId: "arjun",
     sortOrder: 115,
+  },
+  {
+    key: "jamie_drink_level",
+    label: "酔いレベル",
+    badgeClassName:
+      "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200 dark:border dark:border-amber-400/35",
+    characterId: "jamie",
+    sortOrder: 116,
+  },
+  {
+    key: "kimberly_shuriken",
+    label: "細工手裏剣",
+    badgeClassName:
+      "bg-pink-100 text-pink-800 dark:bg-fuchsia-500/20 dark:text-pink-200 dark:border dark:border-pink-400/35",
+    characterId: "kimberly",
+    sortOrder: 117,
   },
 ];
 

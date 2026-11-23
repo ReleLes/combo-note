@@ -31,6 +31,8 @@
 - アレックス: `alex.webp` / `alex.png` / `alex.jpg`
 - ヤスミン: `yasmine.webp` / `yasmine.png` / `yasmine.jpg`
 - アルジュン: `arjun.webp` / `arjun.png` / `arjun.jpg`
+- ジェイミー: `jamie.webp` / `jamie.png` / `jamie.jpg`
+- キンバリー: `kimberly.webp` / `kimberly.png` / `kimberly.jpg`
 
 ## 検出優先順位
 

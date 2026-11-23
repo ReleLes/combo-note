@@ -486,6 +486,13 @@ export function ComboForm({
     if (autoStock?.situationKey && autoStock.requiredStart > 0) {
       keys.push(autoStock.situationKey);
     }
+    if (
+      selectedCharacterId === "kimberly" &&
+      recipeMoveIds.includes("kimberly_shuriken_explode") &&
+      !keys.includes("kimberly_shuriken")
+    ) {
+      keys.push("kimberly_shuriken");
+    }
     if (recipeMoveIds.includes("sys_ch")) {
       keys.push("counter");
     }

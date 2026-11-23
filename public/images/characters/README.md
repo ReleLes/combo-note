@@ -19,6 +19,8 @@
 - 春麗: `chun-li.webp` / `chun-li.png` / `chun-li.jpg`
 - ガイル: `guile.webp` / `guile.png` / `guile.jpg`
 - ザンギエフ: `zangief.webp` / `zangief.png` / `zangief.jpg`
+- ベガ: `vega.webp` / `vega.png` / `vega.jpg`
+- JP: `jp.webp` / `jp.png` / `jp.jpg`
 
 ## 検出優先順位
 

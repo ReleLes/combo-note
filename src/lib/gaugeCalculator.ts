@@ -71,6 +71,18 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "guile_m_cross_od_from_od",
   "guile_break_od",
   "guile_m_break_od",
+  // ベガ: OD シャドウライズからの各種OD派生（親技ODシャドウライズで既に +2 消費済み・追加消費なし）
+  "vega_headpress_od_from_od",
+  "vega_devil_od_from_od",
+  "vega_devil_od_mine_from_od",
+  "vega_m_headpress_od_from_od",
+  "vega_m_devil_od_from_od",
+  "vega_m_devil_od_mine_from_od",
+  // JP: ヴィーハト（OD含む）設置中からの各種派生（ヴィーハト・アクノ／ヴィーハト・チェーニは追加消費なし）
+  "jp_vihat_akno",
+  "jp_vihat_cheni",
+  "jp_m_vihat_akno",
+  "jp_m_vihat_cheni",
 ]);
 
 /**

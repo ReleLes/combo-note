@@ -164,6 +164,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(217, 119, 6, 0.45)",
     watermark: "ZANGIEF",
   },
+  // ベガ：サイコパープル／クリムゾンレッド系
+  vega: {
+    accent: "#A855F7",
+    secondary: "#E11D48",
+    gradientFrom: "#3B0764",
+    gradientTo: "#1F0A1D",
+    glow: "rgba(168, 85, 247, 0.50)",
+    badgeBg: "rgba(168, 85, 247, 0.24)",
+    badgeBorder: "rgba(225, 29, 72, 0.45)",
+    watermark: "M.BISON",
+  },
+  // JP：ディープバイオレット／ロイヤルゴールド系
+  jp: {
+    accent: "#7C3AED",
+    secondary: "#EAB308",
+    gradientFrom: "#2E1065",
+    gradientTo: "#141026",
+    glow: "rgba(124, 58, 237, 0.50)",
+    badgeBg: "rgba(124, 58, 237, 0.24)",
+    badgeBorder: "rgba(234, 179, 8, 0.45)",
+    watermark: "JP",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
@@ -193,6 +215,8 @@ export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
   "chun-li": ["ちゅんりー", "チュンリー", "ちゅんり", "chunli"],
   guile: ["がいる"],
   zangief: ["ざんぎえふ", "ざんぎ"],
+  vega: ["べが", "ばいそん", "m.bison", "mbison", "bison", "ベガ"],
+  jp: ["じぇいぴー", "じぇーぴー", "じぇいぴ", "ジェイピー", "ジェーピー"],
 };
 
 /**

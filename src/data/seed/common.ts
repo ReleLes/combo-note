@@ -126,6 +126,22 @@ export const SEED_CHARACTERS: Character[] = [
     sortOrder: 12,
     isActive: true,
   },
+  {
+    id: "vega",
+    slug: "vega",
+    nameJa: "ベガ",
+    nameEn: "M. Bison",
+    sortOrder: 13,
+    isActive: true,
+  },
+  {
+    id: "jp",
+    slug: "jp",
+    nameJa: "JP",
+    nameEn: "JP",
+    sortOrder: 14,
+    isActive: true,
+  },
 ];
 
 export const SEED_GAME_VERSIONS: GameVersion[] = [
@@ -276,6 +292,14 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-lime-100 text-lime-800 dark:bg-lime-500/20 dark:text-lime-200 dark:border dark:border-lime-400/30",
     characterId: "guile",
     sortOrder: 108,
+  },
+  {
+    key: "vega_psycho_mine",
+    label: "サイコマイン",
+    badgeClassName:
+      "bg-purple-100 text-purple-800 dark:bg-purple-500/25 dark:text-purple-200 dark:border dark:border-fuchsia-400/35",
+    characterId: "vega",
+    sortOrder: 109,
   },
 ];
 

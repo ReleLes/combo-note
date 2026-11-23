@@ -28,6 +28,8 @@ import { cammySeedData } from "./characters/cammy";
 import { chunLiSeedData } from "./characters/chun-li";
 import { guileSeedData } from "./characters/guile";
 import { zangiefSeedData } from "./characters/zangief";
+import { vegaSeedData } from "./characters/vega";
+import { jpSeedData } from "./characters/jp";
 
 const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   akuma: akumaSeedData,
@@ -42,6 +44,8 @@ const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
   "chun-li": chunLiSeedData,
   guile: guileSeedData,
   zangief: zangiefSeedData,
+  vega: vegaSeedData,
+  jp: jpSeedData,
 };
 
 export {

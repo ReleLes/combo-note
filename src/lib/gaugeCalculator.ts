@@ -83,6 +83,13 @@ export const DRIVE_COST_EXCLUDED_MOVE_IDS: ReadonlySet<string> = new Set([
   "jp_vihat_cheni",
   "jp_m_vihat_akno",
   "jp_m_vihat_cheni",
+  // エド: OD サイコスパークからの追撃派生（OD サイコシュート弱/中/強は親技ODサイコスパークで既に +2 消費済み・追加消費なし）
+  "ed_shoot_od_l",
+  "ed_shoot_od_m",
+  "ed_shoot_od_h",
+  "ed_m_shoot_od_l",
+  "ed_m_shoot_od_m",
+  "ed_m_shoot_od_h",
 ]);
 
 /**
@@ -122,12 +129,23 @@ export const MOVE_DRIVE_COST_OVERRIDES: Readonly<Record<string, number>> = {
   guile_cross_od2: 1,
   guile_m_cross_od2: 1,
   guile_m_sp_cross_od2: 1,
+  // テリー: SA2 ツインゲイザーは公式仕様どおり Dゲージを 3本消費（SAゲージ追加消費なし）
+  terry_sa2_twin: 3,
+  terry_m_sa2_twin: 3,
 };
 
 /**
  * 技ID単位の個別SAゲージ消費コストマップ（将来拡張・例外技用）。
  */
-export const MOVE_SA_COST_OVERRIDES: Readonly<Record<string, number>> = {};
+export const MOVE_SA_COST_OVERRIDES: Readonly<Record<string, number>> = {
+  // テリー: SA2 パワーゲイザーからの追撃派生
+  // - ツインゲイザー: 追加SA消費なし（0、Dゲージ3本消費のみ）
+  // - トリプルゲイザー: 追加SA消費 +1（パワーゲイザーSA2と合算して計SA3）
+  terry_sa2_twin: 0,
+  terry_m_sa2_twin: 0,
+  terry_sa2_triple: 1,
+  terry_m_sa2_triple: 1,
+};
 
 /**
  * 技1つが OD 必殺技（消費Dゲージ +2）かどうかを判定する。

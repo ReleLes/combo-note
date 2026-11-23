@@ -186,6 +186,28 @@ export const CHARACTER_THEMES: Record<string, CharacterVisualTheme> = {
     badgeBorder: "rgba(234, 179, 8, 0.45)",
     watermark: "JP",
   },
+  // エド：ネオンバイオレット／エレクトリックシアン系
+  ed: {
+    accent: "#8B5CF6",
+    secondary: "#22D3EE",
+    gradientFrom: "#2E1065",
+    gradientTo: "#0F172A",
+    glow: "rgba(139, 92, 246, 0.50)",
+    badgeBg: "rgba(139, 92, 246, 0.24)",
+    badgeBorder: "rgba(34, 211, 238, 0.45)",
+    watermark: "ED",
+  },
+  // テリー：ヒーローレッド／ロイヤルブルー系
+  terry: {
+    accent: "#EF4444",
+    secondary: "#3B82F6",
+    gradientFrom: "#450A0A",
+    gradientTo: "#172554",
+    glow: "rgba(239, 68, 68, 0.50)",
+    badgeBg: "rgba(239, 68, 68, 0.24)",
+    badgeBorder: "rgba(59, 130, 246, 0.45)",
+    watermark: "TERRY",
+  },
 };
 
 export function getCharacterTheme(slug: string): CharacterVisualTheme {
@@ -217,6 +239,8 @@ export const CHARACTER_SEARCH_READINGS: Readonly<Record<string, string[]>> = {
   zangief: ["ざんぎえふ", "ざんぎ"],
   vega: ["べが", "ばいそん", "m.bison", "mbison", "bison", "ベガ"],
   jp: ["じぇいぴー", "じぇーぴー", "じぇいぴ", "ジェイピー", "ジェーピー"],
+  ed: ["えど", "エド"],
+  terry: ["てりー", "てりーぼがーど", "テリーボガード", "terrybogard"],
 };
 
 /**

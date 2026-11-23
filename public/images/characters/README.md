@@ -21,6 +21,8 @@
 - ザンギエフ: `zangief.webp` / `zangief.png` / `zangief.jpg`
 - ベガ: `vega.webp` / `vega.png` / `vega.jpg`
 - JP: `jp.webp` / `jp.png` / `jp.jpg`
+- エド: `ed.webp` / `ed.png` / `ed.jpg`
+- テリー: `terry.webp` / `terry.png` / `terry.jpg`
 
 ## 検出優先順位
 

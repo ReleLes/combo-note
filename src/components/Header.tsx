@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -26,6 +26,8 @@ export function Header() {
   const { user, isAdmin, isLoading, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [notice, setNotice] = useState<string | null>(null);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!notice) return;
@@ -33,7 +35,34 @@ export function Header() {
     return () => window.clearTimeout(timer);
   }, [notice]);
 
+  useEffect(() => {
+    if (!isAccountMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAccountMenuOpen]);
+
   const handleLogout = async () => {
+    setIsAccountMenuOpen(false);
     await signOut();
     setNotice("ログアウトしました。");
     router.refresh();
@@ -161,26 +190,54 @@ export function Header() {
                     <span className="hidden sm:inline">ADMIN</span>
                   </span>
                 )}
-                <span
-                  title={user.email ?? "ログイン中"}
-                  className="hidden max-w-[140px] items-center gap-1 truncate rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700 xl:inline-flex dark:bg-[#251D3A] dark:text-[#E2DCF5]"
-                >
-                  <User
-                    className="h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-[#A99EC4]"
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{user.email}</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  aria-label="ログアウト"
-                  title={`ログアウト (${user.email ?? ""})`}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-1.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 sm:px-2.5 sm:text-sm dark:border-[#2E2447] dark:bg-[#1B152B] dark:text-[#E2DCF5] dark:hover:bg-[#251D3A]"
-                >
-                  <LogOut className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden="true" />
-                  <span className="hidden md:inline">ログアウト</span>
-                </button>
+                <div ref={accountMenuRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsAccountMenuOpen((prev) => !prev)}
+                    aria-label="アカウントメニュー"
+                    aria-haspopup="menu"
+                    aria-expanded={isAccountMenuOpen}
+                    title="アカウントメニュー"
+                    className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-colors sm:h-8 sm:w-8 ${
+                      isAccountMenuOpen
+                        ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-[#8B5CF6] dark:bg-[#7C3AED]/25 dark:text-[#DDD6FE]"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#DDD6FE] dark:hover:bg-[#30264A] dark:hover:text-white"
+                    }`}
+                  >
+                    <User
+                      className="h-3.5 w-3.5 sm:h-4 sm:w-4"
+                      aria-hidden="true"
+                    />
+                  </button>
+
+                  {isAccountMenuOpen && (
+                    <div
+                      role="menu"
+                      aria-label="アカウントメニュー"
+                      className="absolute right-0 z-40 mt-2 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-[#3A2E58] dark:bg-[#1B152B] dark:shadow-black/40"
+                    >
+                      <div className="flex items-center gap-2 border-b border-slate-100 px-2.5 py-2 text-xs font-semibold text-slate-700 dark:border-[#2E2447] dark:text-[#E2DCF5]">
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 dark:bg-emerald-400"
+                          aria-hidden="true"
+                        />
+                        <span>ログイン中</span>
+                      </div>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleLogout}
+                        className="mt-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-slate-700 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-[#E2DCF5] dark:hover:bg-rose-500/15 dark:hover:text-rose-200"
+                      >
+                        <LogOut
+                          className="h-3.5 w-3.5 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span>ログアウト</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <Link

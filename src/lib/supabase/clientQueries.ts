@@ -222,6 +222,67 @@ export async function fetchClientCombosByIds(ids: string[]): Promise<Combo[]> {
   return results;
 }
 
+export interface ClientRecentCombosQueryOptions {
+  /** 1ページあたりの取得件数（デフォルト: 20） */
+  limit?: number;
+  /** オフセット開始位置（デフォルト: 0） */
+  offset?: number;
+  /** 特定キャラクターで絞り込む場合の character_id */
+  characterId?: string | null;
+  /** 操作タイプ絞り込み（"all" または未指定で両方取得） */
+  controlType?: ControlType | "all";
+  /** 共通状況タグキー（例: "midscreen", "corner"） */
+  situation?: string | null;
+}
+
+export interface ClientRecentCombosPageResult {
+  combos: Combo[];
+  hasMore: boolean;
+}
+
+/**
+ * クライアント側から全キャラ公開コンボを新着順（created_at DESC, id DESC）で
+ * ページネーション取得する（1ページあたりデフォルト20件）。
+ */
+export async function fetchClientRecentCombosPage(
+  options: ClientRecentCombosQueryOptions = {}
+): Promise<ClientRecentCombosPageResult> {
+  const limit = Math.max(1, Math.min(100, options.limit ?? 20));
+  const offset = Math.max(0, options.offset ?? 0);
+
+  const supabase = createClient();
+  let query = supabase
+    .from("combos")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+
+  if (options.characterId && options.characterId !== "all") {
+    query = query.eq("character_id", options.characterId);
+  }
+  if (options.controlType && options.controlType !== "all") {
+    query = query.eq("control_type", options.controlType);
+  }
+  if (options.situation && options.situation !== "all") {
+    query = query.contains("situations", [options.situation]);
+  }
+
+  const { data, error } = await query.range(offset, offset + limit);
+
+  if (error) {
+    throw new Error(`新着コンボ一覧の取得に失敗しました: ${error.message}`);
+  }
+
+  const rows = (data ?? []) as ComboRow[];
+  const hasMore = rows.length > limit;
+  const pageRows = hasMore ? rows.slice(0, limit) : rows;
+
+  return {
+    combos: pageRows.map(mapCombo),
+    hasMore,
+  };
+}
+
 /**
  * ログイン中ユーザーが管理者（public.admin_users）かどうかを判定する。
  * 優先して RPC (`public.is_admin`) を呼び出し、未適用環境や一時エラー時は

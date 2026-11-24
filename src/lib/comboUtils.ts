@@ -88,3 +88,56 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * ISO日時文字列を「3分前」「2時間前」「2026/11/24」のような読みやすい表記へ変換する。
+ */
+export function formatRelativePostedAt(
+  isoString: string,
+  nowMs: number = Date.now()
+): string {
+  const date = new Date(isoString);
+  const timeMs = date.getTime();
+  if (Number.isNaN(timeMs)) return "";
+
+  const diffSec = Math.floor((nowMs - timeMs) / 1000);
+  if (diffSec < 0) {
+    return formatYmdDate(date);
+  }
+  if (diffSec < 60) {
+    return "たった今";
+  }
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) {
+    return `${diffMin}分前`;
+  }
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) {
+    return `${diffHour}時間前`;
+  }
+  const diffDay = Math.floor(diffHour / 24);
+  if (diffDay < 7) {
+    return `${diffDay}日前`;
+  }
+
+  return formatYmdDate(date);
+}
+
+/**
+ * ツールチップ等に表示する完全な日付時刻文字列（YYYY/MM/DD HH:mm）。
+ */
+export function formatFullDateTime(isoString: string): string {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return "";
+  const ymd = formatYmdDate(date);
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  return `${ymd} ${hh}:${mm}`;
+}
+
+function formatYmdDate(date: Date): string {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}/${mm}/${dd}`;
+}

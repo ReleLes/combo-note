@@ -133,7 +133,7 @@ export function CharacterSelectGridClient({
                   key={character.id}
                   href={`/characters/${character.slug}`}
                   style={cardStyle}
-                  className="group relative flex min-h-[80px] items-center overflow-hidden rounded-xl border border-slate-900/15 bg-[#110C1D] shadow-sm shadow-slate-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--char-accent)] hover:shadow-[0_10px_24px_-8px_var(--char-glow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--char-accent)] active:scale-[0.985] sm:min-h-[88px] lg:min-h-[92px] dark:border-white/12 dark:shadow-md dark:shadow-black/45"
+                  className="group relative flex min-h-[80px] items-center justify-between gap-2 overflow-hidden rounded-xl border border-slate-900/15 bg-[#110C1D] shadow-sm shadow-slate-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--char-accent)] hover:shadow-[0_10px_24px_-8px_var(--char-glow)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--char-accent)] active:scale-[0.985] sm:min-h-[88px] lg:min-h-[92px] dark:border-white/12 dark:shadow-md dark:shadow-black/45"
                 >
                   {/* ベース背景：キャラ別テーマカラーの斜めグラデーション */}
                   <div
@@ -163,26 +163,16 @@ export function CharacterSelectGridClient({
                     }}
                   />
 
-                  {/* 右側ビジュアルエリア：ポートレート画像 or 英字透かしフォールバック */}
+                  {/* 右側背景演出：モチーフアイコン用の控えめなグロー or 未配置時の英字透かしフォールバック */}
                   {imageUrl ? (
                     <div
                       aria-hidden="true"
-                      className="pointer-events-none absolute inset-y-0 right-0 w-[46%] overflow-hidden sm:w-[44%]"
+                      className="pointer-events-none absolute top-1/2 -right-4 h-24 w-24 -translate-y-1/2 rounded-full opacity-25 blur-2xl transition-opacity duration-300 group-hover:opacity-45"
                       style={{
-                        WebkitMaskImage:
-                          "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.72) 32%, black 62%)",
-                        maskImage:
-                          "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.72) 32%, black 62%)",
+                        background:
+                          "radial-gradient(circle, var(--char-accent) 0%, transparent 70%)",
                       }}
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt={`${character.nameJa}（${character.nameEn}）`}
-                        fill
-                        sizes="(max-width: 639px) 25vw, (max-width: 1023px) 16vw, 12vw"
-                        className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-108"
-                      />
-                    </div>
+                    />
                   ) : (
                     <>
                       {/* 右側ラジアルグロー */}
@@ -229,7 +219,7 @@ export function CharacterSelectGridClient({
                   {/* 左側：情報エリア */}
                   <div
                     className={`relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-1 py-2 pl-3 sm:py-2.5 sm:pl-3.5 ${
-                      imageUrl ? "pr-[34%] sm:pr-[36%]" : "pr-7 sm:pr-8"
+                      imageUrl ? "pr-0" : "pr-7 sm:pr-8"
                     }`}
                   >
                     {/* 1. キャラ日本語名＋英語名 */}
@@ -274,13 +264,29 @@ export function CharacterSelectGridClient({
                     )}
                   </div>
 
-                  {/* 右上コーナーの控えめな遷移アイコン */}
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute top-2 right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white/75 backdrop-blur-xs transition-all duration-200 group-hover:border-[var(--char-accent)] group-hover:bg-black/65 group-hover:text-white sm:h-6 sm:w-6"
-                  >
-                    <ChevronRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5" />
-                  </span>
+                  {/* 右側：丸型モチーフアイコン（画像配置済みキャラ） or 右上コーナー遷移アイコン（未配置キャラ） */}
+                  {imageUrl ? (
+                    <div className="relative z-10 mr-2.5 h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#1C222D] ring-1 ring-white/20 shadow-[0_4px_12px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:ring-[var(--char-accent)]/75 group-hover:shadow-[0_0_16px_-2px_var(--char-glow)] sm:mr-3 sm:h-14 sm:w-14 lg:h-16 lg:w-16 dark:ring-white/15 dark:shadow-[0_4px_14px_rgba(0,0,0,0.55)]">
+                      <Image
+                        src={imageUrl}
+                        alt={`${character.nameJa}（${character.nameEn}）モチーフアイコン`}
+                        fill
+                        sizes="(max-width: 639px) 48px, (max-width: 1023px) 56px, 64px"
+                        className="scale-[1.08] object-cover object-center transition-transform duration-300 ease-out group-hover:scale-[1.14]"
+                      />
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset ring-black/15"
+                      />
+                    </div>
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute top-2 right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white/75 backdrop-blur-xs transition-all duration-200 group-hover:border-[var(--char-accent)] group-hover:bg-black/65 group-hover:text-white sm:h-6 sm:w-6"
+                    >
+                      <ChevronRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5" />
+                    </span>
+                  )}
                 </Link>
               );
             }

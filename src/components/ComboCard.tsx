@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Check,
   ChevronRight,
+  Clock,
   Copy,
   Flame,
   Heart,
@@ -15,6 +17,7 @@ import {
   Trash2,
 } from "lucide-react";
 import type {
+  Character,
   CharacterStockMeta,
   Combo,
   GameVersion,
@@ -23,9 +26,12 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
+import { getCharacterTheme } from "@/lib/characterThemes";
 import {
   copyTextToClipboard,
   formatComboRecipeText,
+  formatFullDateTime,
+  formatRelativePostedAt,
 } from "@/lib/comboUtils";
 import { calculateRecipeStock } from "@/lib/stockCalculator";
 import { MoveNotation } from "@/components/CommandNotation";
@@ -48,6 +54,14 @@ interface ComboCardProps {
   isAdminAction?: boolean;
   /** 共有リンク生成用のキャラクターslug */
   characterSlug?: string;
+  /** 全キャラ横断一覧（/combos 等）でカード最上部に表示するキャラクター情報 */
+  character?: Pick<Character, "id" | "slug" | "nameJa" | "nameEn">;
+  /** キャラクターの丸型モチーフアイコンURL（未配置時はテーマカラーイニシャル表示） */
+  characterImageUrl?: string | null;
+  /** 操作タイプバッジ（C/M）をキャラクターバッジ横に併記するか */
+  showControlTypeBadge?: boolean;
+  /** 投稿日時（相対日時または日付）をカード最上部に表示するか */
+  showPostedAt?: boolean;
   onToggleSave: (comboId: string) => void;
   onToggleLike: (combo: Combo) => void;
   onSelect: (combo: Combo) => void;
@@ -88,6 +102,10 @@ export function ComboCard({
   onDeleteRequest,
   isAdminAction = false,
   characterSlug,
+  character,
+  characterImageUrl,
+  showControlTypeBadge = false,
+  showPostedAt = false,
   onToggleSave,
   onToggleLike,
   onSelect,
@@ -133,6 +151,7 @@ export function ComboCard({
   const stockShortLabel = stockMeta?.shortLabel ?? "ストック";
   const stockCost = combo.stockCost ?? 0;
   const stockGain = combo.stockGain ?? 0;
+  const charTheme = character ? getCharacterTheme(character.slug) : null;
 
   return (
     <article
@@ -147,6 +166,73 @@ export function ComboCard({
       tabIndex={0}
       className="group cursor-pointer rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs transition-all hover:border-blue-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:p-4 dark:border-[#2E2447] dark:bg-[#1B152B] dark:hover:border-[#8B5CF6] dark:focus-visible:outline-[#8B5CF6]"
     >
+      {/* キャラクターバッジ & 投稿日時（全キャラ横断一覧向け） */}
+      {(character || showPostedAt) && (
+        <div className="mb-2.5 flex items-center justify-between gap-2 border-b border-slate-100 pb-2 dark:border-[#2E2447]">
+          {character ? (
+            <Link
+              href={`/characters/${character.slug}`}
+              onClick={(e) => e.stopPropagation()}
+              title={`${character.nameJa}のコンボ一覧を見る`}
+              className="group/char inline-flex min-w-0 items-center gap-2 rounded-full py-0.5 pr-2 pl-0.5 transition-colors hover:bg-slate-100 dark:hover:bg-[#251D3A]"
+            >
+              {characterImageUrl ? (
+                <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-[#1C222D] ring-1 ring-slate-900/10 shadow-2xs dark:ring-white/15">
+                  <Image
+                    src={characterImageUrl}
+                    alt={`${character.nameJa}モチーフアイコン`}
+                    fill
+                    sizes="24px"
+                    className="scale-[1.08] object-cover object-center"
+                  />
+                </span>
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold text-white ring-1 ring-black/10 dark:ring-white/15"
+                  style={
+                    charTheme
+                      ? {
+                          background: `linear-gradient(135deg, ${charTheme.gradientFrom}, ${charTheme.accent})`,
+                        }
+                      : undefined
+                  }
+                >
+                  {character.nameJa.slice(0, 1)}
+                </span>
+              )}
+              <span className="truncate text-xs font-bold text-slate-800 group-hover/char:text-blue-700 sm:text-[13px] dark:text-[#F4F1FF] dark:group-hover/char:text-[#C4B5FD]">
+                {character.nameJa}
+              </span>
+              {showControlTypeBadge && (
+                <span
+                  className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold leading-none ${
+                    combo.controlType === "classic"
+                      ? "bg-slate-900 text-white dark:bg-[#7C3AED] dark:text-white"
+                      : "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-200"
+                  }`}
+                >
+                  {combo.controlType === "classic" ? "C" : "M"}
+                </span>
+              )}
+            </Link>
+          ) : (
+            <span />
+          )}
+
+          {showPostedAt && (
+            <time
+              dateTime={combo.createdAt}
+              title={formatFullDateTime(combo.createdAt)}
+              suppressHydrationWarning
+              className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-[#A99EC4]"
+            >
+              <Clock className="h-3 w-3" aria-hidden="true" />
+              <span>{formatRelativePostedAt(combo.createdAt)}</span>
+            </time>
+          )}
+        </div>
+      )}
       {/* ヘッダー行：最重要の状況バッジ + カテゴリ + 編集・マイノート保存ボタン */}
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">

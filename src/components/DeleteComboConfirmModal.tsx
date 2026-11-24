@@ -35,6 +35,8 @@ export function DeleteComboConfirmModal({
 
   if (!combo) return null;
 
+  const displayAuthorName = combo.authorName?.trim() || "未設定（匿名）";
+
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-[1px] dark:bg-black/80"
@@ -86,7 +88,7 @@ export function DeleteComboConfirmModal({
             <div className="space-y-0.5">
               <p className="font-bold">管理者権限で削除します</p>
               <p className="text-[11px] leading-relaxed text-amber-800/90 dark:text-amber-200/85">
-                投稿者（{combo.authorName ?? "シード／投稿者"}
+                投稿者（{displayAuthorName}
                 ）の公開コンボを削除しようとしています。対象に誤りがないかご確認ください。
               </p>
             </div>
@@ -113,7 +115,7 @@ export function DeleteComboConfirmModal({
               {combo.damage !== null ? combo.damage.toLocaleString() : "---"}
             </span>
             <span>/</span>
-            <span>投稿者: {combo.authorName ?? "投稿者"}</span>
+            <span>投稿者: {displayAuthorName}</span>
           </div>
         </div>
 

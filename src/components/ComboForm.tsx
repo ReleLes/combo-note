@@ -55,6 +55,7 @@ export interface ComboFormSubmitPayload {
   characterId: string;
   controlType: ControlType;
   title: string | null;
+  authorName: string | null;
   moveIds: string[];
   recipeSignature: string;
   situations: string[];
@@ -75,6 +76,8 @@ export interface ComboFormProps {
   initialMoves: Move[];
   /** 新規投稿時の初期選択キャラクターID（URLクエリ引き継ぎ等） */
   initialCharacterId?: string;
+  /** 編集モード時の任意投稿者名の初期値 */
+  initialAuthorName?: string;
   versions: GameVersion[];
   /** 編集モード時の初期値 */
   initialCombo?: Combo;
@@ -181,6 +184,7 @@ export function ComboForm({
   characters,
   initialMoves,
   initialCharacterId,
+  initialAuthorName,
   versions,
   initialCombo,
   excludeComboId,
@@ -364,6 +368,9 @@ export function ComboForm({
   );
   const [hasOki, setHasOki] = useState<boolean>(initialCombo?.hasOki ?? false);
   const [note, setNote] = useState<string>(initialCombo?.note ?? "");
+  const [authorName, setAuthorName] = useState<string>(
+    initialAuthorName ?? initialCombo?.authorName ?? ""
+  );
 
   // 重複チェック・ローカルバリデーションエラー
   const [duplicateCheck, setDuplicateCheck] = useState<{
@@ -825,10 +832,17 @@ export function ComboForm({
       return;
     }
 
+    const trimmedAuthorName = authorName.trim();
+    if (trimmedAuthorName.length > 30) {
+      setValidationError("投稿者名は30文字以内で入力してください。");
+      return;
+    }
+
     await onSubmit({
       characterId: selectedCharacterId,
       controlType,
       title: trimmedTitle || null,
+      authorName: trimmedAuthorName || null,
       moveIds: recipeMoveIds,
       recipeSignature,
       situations: selectedSituations,
@@ -1740,6 +1754,36 @@ export function ComboForm({
             placeholder="タイミングのコツ、距離限定、キャラ限定、起き攻めのフレーム状況などを記入してください。"
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] dark:focus:border-[#8B5CF6]"
           />
+        </div>
+
+        {/* 投稿者名（任意） */}
+        <div className="space-y-1.5 border-t border-slate-100 pt-4 dark:border-[#2D2346]">
+          <div className="flex items-center justify-between gap-2">
+            <label
+              htmlFor="combo-author-name-input"
+              className="text-sm font-bold text-slate-900 dark:text-[#F4F1FF]"
+            >
+              投稿者名（任意）
+            </label>
+            <span className="text-[11px] text-slate-400 dark:text-[#8E82B3]">
+              {authorName.trim().length}/30
+            </span>
+          </div>
+          <input
+            id="combo-author-name-input"
+            type="text"
+            maxLength={30}
+            value={authorName}
+            onChange={(e) => {
+              setAuthorName(e.target.value);
+              clearErrors();
+            }}
+            placeholder="プレイヤー名やXアカウント名など（空欄の場合は非表示）"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm dark:border-[#3A2E58] dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] dark:focus:border-[#8B5CF6]"
+          />
+          <p className="text-[11px] leading-relaxed text-slate-500 dark:text-[#A99EC4]">
+            ※未入力のまま投稿できます。メールアドレスは公開されません。
+          </p>
         </div>
       </section>
 

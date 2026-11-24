@@ -65,11 +65,14 @@ export function ComboEditClient({
     const supabase = createClient();
 
     try {
-      // 管理者が他ユーザーのコンボを編集した際も author_id / author_name は上書きしない。
+      const normalizedAuthorName = payload.authorName?.trim() || null;
+
+      // 管理者が他ユーザーのコンボを編集した際も author_id（投稿者アカウント紐付け）は上書きしない。
       // 認可は DB の RLS ポリシー（auth.uid() = author_id OR public.is_admin()）で強制する。
       const { data: updatedRow, error: updateError } = await supabase
         .from("combos")
         .update({
+          author_name: normalizedAuthorName,
           control_type: payload.controlType,
           title: payload.title,
           move_ids: payload.moveIds,
@@ -229,7 +232,7 @@ export function ComboEditClient({
             />
             <span>
               <strong>管理者権限で編集しています。</strong>
-              元の投稿者（{combo.authorName ?? "シード／投稿者"}）の情報は変更されません。
+              元の投稿者アカウント（表示名: {combo.authorName?.trim() || "未設定（匿名）"}）の紐付けは変更されません。
             </span>
           </div>
         )}
@@ -239,6 +242,7 @@ export function ComboEditClient({
         mode="edit"
         characters={characters}
         initialMoves={initialMoves}
+        initialAuthorName={combo.authorName ?? ""}
         versions={versions}
         initialCombo={combo}
         excludeComboId={combo.id}

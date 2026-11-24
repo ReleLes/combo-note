@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Star,
   Trash2,
+  User,
 } from "lucide-react";
 import type {
   Character,
@@ -152,6 +153,7 @@ export function ComboCard({
   const stockCost = combo.stockCost ?? 0;
   const stockGain = combo.stockGain ?? 0;
   const charTheme = character ? getCharacterTheme(character.slug) : null;
+  const displayAuthorName = combo.authorName?.trim() || null;
 
   return (
     <article
@@ -439,6 +441,15 @@ export function ComboCard({
         </div>
 
         <div className="flex items-center gap-2.5 text-[11px] text-slate-500 dark:text-[#A99EC4]">
+          {displayAuthorName && (
+            <span
+              title={`投稿者: ${displayAuthorName}`}
+              className="inline-flex max-w-[120px] items-center gap-1 text-[11px] text-slate-500 sm:max-w-[160px] dark:text-[#A99EC4]"
+            >
+              <User className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{displayAuthorName}</span>
+            </span>
+          )}
           {version && (
             <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-[#251D3A] dark:text-[#A99EC4]">
               {version.label}

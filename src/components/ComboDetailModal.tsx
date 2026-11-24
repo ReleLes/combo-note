@@ -128,6 +128,7 @@ export function ComboDetailModal({
     .filter((m): m is Move => Boolean(m));
 
   const autoStock = calculateRecipeStock(combo.characterId, moves);
+  const displayAuthorName = combo.authorName?.trim() || null;
 
   const categoryLabel =
     COMBO_CATEGORIES.find((c) => c.key === combo.category)?.label ??
@@ -426,10 +427,12 @@ export function ComboDetailModal({
                   </strong>
                 </span>
               )}
-              <span className="inline-flex items-center gap-1">
-                <User className="h-3.5 w-3.5" aria-hidden="true" />
-                {combo.authorName ?? "投稿者"}
-              </span>
+              {displayAuthorName && (
+                <span className="inline-flex max-w-[200px] items-center gap-1 sm:max-w-[260px]">
+                  <User className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{displayAuthorName}</span>
+                </span>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">

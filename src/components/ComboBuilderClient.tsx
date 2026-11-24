@@ -66,12 +66,12 @@ export function ComboBuilderClient({
         throw new Error("ゲームバージョンマスタが見つかりませんでした。");
       }
 
-      const authorName = user.email ? user.email.split("@")[0] : "ユーザー";
+      const normalizedAuthorName = payload.authorName?.trim() || null;
 
       // 2. combos テーブルへ INSERT
       const { error: insertError } = await supabase.from("combos").insert({
         author_id: user.id,
-        author_name: authorName,
+        author_name: normalizedAuthorName,
         character_id: payload.characterId,
         control_type: payload.controlType,
         title: payload.title,

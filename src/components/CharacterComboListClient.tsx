@@ -116,6 +116,14 @@ export function CharacterComboListClient({
     return () => window.clearTimeout(timer);
   }, [notice]);
 
+  const groupedSituations = useMemo(() => {
+    return {
+      basic: situations.filter((s) => s.group === "basic"),
+      purpose: situations.filter((s) => s.group === "purpose"),
+      characterUnique: situations.filter((s) => s.group === "character"),
+    };
+  }, [situations]);
+
   const situationMap = useMemo(() => {
     const map: Record<string, SituationDefinition> = {};
     for (const s of situations) {
@@ -202,7 +210,7 @@ export function CharacterComboListClient({
 
       if (
         selectedSituations.length > 0 &&
-        !selectedSituations.some((sit) => combo.situations.includes(sit))
+        !selectedSituations.every((sit) => combo.situations.includes(sit))
       ) {
         return false;
       }
@@ -456,10 +464,17 @@ export function CharacterComboListClient({
         aria-label="検索・絞り込み"
         className="mb-5 space-y-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs sm:p-4 dark:border-[#2E2447] dark:bg-[#1B152B]"
       >
-        {/* 状況フィルタチップ */}
+        {/* 状況フィルタチップ（基本状況／実戦・目的／キャラ固有のコンパクト整理・複数選択AND） */}
         <div>
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-[#E2DCF5]">状況で絞る</span>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs font-bold text-slate-700 dark:text-[#E2DCF5]">
+                状況で絞る
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-[#8E82B3]">
+                複数選択はAND
+              </span>
+            </div>
             {(selectedSituations.length > 0 ||
               onlyStockGain ||
               selectedStockCosts.length > 0) && (
@@ -476,68 +491,130 @@ export function CharacterComboListClient({
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {situations.map((sit) => {
-              const isSelected = selectedSituations.includes(sit.key);
-              return (
-                <button
-                  key={sit.key}
-                  type="button"
-                  onClick={() => toggleSituation(sit.key)}
-                  aria-pressed={isSelected}
-                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
-                    isSelected
-                      ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
-                      : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
-                  }`}
-                >
-                  {sit.label}
-                </button>
-              );
-            })}
 
-            {/* キャラ固有ストック絞り込み（獲得・始動ストック数） */}
-            {character.stockMeta && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setOnlyStockGain((prev) => !prev)}
-                  aria-pressed={onlyStockGain}
-                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
-                    onlyStockGain
-                      ? "bg-cyan-100 text-cyan-800 ring-2 ring-blue-600 ring-offset-1 dark:border dark:border-cyan-400/40 dark:bg-cyan-500/25 dark:text-cyan-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
-                      : "border border-cyan-200 bg-cyan-50/70 text-cyan-700 hover:bg-cyan-100/70 dark:border-cyan-400/30 dark:bg-cyan-500/15 dark:text-cyan-200 dark:hover:bg-cyan-500/25"
-                  }`}
-                >
-                  {character.stockMeta.shortLabel}獲得
-                </button>
+          <div className="space-y-2">
+            {/* 基本状況 */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                基本
+              </span>
+              {groupedSituations.basic.map((sit) => {
+                const isSelected = selectedSituations.includes(sit.key);
+                return (
+                  <button
+                    key={sit.key}
+                    type="button"
+                    onClick={() => toggleSituation(sit.key)}
+                    aria-pressed={isSelected}
+                    className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                      isSelected
+                        ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                        : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
+                    }`}
+                  >
+                    {sit.label}
+                  </button>
+                );
+              })}
+            </div>
 
-                {Array.from(
-                  { length: character.stockMeta.maxCount },
-                  (_, i) => i + 1
-                ).map((count) => {
-                  const isSelected = selectedStockCosts.includes(count);
-                  const isMax = count === character.stockMeta?.maxCount;
-                  const label = isMax
-                    ? `${character.stockMeta?.shortLabel}最大(${count}個)`
-                    : `${character.stockMeta?.shortLabel}${count}個`;
+            {/* 実戦・目的タグ */}
+            {groupedSituations.purpose.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
+                <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                  実戦・目的
+                </span>
+                {groupedSituations.purpose.map((sit) => {
+                  const isSelected = selectedSituations.includes(sit.key);
                   return (
                     <button
-                      key={`stock-cost-${count}`}
+                      key={sit.key}
                       type="button"
-                      onClick={() => toggleStockCost(count)}
+                      onClick={() => toggleSituation(sit.key)}
                       aria-pressed={isSelected}
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                      title={sit.description}
+                      className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
                         isSelected
-                          ? "bg-pink-100 text-pink-800 ring-2 ring-blue-600 ring-offset-1 dark:border dark:border-pink-400/40 dark:bg-pink-500/25 dark:text-pink-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
-                          : "border border-pink-200 bg-pink-50/70 text-pink-700 hover:bg-pink-100/70 dark:border-pink-400/30 dark:bg-pink-500/15 dark:text-pink-200 dark:hover:bg-pink-500/25"
+                          ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                          : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
                       }`}
                     >
-                      {label}
+                      {sit.label}
                     </button>
                   );
                 })}
-              </>
+              </div>
+            )}
+
+            {/* キャラ固有状況＆固有ストック絞り込み */}
+            {(groupedSituations.characterUnique.length > 0 ||
+              character.stockMeta) && (
+              <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
+                <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                  固有
+                </span>
+                {groupedSituations.characterUnique.map((sit) => {
+                  const isSelected = selectedSituations.includes(sit.key);
+                  return (
+                    <button
+                      key={sit.key}
+                      type="button"
+                      onClick={() => toggleSituation(sit.key)}
+                      aria-pressed={isSelected}
+                      className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                        isSelected
+                          ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                          : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
+                      }`}
+                    >
+                      {sit.label}
+                    </button>
+                  );
+                })}
+
+                {character.stockMeta && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setOnlyStockGain((prev) => !prev)}
+                      aria-pressed={onlyStockGain}
+                      className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                        onlyStockGain
+                          ? "bg-cyan-100 text-cyan-800 ring-2 ring-blue-600 ring-offset-1 dark:border dark:border-cyan-400/40 dark:bg-cyan-500/25 dark:text-cyan-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
+                          : "border border-cyan-200 bg-cyan-50/70 text-cyan-700 hover:bg-cyan-100/70 dark:border-cyan-400/30 dark:bg-cyan-500/15 dark:text-cyan-200 dark:hover:bg-cyan-500/25"
+                      }`}
+                    >
+                      {character.stockMeta.shortLabel}獲得
+                    </button>
+
+                    {Array.from(
+                      { length: character.stockMeta.maxCount },
+                      (_, i) => i + 1
+                    ).map((count) => {
+                      const isSelected = selectedStockCosts.includes(count);
+                      const isMax = count === character.stockMeta?.maxCount;
+                      const label = isMax
+                        ? `${character.stockMeta?.shortLabel}最大(${count}個)`
+                        : `${character.stockMeta?.shortLabel}${count}個`;
+                      return (
+                        <button
+                          key={`stock-cost-${count}`}
+                          type="button"
+                          onClick={() => toggleStockCost(count)}
+                          aria-pressed={isSelected}
+                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                            isSelected
+                              ? "bg-pink-100 text-pink-800 ring-2 ring-blue-600 ring-offset-1 dark:border dark:border-pink-400/40 dark:bg-pink-500/25 dark:text-pink-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
+                              : "border border-pink-200 bg-pink-50/70 text-pink-700 hover:bg-pink-100/70 dark:border-pink-400/30 dark:bg-pink-500/15 dark:text-pink-200 dark:hover:bg-pink-500/25"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>

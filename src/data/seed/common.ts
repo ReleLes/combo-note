@@ -5,6 +5,7 @@ import type {
   GameVersion,
   Move,
   SituationDefinition,
+  SituationGroup,
 } from "@/types/combo";
 
 export const SEED_CHARACTERS: Character[] = [
@@ -337,14 +338,24 @@ export const COMBO_CATEGORIES: ComboCategoryDefinition[] = [
   { key: "fun", label: "ネタコン", sortOrder: 4 },
 ];
 
+export const SITUATION_GROUPS: ReadonlyArray<{
+  key: SituationGroup;
+  label: string;
+}> = [
+  { key: "basic", label: "基本状況" },
+  { key: "purpose", label: "実戦目的・状態" },
+  { key: "character", label: "キャラ固有" },
+];
+
 export const SEED_SITUATIONS: SituationDefinition[] = [
-  // 共通状況
+  // 基本状況（共通）
   {
     key: "midscreen",
     label: "中央・基本",
     badgeClassName:
       "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200 dark:border dark:border-blue-400/30",
     characterId: null,
+    group: "basic",
     sortOrder: 1,
   },
   {
@@ -353,6 +364,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200 dark:border dark:border-amber-400/30",
     characterId: null,
+    group: "basic",
     sortOrder: 2,
   },
   {
@@ -361,6 +373,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-purple-100 text-purple-700 dark:bg-purple-500/25 dark:text-purple-200 dark:border dark:border-purple-400/35",
     characterId: null,
+    group: "basic",
     sortOrder: 3,
   },
   {
@@ -369,6 +382,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-500/20 dark:text-fuchsia-200 dark:border dark:border-fuchsia-400/30",
     characterId: null,
+    group: "basic",
     sortOrder: 4,
   },
   {
@@ -377,6 +391,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200 dark:border dark:border-red-400/30",
     characterId: null,
+    group: "basic",
     sortOrder: 5,
   },
   {
@@ -385,6 +400,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200 dark:border dark:border-rose-400/30",
     characterId: null,
+    group: "basic",
     sortOrder: 6,
   },
   {
@@ -393,6 +409,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200 dark:border dark:border-emerald-400/30",
     characterId: null,
+    group: "basic",
     sortOrder: 7,
   },
   {
@@ -401,7 +418,60 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-200 dark:border dark:border-yellow-400/30",
     characterId: null,
+    group: "basic",
     sortOrder: 8,
+  },
+
+  // 実戦目的・状態（共通）
+  {
+    key: "lethal",
+    label: "リーサル",
+    badgeClassName:
+      "border border-red-300 bg-red-600 text-white dark:border-red-400/60 dark:bg-red-600/85 dark:text-red-50",
+    characterId: null,
+    group: "purpose",
+    description: "倒し切り・最大火力",
+    sortOrder: 21,
+  },
+  {
+    key: "corner_carry",
+    label: "運び",
+    badgeClassName:
+      "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/25 dark:text-indigo-200 dark:border dark:border-indigo-400/35",
+    characterId: null,
+    group: "purpose",
+    description: "画面端への運び重視",
+    sortOrder: 22,
+  },
+  {
+    key: "drive_recovery",
+    label: "Dゲージ回復",
+    badgeClassName:
+      "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200 dark:border dark:border-sky-400/35",
+    characterId: null,
+    group: "purpose",
+    description: "Dゲージ回復待ち・時間稼ぎ",
+    sortOrder: 23,
+  },
+  {
+    key: "burnout",
+    label: "自分BO中",
+    badgeClassName:
+      "bg-slate-200 text-slate-800 dark:bg-slate-500/25 dark:text-slate-200 dark:border dark:border-slate-400/35",
+    characterId: null,
+    group: "purpose",
+    description: "バーンアウト中でも使用可能",
+    sortOrder: 24,
+  },
+  {
+    key: "setplay",
+    label: "セットプレイ",
+    badgeClassName:
+      "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-200 dark:border dark:border-teal-400/35",
+    characterId: null,
+    group: "purpose",
+    description: "詐欺飛び・起き攻め連携・セットプレイ向け",
+    sortOrder: 25,
   },
 
   // キャラ固有状況
@@ -411,6 +481,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-200 dark:border dark:border-pink-400/30",
     characterId: "juri",
+    group: "character",
     sortOrder: 101,
   },
   {
@@ -419,6 +490,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-200 dark:border dark:border-pink-400/30",
     characterId: "c-viper",
+    group: "character",
     sortOrder: 103,
   },
   {
@@ -427,6 +499,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-200 dark:border dark:border-pink-400/30",
     characterId: "ingrid",
+    group: "character",
     sortOrder: 104,
   },
   {
@@ -435,6 +508,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-200 dark:border dark:border-cyan-400/30",
     characterId: "ingrid",
+    group: "character",
     sortOrder: 106,
   },
   {
@@ -443,6 +517,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/30",
     characterId: "mai",
+    group: "character",
     sortOrder: 105,
   },
   {
@@ -451,6 +526,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200 dark:border dark:border-sky-400/30",
     characterId: "ryu",
+    group: "character",
     sortOrder: 107,
   },
   {
@@ -459,6 +535,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-lime-100 text-lime-800 dark:bg-lime-500/20 dark:text-lime-200 dark:border dark:border-lime-400/30",
     characterId: "guile",
+    group: "character",
     sortOrder: 108,
   },
   {
@@ -467,6 +544,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-purple-100 text-purple-800 dark:bg-purple-500/25 dark:text-purple-200 dark:border dark:border-fuchsia-400/35",
     characterId: "vega",
+    group: "character",
     sortOrder: 109,
   },
   {
@@ -475,6 +553,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-200 dark:border dark:border-teal-400/35",
     characterId: "rashid",
+    group: "character",
     sortOrder: 110,
   },
   {
@@ -483,6 +562,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-violet-100 text-violet-800 dark:bg-violet-500/25 dark:text-lime-200 dark:border dark:border-lime-400/35",
     characterId: "aki",
+    group: "character",
     sortOrder: 111,
   },
   {
@@ -491,6 +571,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-red-100 text-red-800 dark:bg-red-500/25 dark:text-lime-200 dark:border dark:border-red-400/35",
     characterId: "alex",
+    group: "character",
     sortOrder: 112,
   },
   {
@@ -499,6 +580,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-amber-200 dark:border dark:border-sky-400/35",
     characterId: "yasmine",
+    group: "character",
     sortOrder: 113,
   },
   {
@@ -507,6 +589,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-yellow-200 dark:border dark:border-amber-400/35",
     characterId: "yasmine",
+    group: "character",
     sortOrder: 114,
   },
   {
@@ -515,6 +598,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/35",
     characterId: "arjun",
+    group: "character",
     sortOrder: 115,
   },
   {
@@ -523,6 +607,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200 dark:border dark:border-amber-400/35",
     characterId: "jamie",
+    group: "character",
     sortOrder: 116,
   },
   {
@@ -531,6 +616,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-pink-100 text-pink-800 dark:bg-fuchsia-500/20 dark:text-pink-200 dark:border dark:border-pink-400/35",
     characterId: "kimberly",
+    group: "character",
     sortOrder: 117,
   },
   {
@@ -539,6 +625,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-rose-100 text-rose-800 dark:bg-indigo-500/25 dark:text-rose-200 dark:border dark:border-rose-400/35",
     characterId: "manon",
+    group: "character",
     sortOrder: 118,
   },
   {
@@ -547,6 +634,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-yellow-200 dark:border dark:border-emerald-400/35",
     characterId: "blanka",
+    group: "character",
     sortOrder: 119,
   },
   {
@@ -555,6 +643,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 dark:border dark:border-rose-400/35",
     characterId: "ehonda",
+    group: "character",
     sortOrder: 120,
   },
   {
@@ -563,6 +652,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     badgeClassName:
       "bg-emerald-100 text-emerald-800 dark:bg-sky-500/20 dark:text-emerald-200 dark:border dark:border-emerald-400/35",
     characterId: "lily",
+    group: "character",
     sortOrder: 121,
   },
 ];

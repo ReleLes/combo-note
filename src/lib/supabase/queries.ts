@@ -372,8 +372,10 @@ export interface RecentCombosQueryOptions {
   characterId?: string | null;
   /** 操作タイプ絞り込み（"all" または未指定で両方取得） */
   controlType?: ControlType | "all";
-  /** 共通状況タグキー（例: "midscreen", "corner"） */
+  /** 単一の共通状況タグキー（後方互換用） */
   situation?: string | null;
+  /** 複数の共通状況タグキー（AND条件で絞り込み） */
+  situations?: string[] | null;
 }
 
 export interface RecentCombosPageResult {
@@ -405,8 +407,20 @@ export async function fetchRecentCombosPage(
   if (options.controlType && options.controlType !== "all") {
     query = query.eq("control_type", options.controlType);
   }
-  if (options.situation && options.situation !== "all") {
-    query = query.contains("situations", [options.situation]);
+
+  const activeSituations = Array.from(
+    new Set([
+      ...(options.situations ?? []).filter(
+        (s): s is string => typeof s === "string" && s.length > 0 && s !== "all"
+      ),
+      ...(options.situation && options.situation !== "all"
+        ? [options.situation]
+        : []),
+    ])
+  );
+  if (activeSituations.length > 0) {
+    // PostgreSQL text[] の contains (@>) により、指定した全状況タグを含むコンボのみ抽出（AND条件）
+    query = query.contains("situations", activeSituations);
   }
 
   const { data, error } = await query.range(offset, offset + limit);

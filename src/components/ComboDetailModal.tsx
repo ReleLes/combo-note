@@ -148,13 +148,14 @@ export function ComboDetailModal({
       >
         {/* モーダルヘッダー */}
         <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3.5 sm:px-6 dark:border-[#2E2447] dark:bg-[#1B152B]">
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
             {combo.situations.map((sitKey) => {
               const def = situationMap[sitKey];
               return (
                 <span
                   key={sitKey}
-                  className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-bold ${
+                  title={def?.description}
+                  className={`inline-flex items-center whitespace-nowrap rounded-md px-2.5 py-0.5 text-xs font-bold ${
                     def?.badgeClassName ??
                     "bg-slate-100 text-slate-700 dark:bg-[#251D3A] dark:text-[#CFC6E8]"
                   }`}
@@ -163,10 +164,10 @@ export function ComboDetailModal({
                 </span>
               );
             })}
-            <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600 dark:border-[#34294F] dark:bg-[#251D3A] dark:text-[#A99EC4]">
+            <span className="inline-flex items-center whitespace-nowrap rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600 dark:border-[#34294F] dark:bg-[#251D3A] dark:text-[#A99EC4]">
               {categoryLabel}
             </span>
-            <span className="inline-flex items-center rounded-md bg-slate-900 px-2 py-0.5 text-xs font-medium text-white dark:bg-[#7C3AED] dark:text-white">
+            <span className="inline-flex items-center whitespace-nowrap rounded-md bg-slate-900 px-2 py-0.5 text-xs font-medium text-white dark:bg-[#7C3AED] dark:text-white">
               {combo.controlType === "classic" ? "クラシック" : "モダン"}
             </span>
           </div>

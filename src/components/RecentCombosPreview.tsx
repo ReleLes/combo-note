@@ -163,7 +163,8 @@ export function RecentCombosPreview({
                           return (
                             <span
                               key={sitKey}
-                              className={`inline-flex shrink-0 items-center rounded px-1.5 py-[1px] text-[10px] font-bold leading-tight ${
+                              title={def?.description}
+                              className={`inline-flex shrink-0 items-center whitespace-nowrap rounded px-1.5 py-[1px] text-[10px] font-bold leading-tight ${
                                 idx > 0 ? "hidden sm:inline-flex" : ""
                               } ${
                                 def?.badgeClassName ??

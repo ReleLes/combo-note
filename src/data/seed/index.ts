@@ -13,6 +13,7 @@ import {
   SEED_CHARACTERS,
   SEED_GAME_VERSIONS,
   SEED_SITUATIONS,
+  SITUATION_GROUPS,
   SYSTEM_MOVES,
   buildRecipeSignature,
 } from "./common";
@@ -89,6 +90,7 @@ export {
   SEED_CHARACTERS,
   SEED_GAME_VERSIONS,
   SEED_SITUATIONS,
+  SITUATION_GROUPS,
   SYSTEM_MOVES,
   buildRecipeSignature,
 };

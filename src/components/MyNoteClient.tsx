@@ -311,6 +311,14 @@ export function MyNoteClient({
     [situationsByCharacter, selectedCharacterId]
   );
 
+  const groupedCurrentSituations = useMemo(() => {
+    return {
+      basic: currentSituations.filter((s) => s.group === "basic"),
+      purpose: currentSituations.filter((s) => s.group === "purpose"),
+      characterUnique: currentSituations.filter((s) => s.group === "character"),
+    };
+  }, [currentSituations]);
+
   const currentSituationMap = useMemo(() => {
     const map: Record<string, SituationDefinition> = {};
     for (const s of currentSituations) {
@@ -407,7 +415,7 @@ export function MyNoteClient({
     return currentSavedCombos.filter((combo) => {
       if (
         selectedSituations.length > 0 &&
-        !selectedSituations.some((sit) => combo.situations.includes(sit))
+        !selectedSituations.every((sit) => combo.situations.includes(sit))
       ) {
         return false;
       }
@@ -871,10 +879,15 @@ export function MyNoteClient({
         <section aria-label="保存した公開コンボ" className="space-y-4">
           {currentSavedCombos.length > 0 && (
             <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-[#2E2447] dark:bg-[#1B152B]">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 dark:text-[#E2DCF5]">
-                  状況で絞る
-                </span>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xs font-bold text-slate-700 dark:text-[#E2DCF5]">
+                    状況で絞る
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-[#8E82B3]">
+                    複数選択はAND
+                  </span>
+                </div>
                 {hasSavedFilters && (
                   <button
                     type="button"
@@ -886,67 +899,127 @@ export function MyNoteClient({
                   </button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {currentSituations.map((sit) => {
-                  const isSelected = selectedSituations.includes(sit.key);
-                  return (
-                    <button
-                      key={sit.key}
-                      type="button"
-                      onClick={() => toggleSituation(sit.key)}
-                      aria-pressed={isSelected}
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
-                        isSelected
-                          ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
-                          : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
-                      }`}
-                    >
-                      {sit.label}
-                    </button>
-                  );
-                })}
 
-                {activeCharacter?.stockMeta && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setOnlyStockGain((prev) => !prev)}
-                      aria-pressed={onlyStockGain}
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
-                        onlyStockGain
-                          ? "bg-cyan-100 text-cyan-800 ring-2 ring-blue-600 ring-offset-1 dark:bg-cyan-500/25 dark:text-cyan-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
-                          : "border border-cyan-200 bg-cyan-50/70 text-cyan-700 hover:bg-cyan-100/70 dark:border-cyan-400/30 dark:bg-cyan-500/15 dark:text-cyan-200 dark:hover:bg-cyan-500/25"
-                      }`}
-                    >
-                      {activeCharacter.stockMeta.shortLabel}獲得
-                    </button>
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                    基本
+                  </span>
+                  {groupedCurrentSituations.basic.map((sit) => {
+                    const isSelected = selectedSituations.includes(sit.key);
+                    return (
+                      <button
+                        key={sit.key}
+                        type="button"
+                        onClick={() => toggleSituation(sit.key)}
+                        aria-pressed={isSelected}
+                        className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                          isSelected
+                            ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                            : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
+                        }`}
+                      >
+                        {sit.label}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                    {Array.from(
-                      { length: activeCharacter.stockMeta.maxCount },
-                      (_, i) => i + 1
-                    ).map((count) => {
-                      const isSelected = selectedStockCosts.includes(count);
-                      const isMax = count === activeCharacter.stockMeta?.maxCount;
-                      const label = isMax
-                        ? `${activeCharacter.stockMeta?.shortLabel}最大(${count}個)`
-                        : `${activeCharacter.stockMeta?.shortLabel}${count}個`;
+                {groupedCurrentSituations.purpose.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
+                    <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                      実戦・目的
+                    </span>
+                    {groupedCurrentSituations.purpose.map((sit) => {
+                      const isSelected = selectedSituations.includes(sit.key);
                       return (
                         <button
-                          key={`mynote-stock-${count}`}
+                          key={sit.key}
                           type="button"
-                          onClick={() => toggleStockCost(count)}
+                          onClick={() => toggleSituation(sit.key)}
                           aria-pressed={isSelected}
-                          className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                          title={sit.description}
+                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
                             isSelected
-                              ? "bg-pink-100 text-pink-800 ring-2 ring-blue-600 ring-offset-1 dark:bg-pink-500/25 dark:text-pink-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
-                              : "border border-pink-200 bg-pink-50/70 text-pink-700 hover:bg-pink-100/70 dark:border-pink-400/30 dark:bg-pink-500/15 dark:text-pink-200 dark:hover:bg-pink-500/25"
+                              ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                              : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
                           }`}
                         >
-                          {label}
+                          {sit.label}
                         </button>
                       );
                     })}
-                  </>
+                  </div>
+                )}
+
+                {(groupedCurrentSituations.characterUnique.length > 0 ||
+                  activeCharacter?.stockMeta) && (
+                  <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
+                    <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                      固有
+                    </span>
+                    {groupedCurrentSituations.characterUnique.map((sit) => {
+                      const isSelected = selectedSituations.includes(sit.key);
+                      return (
+                        <button
+                          key={sit.key}
+                          type="button"
+                          onClick={() => toggleSituation(sit.key)}
+                          aria-pressed={isSelected}
+                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                            isSelected
+                              ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                              : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
+                          }`}
+                        >
+                          {sit.label}
+                        </button>
+                      );
+                    })}
+
+                    {activeCharacter?.stockMeta && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setOnlyStockGain((prev) => !prev)}
+                          aria-pressed={onlyStockGain}
+                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                            onlyStockGain
+                              ? "bg-cyan-100 text-cyan-800 ring-2 ring-blue-600 ring-offset-1 dark:bg-cyan-500/25 dark:text-cyan-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
+                              : "border border-cyan-200 bg-cyan-50/70 text-cyan-700 hover:bg-cyan-100/70 dark:border-cyan-400/30 dark:bg-cyan-500/15 dark:text-cyan-200 dark:hover:bg-cyan-500/25"
+                          }`}
+                        >
+                          {activeCharacter.stockMeta.shortLabel}獲得
+                        </button>
+
+                        {Array.from(
+                          { length: activeCharacter.stockMeta.maxCount },
+                          (_, i) => i + 1
+                        ).map((count) => {
+                          const isSelected = selectedStockCosts.includes(count);
+                          const isMax = count === activeCharacter.stockMeta?.maxCount;
+                          const label = isMax
+                            ? `${activeCharacter.stockMeta?.shortLabel}最大(${count}個)`
+                            : `${activeCharacter.stockMeta?.shortLabel}${count}個`;
+                          return (
+                            <button
+                              key={`mynote-stock-${count}`}
+                              type="button"
+                              onClick={() => toggleStockCost(count)}
+                              aria-pressed={isSelected}
+                              className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                                isSelected
+                                  ? "bg-pink-100 text-pink-800 ring-2 ring-blue-600 ring-offset-1 dark:bg-pink-500/25 dark:text-pink-200 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]"
+                                  : "border border-pink-200 bg-pink-50/70 text-pink-700 hover:bg-pink-100/70 dark:border-pink-400/30 dark:bg-pink-500/15 dark:text-pink-200 dark:hover:bg-pink-500/25"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

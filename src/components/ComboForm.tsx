@@ -399,6 +399,15 @@ export function ComboForm({
     [selectedCharacterId]
   );
 
+  const groupedSituations = useMemo(() => {
+    const basic = characterSituations.filter((s) => s.group === "basic");
+    const purpose = characterSituations.filter((s) => s.group === "purpose");
+    const characterUnique = characterSituations.filter(
+      (s) => s.group === "character"
+    );
+    return { basic, purpose, characterUnique };
+  }, [characterSituations]);
+
   const situationMap = useMemo(() => {
     const map: Record<string, SituationDefinition> = {};
     for (const s of characterSituations) {
@@ -1400,7 +1409,7 @@ export function ComboForm({
 
         {/* 状況タグ選択（必須・複数選択可） */}
         <div>
-          <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
             <span className="text-sm font-bold text-slate-900 dark:text-[#F4F1FF]">
               状況タグ（複数選択可） <span className="text-rose-500 dark:text-rose-400">*</span>
             </span>
@@ -1408,25 +1417,93 @@ export function ComboForm({
               カードの最上部に表示されます
             </span>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {characterSituations.map((sit) => {
-              const isSelected = selectedSituations.includes(sit.key);
-              return (
-                <button
-                  key={sit.key}
-                  type="button"
-                  onClick={() => toggleSituation(sit.key)}
-                  aria-pressed={isSelected}
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold transition-all ${
-                    isSelected
-                      ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
-                      : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
-                  }`}
-                >
-                  {sit.label}
-                </button>
-              );
-            })}
+
+          <div className="space-y-3">
+            {/* 基本状況 */}
+            <div>
+              <p className="mb-1.5 text-[11px] font-semibold text-slate-500 dark:text-[#A99EC4]">
+                基本状況
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {groupedSituations.basic.map((sit) => {
+                  const isSelected = selectedSituations.includes(sit.key);
+                  return (
+                    <button
+                      key={sit.key}
+                      type="button"
+                      onClick={() => toggleSituation(sit.key)}
+                      aria-pressed={isSelected}
+                      className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                        isSelected
+                          ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                          : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
+                      }`}
+                    >
+                      {sit.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 実戦・目的タグ */}
+            {groupedSituations.purpose.length > 0 && (
+              <div className="border-t border-slate-100 pt-2.5 dark:border-[#2D2346]">
+                <p className="mb-1.5 text-[11px] font-semibold text-slate-500 dark:text-[#A99EC4]">
+                  実戦・目的タグ
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {groupedSituations.purpose.map((sit) => {
+                    const isSelected = selectedSituations.includes(sit.key);
+                    return (
+                      <button
+                        key={sit.key}
+                        type="button"
+                        onClick={() => toggleSituation(sit.key)}
+                        aria-pressed={isSelected}
+                        title={sit.description}
+                        className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                          isSelected
+                            ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                            : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
+                        }`}
+                      >
+                        {sit.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* キャラ固有（該当キャラのみ） */}
+            {groupedSituations.characterUnique.length > 0 && (
+              <div className="border-t border-slate-100 pt-2.5 dark:border-[#2D2346]">
+                <p className="mb-1.5 text-[11px] font-semibold text-slate-500 dark:text-[#A99EC4]">
+                  キャラ固有
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {groupedSituations.characterUnique.map((sit) => {
+                    const isSelected = selectedSituations.includes(sit.key);
+                    return (
+                      <button
+                        key={sit.key}
+                        type="button"
+                        onClick={() => toggleSituation(sit.key)}
+                        aria-pressed={isSelected}
+                        className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                          isSelected
+                            ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                            : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
+                        }`}
+                      >
+                        {sit.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

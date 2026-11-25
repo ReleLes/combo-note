@@ -237,7 +237,7 @@ export function ComboCard({
       )}
       {/* ヘッダー行：最重要の状況バッジ + カテゴリ + 編集・マイノート保存ボタン */}
       <div className="mb-3 flex items-start justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
           {combo.situations.map((sitKey) => {
             const def = situationMap[sitKey];
             const label = def?.label ?? sitKey;
@@ -247,13 +247,14 @@ export function ComboCard({
             return (
               <span
                 key={sitKey}
-                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold tracking-tight ${badgeStyle}`}
+                title={def?.description}
+                className={`inline-flex items-center whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-bold tracking-tight ${badgeStyle}`}
               >
                 {label}
               </span>
             );
           })}
-          <span className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:border-[#34294F] dark:bg-[#251D3A] dark:text-[#A99EC4]">
+          <span className="inline-flex items-center whitespace-nowrap rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:border-[#34294F] dark:bg-[#251D3A] dark:text-[#A99EC4]">
             {getCategoryLabel(combo.category)}
           </span>
         </div>

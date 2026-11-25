@@ -22,9 +22,22 @@ export type CommonSituationKey =
   | "counter"
   | "punish_counter"
   | "anti_air"
-  | "stun";
+  | "stun"
+  | "lethal"
+  | "corner_carry"
+  | "drive_recovery"
+  | "burnout"
+  | "setplay";
 
 export type SituationKey = CommonSituationKey | (string & {});
+
+/**
+ * 状況タグの表示グループ区分：
+ * - "basic": 基本状況（位置・始動条件）
+ * - "purpose": 実戦目的・状態（リーサル、運び、Dゲージ回復、自分BO中）
+ * - "character": キャラクター固有状況
+ */
+export type SituationGroup = "basic" | "purpose" | "character";
 
 export interface SituationDefinition {
   key: SituationKey;
@@ -32,6 +45,10 @@ export interface SituationDefinition {
   badgeClassName: string;
   /** null の場合は全キャラ共通状況。キャラID指定時はそのキャラ固有状況 */
   characterId: string | null;
+  /** UI側でグルーピング表示するための区分 */
+  group: SituationGroup;
+  /** タグの用途・意味の説明（任意） */
+  description?: string;
   sortOrder: number;
 }
 

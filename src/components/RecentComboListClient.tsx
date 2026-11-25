@@ -75,9 +75,7 @@ export function RecentComboListClient({
   const [selectedControlType, setSelectedControlType] =
     useState<ControlTypeFilter>("all");
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>("all");
-  const [selectedSituation, setSelectedSituation] = useState<string | null>(
-    null
-  );
+  const [selectedSituations, setSelectedSituations] = useState<string[]>([]);
 
   // ローディング・エラー状態
   const [isFilteringLoading, setIsFilteringLoading] = useState(false);
@@ -114,6 +112,13 @@ export function RecentComboListClient({
     }
     return map;
   }, [characters]);
+
+  const groupedCommonSituations = useMemo(() => {
+    return {
+      basic: commonSituations.filter((s) => s.group === "basic"),
+      purpose: commonSituations.filter((s) => s.group === "purpose"),
+    };
+  }, [commonSituations]);
 
   const situationMap = useMemo(() => {
     const map: Record<string, SituationDefinition> = {};
@@ -165,7 +170,7 @@ export function RecentComboListClient({
     async (filters: {
       controlType: ControlTypeFilter;
       characterId: string;
-      situation: string | null;
+      situations: string[];
     }) => {
       const seq = ++requestSeqRef.current;
       setIsFilteringLoading(true);
@@ -177,7 +182,7 @@ export function RecentComboListClient({
           offset: 0,
           characterId: filters.characterId,
           controlType: filters.controlType,
-          situation: filters.situation,
+          situations: filters.situations,
         });
 
         if (seq !== requestSeqRef.current) return;
@@ -219,7 +224,7 @@ export function RecentComboListClient({
         offset: combos.length,
         characterId: selectedCharacterId,
         controlType: selectedControlType,
-        situation: selectedSituation,
+        situations: selectedSituations,
       });
 
       if (seq !== requestSeqRef.current) return;
@@ -255,7 +260,7 @@ export function RecentComboListClient({
     void reloadFirstPage({
       controlType: next,
       characterId: selectedCharacterId,
-      situation: selectedSituation,
+      situations: selectedSituations,
     });
   };
 
@@ -264,36 +269,46 @@ export function RecentComboListClient({
     void reloadFirstPage({
       controlType: selectedControlType,
       characterId: nextCharacterId,
-      situation: selectedSituation,
+      situations: selectedSituations,
     });
   };
 
   const handleSituationToggle = (situationKey: string) => {
-    const nextSituation =
-      selectedSituation === situationKey ? null : situationKey;
-    setSelectedSituation(nextSituation);
+    const nextSituations = selectedSituations.includes(situationKey)
+      ? selectedSituations.filter((item) => item !== situationKey)
+      : [...selectedSituations, situationKey];
+    setSelectedSituations(nextSituations);
     void reloadFirstPage({
       controlType: selectedControlType,
       characterId: selectedCharacterId,
-      situation: nextSituation,
+      situations: nextSituations,
+    });
+  };
+
+  const handleClearSituations = () => {
+    setSelectedSituations([]);
+    void reloadFirstPage({
+      controlType: selectedControlType,
+      characterId: selectedCharacterId,
+      situations: [],
     });
   };
 
   const handleResetFilters = () => {
     setSelectedControlType("all");
     setSelectedCharacterId("all");
-    setSelectedSituation(null);
+    setSelectedSituations([]);
     void reloadFirstPage({
       controlType: "all",
       characterId: "all",
-      situation: null,
+      situations: [],
     });
   };
 
   const hasActiveFilters =
     selectedControlType !== "all" ||
     selectedCharacterId !== "all" ||
-    selectedSituation !== null;
+    selectedSituations.length > 0;
 
   const visibleCombos = useMemo(
     () => combos.filter((combo) => !deletedIds.has(combo.id)),
@@ -510,41 +525,77 @@ export function RecentComboListClient({
           </div>
         </div>
 
-        {/* 共通状況タグフィルタ */}
+        {/* 共通状況タグフィルタ（基本状況／実戦・目的・複数選択AND） */}
         <div className="border-t border-slate-100 pt-3 dark:border-[#2E2447]">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-[#E2DCF5]">
-              共通状況で絞る
-            </span>
-            {selectedSituation && (
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs font-bold text-slate-700 dark:text-[#E2DCF5]">
+                共通状況で絞る
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-[#8E82B3]">
+                複数選択はAND
+              </span>
+            </div>
+            {selectedSituations.length > 0 && (
               <button
                 type="button"
-                onClick={() => handleSituationToggle(selectedSituation)}
+                onClick={handleClearSituations}
                 className="text-xs font-medium text-blue-600 hover:underline dark:text-[#C4B5FD]"
               >
                 状況をクリア
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {commonSituations.map((sit) => {
-              const isSelected = selectedSituation === sit.key;
-              return (
-                <button
-                  key={sit.key}
-                  type="button"
-                  onClick={() => handleSituationToggle(sit.key)}
-                  aria-pressed={isSelected}
-                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
-                    isSelected
-                      ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
-                      : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
-                  }`}
-                >
-                  {sit.label}
-                </button>
-              );
-            })}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                基本
+              </span>
+              {groupedCommonSituations.basic.map((sit) => {
+                const isSelected = selectedSituations.includes(sit.key);
+                return (
+                  <button
+                    key={sit.key}
+                    type="button"
+                    onClick={() => handleSituationToggle(sit.key)}
+                    aria-pressed={isSelected}
+                    className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                      isSelected
+                        ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                        : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
+                    }`}
+                  >
+                    {sit.label}
+                  </button>
+                );
+              })}
+            </div>
+            {groupedCommonSituations.purpose.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
+                <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                  実戦・目的
+                </span>
+                {groupedCommonSituations.purpose.map((sit) => {
+                  const isSelected = selectedSituations.includes(sit.key);
+                  return (
+                    <button
+                      key={sit.key}
+                      type="button"
+                      onClick={() => handleSituationToggle(sit.key)}
+                      aria-pressed={isSelected}
+                      title={sit.description}
+                      className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                        isSelected
+                          ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                          : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
+                      }`}
+                    >
+                      {sit.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -591,7 +642,7 @@ export function RecentComboListClient({
               reloadFirstPage({
                 controlType: selectedControlType,
                 characterId: selectedCharacterId,
-                situation: selectedSituation,
+                situations: selectedSituations,
               })
             }
             className="rounded-lg border border-rose-300 bg-white px-2.5 py-1 font-semibold text-rose-700 hover:bg-rose-50 dark:border-rose-400/40 dark:bg-[#1B152B] dark:text-rose-200 dark:hover:bg-rose-500/20"

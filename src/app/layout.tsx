@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { ExternalLink, MessageSquare } from "lucide-react";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Header } from "@/components/Header";
@@ -57,6 +58,8 @@ export const viewport: Viewport = {
 const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('combonote_v1_theme');if(t==='dark'){document.documentElement.classList.add('dark');var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content','#0F0B1A');}}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="ja" className="h-full antialiased" suppressHydrationWarning>
       <head>
@@ -87,6 +90,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </AuthProvider>
         </ThemeProvider>
       </body>
+      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   );
 }

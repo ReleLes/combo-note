@@ -6,6 +6,7 @@ import {
   Check,
   ChevronRight,
   Copy,
+  ExternalLink,
   Flame,
   Heart,
   Link2,
@@ -14,6 +15,7 @@ import {
   Star,
   Trash2,
   User,
+  Video,
   X,
 } from "lucide-react";
 import type {
@@ -30,6 +32,7 @@ import {
   formatComboRecipeText,
 } from "@/lib/comboUtils";
 import { calculateRecipeStock } from "@/lib/stockCalculator";
+import { getSafeSourceUrl } from "@/lib/sourceUrl";
 import { MoveNotation } from "@/components/CommandNotation";
 
 interface ComboDetailModalProps {
@@ -129,6 +132,7 @@ export function ComboDetailModal({
 
   const autoStock = calculateRecipeStock(combo.characterId, moves);
   const displayAuthorName = combo.authorName?.trim() || null;
+  const safeSource = getSafeSourceUrl(combo.sourceUrl);
 
   const categoryLabel =
     COMBO_CATEGORIES.find((c) => c.key === combo.category)?.label ??
@@ -416,6 +420,37 @@ export function ComboDetailModal({
               {combo.note}
             </div>
           </section>
+
+          {/* 参考動画・ポストリンク（有効な YouTube / X URL のみ表示） */}
+          {safeSource && (
+            <section className="flex">
+              <a
+                href={safeSource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors sm:w-auto ${
+                  safeSource.platform === "youtube"
+                    ? "border-rose-200 bg-rose-50/75 text-rose-700 hover:border-rose-300 hover:bg-rose-100/80 dark:border-rose-400/35 dark:bg-rose-500/15 dark:text-rose-200 dark:hover:border-rose-400/60 dark:hover:bg-rose-500/25"
+                    : "border-slate-300 bg-slate-50 text-slate-800 hover:border-slate-400 hover:bg-slate-100 dark:border-[#4A3B6E] dark:bg-[#251D3A] dark:text-[#E8E2F8] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
+                }`}
+              >
+                {safeSource.platform === "youtube" ? (
+                  <Video className="h-4 w-4 shrink-0" aria-hidden="true" />
+                ) : (
+                  <Link2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                )}
+                <span>
+                  {safeSource.platform === "youtube"
+                    ? "参考動画を見る（YouTube）"
+                    : "参考ポストを見る（X）"}
+                </span>
+                <ExternalLink
+                  className="h-3.5 w-3.5 shrink-0 opacity-75"
+                  aria-hidden="true"
+                />
+              </a>
+            </section>
+          )}
 
           {/* フッターメタ情報 */}
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-[#2E2447] dark:text-[#A99EC4]">

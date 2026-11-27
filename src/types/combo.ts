@@ -121,6 +121,8 @@ export interface Combo {
   stockGain?: number;
   hasOki: boolean;
   note: string;
+  /** 参考動画・投稿URL（YouTube / X のみ許可、未設定時は null / undefined） */
+  sourceUrl?: string | null;
   versionId: string;
   likesCount: number;
   createdAt: string;

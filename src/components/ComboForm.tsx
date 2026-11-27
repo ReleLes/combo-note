@@ -10,6 +10,7 @@ import {
   CornerDownRight,
   ExternalLink,
   Info,
+  Link2,
   Loader2,
   Plus,
   RotateCcw,
@@ -47,6 +48,7 @@ import {
   type ComboValidationWarning,
   validateComboRecipe,
 } from "@/lib/comboValidator";
+import { validateSourceUrl } from "@/lib/sourceUrl";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
 import { ComboDetailModal } from "@/components/ComboDetailModal";
 import { MoveNotation } from "@/components/CommandNotation";
@@ -67,6 +69,7 @@ export interface ComboFormSubmitPayload {
   stockGain: number;
   hasOki: boolean;
   note: string;
+  sourceUrl?: string | null;
 }
 
 export interface ComboFormProps {
@@ -110,6 +113,7 @@ interface DuplicateComboRow {
   stock_gain: number | null;
   has_oki: boolean | null;
   note: string;
+  source_url?: string | null;
   version_id: string;
   likes_count: number | null;
   created_at: string;
@@ -172,6 +176,7 @@ function mapRowToCombo(row: DuplicateComboRow): Combo {
     stockGain: row.stock_gain ?? 0,
     hasOki: row.has_oki ?? false,
     note: row.note,
+    sourceUrl: row.source_url ?? null,
     versionId: row.version_id,
     likesCount: row.likes_count ?? 0,
     createdAt: row.created_at,
@@ -368,6 +373,10 @@ export function ComboForm({
   );
   const [hasOki, setHasOki] = useState<boolean>(initialCombo?.hasOki ?? false);
   const [note, setNote] = useState<string>(initialCombo?.note ?? "");
+  const [sourceUrl, setSourceUrl] = useState<string>(
+    initialCombo?.sourceUrl ?? ""
+  );
+  const [sourceUrlError, setSourceUrlError] = useState<string | null>(null);
   const [authorName, setAuthorName] = useState<string>(
     initialAuthorName ?? initialCombo?.authorName ?? ""
   );
@@ -847,6 +856,17 @@ export function ComboForm({
       return;
     }
 
+    const sourceUrlResult = validateSourceUrl(sourceUrl);
+    if (!sourceUrlResult.isValid) {
+      const errorMsg =
+        sourceUrlResult.error ??
+        "YouTube または X（旧Twitter）のURLのみ登録できます。";
+      setSourceUrlError(errorMsg);
+      setValidationError(errorMsg);
+      return;
+    }
+    setSourceUrlError(null);
+
     await onSubmit({
       characterId: selectedCharacterId,
       controlType,
@@ -863,6 +883,7 @@ export function ComboForm({
       stockGain: selectedCharacter?.stockMeta ? stockGain : 0,
       hasOki,
       note: trimmedNote,
+      sourceUrl: sourceUrlResult.normalizedUrl,
     });
   };
 
@@ -1833,6 +1854,77 @@ export function ComboForm({
           />
         </div>
 
+        {/* 参考動画URL（任意） */}
+        <div className="space-y-1.5 border-t border-slate-100 pt-4 dark:border-[#2D2346]">
+          <div className="flex flex-wrap items-center gap-2">
+            <label
+              htmlFor="combo-source-url-input"
+              className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-[#F4F1FF]"
+            >
+              <Link2
+                className="h-4 w-4 text-slate-500 dark:text-[#A99EC4]"
+                aria-hidden="true"
+              />
+              <span>参考動画URL（YouTube / Xなど）</span>
+            </label>
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8]">
+              任意
+            </span>
+          </div>
+          <input
+            id="combo-source-url-input"
+            type="text"
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+            value={sourceUrl}
+            onChange={(e) => {
+              const nextValue = e.target.value;
+              setSourceUrl(nextValue);
+              clearErrors();
+              if (sourceUrlError) {
+                const result = validateSourceUrl(nextValue);
+                setSourceUrlError(result.isValid ? null : result.error);
+              }
+            }}
+            onBlur={() => {
+              const result = validateSourceUrl(sourceUrl);
+              setSourceUrlError(result.isValid ? null : result.error);
+            }}
+            placeholder="https://www.youtube.com/watch?v=... または https://x.com/..."
+            aria-invalid={Boolean(sourceUrlError)}
+            aria-describedby={
+              sourceUrlError
+                ? "combo-source-url-error combo-source-url-help"
+                : "combo-source-url-help"
+            }
+            className={`w-full rounded-lg border bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none sm:text-sm dark:bg-[#140F23] dark:text-[#F4F1FF] dark:placeholder:text-[#8E82B3] ${
+              sourceUrlError
+                ? "border-rose-400 focus:border-rose-500 dark:border-rose-500/70 dark:focus:border-rose-400"
+                : "border-slate-300 focus:border-blue-500 dark:border-[#3A2E58] dark:focus:border-[#8B5CF6]"
+            }`}
+          />
+          {sourceUrlError && (
+            <p
+              id="combo-source-url-error"
+              role="alert"
+              className="flex items-start gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-300"
+            >
+              <AlertCircle
+                className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                aria-hidden="true"
+              />
+              <span>{sourceUrlError}</span>
+            </p>
+          )}
+          <p
+            id="combo-source-url-help"
+            className="text-[11px] leading-relaxed text-slate-500 dark:text-[#A99EC4]"
+          >
+            参考にした動画やポストがある場合に入力できます（任意・YouTube / X のみ対応）
+          </p>
+        </div>
+
         {/* 投稿者名（任意） */}
         <div className="space-y-1.5 border-t border-slate-100 pt-4 dark:border-[#2D2346]">
           <div className="flex items-center justify-between gap-2">
@@ -1923,6 +2015,26 @@ export function ComboForm({
           <span>{submitSuccess}</span>
         </div>
       )}
+
+      {/* 投稿ガイドライン */}
+      <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-[11px] leading-relaxed text-slate-600 dark:border-[#2E2447] dark:bg-[#140F23]/90 dark:text-[#A99EC4]">
+        <p className="mb-1 flex items-center gap-1.5 font-bold text-slate-700 dark:text-[#CFC6E8]">
+          <ShieldCheck
+            className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-[#A78BFA]"
+            aria-hidden="true"
+          />
+          <span>投稿ガイドライン</span>
+        </p>
+        <ul className="list-disc space-y-0.5 pl-4">
+          <li>
+            無料公開されている動画・ポストのみ対象です（有料・限定コンテンツの転載禁止）
+          </li>
+          <li>解説文の丸コピーや他者へのなりすましは禁止です</li>
+          <li>
+            規約違反や削除依頼があった場合は、運営判断で修正・削除する場合があります
+          </li>
+        </ul>
+      </div>
 
       {/* 送信ボタン */}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">

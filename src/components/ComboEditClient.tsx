@@ -12,6 +12,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import type { Character, Combo, GameVersion, Move } from "@/types/combo";
+import { validateSourceUrl } from "@/lib/sourceUrl";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { usePreferences } from "@/hooks/useComboNoteStorage";
@@ -67,6 +68,19 @@ export function ComboEditClient({
     try {
       const normalizedAuthorName = payload.authorName?.trim() || null;
 
+      let sourceUrlUpdate: { source_url: string | null } | Record<string, never> =
+        {};
+      if (payload.sourceUrl !== undefined) {
+        const sourceUrlResult = validateSourceUrl(payload.sourceUrl);
+        if (!sourceUrlResult.isValid) {
+          throw new Error(
+            sourceUrlResult.error ??
+              "YouTube または X（旧Twitter）のURLのみ登録できます。"
+          );
+        }
+        sourceUrlUpdate = { source_url: sourceUrlResult.normalizedUrl };
+      }
+
       // 管理者が他ユーザーのコンボを編集した際も author_id（投稿者アカウント紐付け）は上書きしない。
       // 認可は DB の RLS ポリシー（auth.uid() = author_id OR public.is_admin()）で強制する。
       const { data: updatedRow, error: updateError } = await supabase
@@ -86,6 +100,7 @@ export function ComboEditClient({
           stock_gain: payload.stockGain,
           has_oki: payload.hasOki,
           note: payload.note,
+          ...sourceUrlUpdate,
           updated_at: new Date().toISOString(),
         })
         .eq("id", combo.id)

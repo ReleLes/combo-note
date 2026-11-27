@@ -43,6 +43,7 @@ interface ComboRow {
   stock_gain: number | null;
   has_oki: boolean | null;
   note: string;
+  source_url?: string | null;
   version_id: string;
   likes_count: number | null;
   created_at: string;
@@ -92,6 +93,7 @@ function mapCombo(row: ComboRow): Combo {
     stockGain: row.stock_gain ?? 0,
     hasOki: row.has_oki ?? false,
     note: row.note,
+    sourceUrl: row.source_url ?? null,
     versionId: row.version_id,
     likesCount: row.likes_count ?? 0,
     createdAt: row.created_at,

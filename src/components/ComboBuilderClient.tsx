@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lock, LogIn, PlusCircle } from "lucide-react";
 import type { Character, GameVersion, Move } from "@/types/combo";
+import { validateSourceUrl } from "@/lib/sourceUrl";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { usePreferences } from "@/hooks/useComboNoteStorage";
@@ -67,6 +68,13 @@ export function ComboBuilderClient({
       }
 
       const normalizedAuthorName = payload.authorName?.trim() || null;
+      const sourceUrlResult = validateSourceUrl(payload.sourceUrl);
+      if (!sourceUrlResult.isValid) {
+        throw new Error(
+          sourceUrlResult.error ??
+            "YouTube または X（旧Twitter）のURLのみ登録できます。"
+        );
+      }
 
       // 2. combos テーブルへ INSERT
       const { error: insertError } = await supabase.from("combos").insert({
@@ -86,6 +94,7 @@ export function ComboBuilderClient({
         stock_gain: payload.stockGain,
         has_oki: payload.hasOki,
         note: payload.note,
+        source_url: sourceUrlResult.normalizedUrl,
         version_id: resolvedVersionId,
       });
 

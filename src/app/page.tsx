@@ -2,6 +2,7 @@ import { getSituationsForCharacter } from "@/data/seed";
 import { SEED_SITUATIONS } from "@/data/seed/common";
 import { buildCharacterImageMap } from "@/lib/characterImages";
 import { getCharacterTheme } from "@/lib/characterThemes";
+import { getAutoManagedCharacterSituations } from "@/lib/stockCalculator";
 import {
   type CharacterComboCounts,
   buildMoveMap,
@@ -78,13 +79,28 @@ export default async function HomePage() {
     const imageUrl = characterImageMap[character.id] ?? null;
     const watermarkText = theme.watermark ?? character.nameEn.toUpperCase();
 
-    // 固有状況バッジ＋固有ストックバッジ（重複ラベルはまとめる）
-    const traitBadges: string[] = uniqueSituations.map((s) => s.label);
-    if (
-      character.stockMeta &&
-      !traitBadges.includes(character.stockMeta.label)
-    ) {
+    // キャラカードの固有特徴バッジ（スマホ2列でも崩れないよう最大2個に集約）
+    // ストックを持つキャラは stockMeta.label を代表バッジとし、ストック連動の個別タグは省略する
+    const traitBadges: string[] = [];
+    if (character.stockMeta) {
       traitBadges.push(character.stockMeta.label);
+      const stockManagedKeys = new Set<string>(
+        getAutoManagedCharacterSituations(character.id)
+      );
+      for (const sit of uniqueSituations) {
+        if (traitBadges.length >= 2) break;
+        if (stockManagedKeys.has(sit.key)) continue;
+        if (!traitBadges.includes(sit.label)) {
+          traitBadges.push(sit.label);
+        }
+      }
+    } else {
+      for (const sit of uniqueSituations) {
+        if (traitBadges.length >= 2) break;
+        if (!traitBadges.includes(sit.label)) {
+          traitBadges.push(sit.label);
+        }
+      }
     }
 
     return {

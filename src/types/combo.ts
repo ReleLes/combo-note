@@ -29,7 +29,54 @@ export type CommonSituationKey =
   | "burnout"
   | "setplay";
 
-export type SituationKey = CommonSituationKey | (string & {});
+export type CharacterSituationKey =
+  | "juri_feng_shui"
+  | "juri_fuha_stock"
+  | "juri_fuha_gain"
+  | "c_viper_feint"
+  | "ingrid_sun_install"
+  | "ingrid_sun_symbol"
+  | "ingrid_sun_symbol_gain"
+  | "mai_flame_stock"
+  | "mai_flame_gain"
+  | "ryu_denjin"
+  | "ryu_denjin_gain"
+  | "guile_solid_puncher"
+  | "vega_mine_plant"
+  | "vega_mine_detonate"
+  | "rashid_air_set"
+  | "rashid_air_boost"
+  | "aki_poison_inflict"
+  | "aki_poison_state"
+  | "alex_back_turned"
+  | "yasmine_bayani"
+  | "yasmine_nakatagong_lakas"
+  | "arjun_giant_rock"
+  | "jamie_drink_lv1"
+  | "jamie_drink_lv2"
+  | "jamie_drink_lv3"
+  | "jamie_drink_lv4"
+  | "jamie_drink_gain"
+  | "kimberly_shuriken"
+  | "kimberly_shuriken_gain"
+  | "manon_medal_gain"
+  | "blanka_lightning_beast"
+  | "ehonda_sumo_spirit"
+  | "ehonda_sumo_spirit_gain"
+  | "lily_windclad"
+  | "lily_windclad_gain";
+
+export type LegacySituationKey =
+  | "jamie_drink_level"
+  | "manon_medal"
+  | "aki_poison"
+  | "vega_psycho_mine"
+  | "rashid_air_current";
+
+export type SituationKey =
+  | CommonSituationKey
+  | CharacterSituationKey
+  | (string & {});
 
 /**
  * 状況タグの表示グループ区分：

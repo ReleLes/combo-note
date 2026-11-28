@@ -10,6 +10,7 @@ import type {
 } from "@/types/combo";
 import {
   COMBO_CATEGORIES,
+  LEGACY_SITUATION_FALLBACKS,
   SEED_CHARACTERS,
   SEED_GAME_VERSIONS,
   SEED_SITUATIONS,
@@ -87,6 +88,7 @@ const CHARACTER_SEED_MAP: Record<string, CharacterSeedData> = {
 
 export {
   COMBO_CATEGORIES,
+  LEGACY_SITUATION_FALLBACKS,
   SEED_CHARACTERS,
   SEED_GAME_VERSIONS,
   SEED_SITUATIONS,
@@ -195,7 +197,10 @@ export function getSituationsForCharacter(
 export function getSituationByKey(
   key: string
 ): SituationDefinition | undefined {
-  return SEED_SITUATIONS.find((s) => s.key === key);
+  return (
+    SEED_SITUATIONS.find((s) => s.key === key) ??
+    LEGACY_SITUATION_FALLBACKS[key]
+  );
 }
 
 export function getVersionById(versionId: string): GameVersion | undefined {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -42,7 +42,10 @@ import { fetchClientMovesForCharacter } from "@/lib/supabase/clientQueries";
 import { calculateRecipeGaugeCost } from "@/lib/gaugeCalculator";
 import {
   calculateRecipeStock,
+  getAutoCharacterSituations,
+  getAutoManagedCharacterSituations,
   hasStockCalculator,
+  hasStockCostConcept,
 } from "@/lib/stockCalculator";
 import {
   type ComboValidationWarning,
@@ -321,6 +324,8 @@ export function ComboForm({
   const [dismissedAutoSituations, setDismissedAutoSituations] = useState<
     string[]
   >([]);
+  /** ジェイミーのレシピ変更で自動ONした酔いLvタグ（Lv切替時に旧自動ON分だけ外すため） */
+  const autoAppliedJamieLvKeyRef = useRef<string | null>(null);
   const [category, setCategory] = useState<ComboCategory>(
     initialCombo?.category ?? "standard"
   );
@@ -471,6 +476,7 @@ export function ComboForm({
     [selectedCharacterId, recipeMoves]
   );
   const supportsAutoStock = hasStockCalculator(selectedCharacterId);
+  const showsStockCostInput = hasStockCostConcept(selectedCharacterId);
 
   const driveCost =
     driveCostMode === "auto" ? autoGauge.driveCost : manualDriveCost;
@@ -508,40 +514,83 @@ export function ComboForm({
     ? insertIndex
     : recipeMoveIds.length;
 
-  // ストック消費技・(CH)・(PC)がレシピに含まれたとき、対応する状況タグを自動でONにする
+  // ストック・キャラ固有技・(CH)・(PC)がレシピに含まれたとき、対応する状況タグを自動でONにする
   // （ユーザーが手動で外した場合は dismissedAutoSituations で記憶し勝手に付け直さない）
+  const autoManagedSituationKeys = useMemo(
+    () =>
+      new Set<string>([
+        "counter",
+        "punish_counter",
+        ...getAutoManagedCharacterSituations(selectedCharacterId),
+      ]),
+    [selectedCharacterId]
+  );
+
   const autoSituationKeys = useMemo(() => {
-    const keys: string[] = [];
-    if (autoStock?.situationKey && autoStock.requiredStart > 0) {
-      keys.push(autoStock.situationKey);
-    }
-    if (
-      selectedCharacterId === "kimberly" &&
-      recipeMoveIds.includes("kimberly_shuriken_explode") &&
-      !keys.includes("kimberly_shuriken")
-    ) {
-      keys.push("kimberly_shuriken");
-    }
-    if (recipeMoveIds.includes("sys_ch")) {
+    const keys: string[] = [
+      ...getAutoCharacterSituations(
+        selectedCharacterId,
+        recipeMoveIds,
+        autoStock
+      ),
+    ];
+    if (recipeMoveIds.includes("sys_ch") && !keys.includes("counter")) {
       keys.push("counter");
     }
-    if (recipeMoveIds.includes("sys_pc")) {
+    if (recipeMoveIds.includes("sys_pc") && !keys.includes("punish_counter")) {
       keys.push("punish_counter");
     }
     return keys;
-  }, [autoStock, recipeMoveIds]);
+  }, [selectedCharacterId, autoStock, recipeMoveIds]);
 
   useEffect(() => {
-    if (autoSituationKeys.length === 0) return;
+    const nextJamieLvKey =
+      selectedCharacterId === "jamie"
+        ? (autoSituationKeys.find((key) => key.startsWith("jamie_drink_lv")) ??
+          null)
+        : null;
+    const prevJamieLvKey = autoAppliedJamieLvKeyRef.current;
+    const shouldRemovePrevJamieLv = Boolean(
+      prevJamieLvKey && prevJamieLvKey !== nextJamieLvKey
+    );
+
     const keysToAdd = autoSituationKeys.filter(
       (key) => !dismissedAutoSituations.includes(key)
     );
-    if (keysToAdd.length === 0) return;
+
+    if (!shouldRemovePrevJamieLv && keysToAdd.length === 0) {
+      if (!nextJamieLvKey) {
+        autoAppliedJamieLvKeyRef.current = null;
+      }
+      return;
+    }
+
     setSelectedSituations((prev) => {
-      const missing = keysToAdd.filter((key) => !prev.includes(key));
-      return missing.length > 0 ? [...prev, ...missing] : prev;
+      const base = shouldRemovePrevJamieLv
+        ? prev.filter((key) => key !== prevJamieLvKey)
+        : prev;
+      const missing = keysToAdd.filter((key) => !base.includes(key));
+
+      // ジェイミーの自動ON Lvタグを記録（ユーザーがすでに手動選択済みのLvタグは自動管理対象にしない）
+      if (nextJamieLvKey && !dismissedAutoSituations.includes(nextJamieLvKey)) {
+        if (
+          missing.includes(nextJamieLvKey) ||
+          prevJamieLvKey === nextJamieLvKey
+        ) {
+          autoAppliedJamieLvKeyRef.current = nextJamieLvKey;
+        } else {
+          autoAppliedJamieLvKeyRef.current = null;
+        }
+      } else {
+        autoAppliedJamieLvKeyRef.current = null;
+      }
+
+      if (!shouldRemovePrevJamieLv && missing.length === 0) {
+        return prev;
+      }
+      return missing.length > 0 ? [...base, ...missing] : base;
     });
-  }, [autoSituationKeys, dismissedAutoSituations]);
+  }, [selectedCharacterId, autoSituationKeys, dismissedAutoSituations]);
 
   const recipeSignature = useMemo(() => {
     if (recipeMoveIds.length < 2) return "";
@@ -652,6 +701,7 @@ export function ComboForm({
     setDriveCostMode("auto");
     setSaCostMode("auto");
     setDismissedAutoSituations([]);
+    autoAppliedJamieLvKeyRef.current = null;
     // 別キャラ固有の状況キーを除外
     const nextAllowed = new Set(
       getSituationsForCharacter(nextCharId).map((s) => s.key)
@@ -789,12 +839,11 @@ export function ComboForm({
     const isCurrentlySelected = selectedSituations.includes(key);
     if (isCurrentlySelected) {
       setSelectedSituations((prev) => prev.filter((item) => item !== key));
-      // 自動連携対象タグ（ストック・カウンター・パニカン）をユーザーが手動で外したことを記憶
-      if (
-        key === "counter" ||
-        key === "punish_counter" ||
-        autoStock?.situationKey === key
-      ) {
+      if (autoAppliedJamieLvKeyRef.current === key) {
+        autoAppliedJamieLvKeyRef.current = null;
+      }
+      // 自動連携対象タグ（ストック・キャラ固有技・カウンター・パニカン）をユーザーが手動で外したことを記憶
+      if (autoManagedSituationKeys.has(key)) {
         setDismissedAutoSituations((prev) =>
           prev.includes(key) ? prev : [...prev, key]
         );
@@ -879,7 +928,8 @@ export function ComboForm({
       damage: parsedDamage,
       driveCost,
       saCost,
-      stockCost: selectedCharacter?.stockMeta ? stockCost : 0,
+      stockCost:
+        selectedCharacter?.stockMeta && showsStockCostInput ? stockCost : 0,
       stockGain: selectedCharacter?.stockMeta ? stockGain : 0,
       hasOki,
       note: trimmedNote,
@@ -1714,57 +1764,71 @@ export function ComboForm({
           </div>
         </div>
 
-        {/* キャラ固有ストック（ジュリ・イングリッド・舞など対応キャラのみ表示） */}
+        {/* キャラ固有ストック（ジュリ・イングリッド・舞・ジェイミー・マノンなど対応キャラのみ表示） */}
         {stockMeta && (
-          <div className="grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:grid-cols-2 dark:border-[#2E2447] dark:bg-[#140F23]">
-            <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span>{stockMeta.label} 消費数（始動必要数）</span>
-                {supportsAutoStock &&
-                  (stockCostMode === "auto" ? (
-                    <span className="inline-flex items-center rounded-full border border-pink-200 bg-pink-50 px-2 py-0.5 text-[10px] font-semibold text-pink-700 dark:border-pink-400/35 dark:bg-pink-500/20 dark:text-pink-200">
-                      自動計算
-                    </span>
-                  ) : (
-                    <>
-                      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200">
-                        手動調整中
+          <div
+            className={`grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-[#2E2447] dark:bg-[#140F23] ${
+              showsStockCostInput ? "sm:grid-cols-2" : ""
+            }`}
+          >
+            {showsStockCostInput && (
+              <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span>
+                    {selectedCharacterId === "jamie"
+                      ? `${stockMeta.label} 始動必要Lv`
+                      : `${stockMeta.label} 消費数（始動必要数）`}
+                  </span>
+                  {supportsAutoStock &&
+                    (stockCostMode === "auto" ? (
+                      <span className="inline-flex items-center rounded-full border border-pink-200 bg-pink-50 px-2 py-0.5 text-[10px] font-semibold text-pink-700 dark:border-pink-400/35 dark:bg-pink-500/20 dark:text-pink-200">
+                        自動計算
                       </span>
-                      <button
-                        type="button"
-                        onClick={handleResetStockCostToAuto}
-                        className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#C4B5FD] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
-                      >
-                        <RotateCcw className="h-2.5 w-2.5" aria-hidden="true" />
-                        <span>自動に戻す</span>
-                      </button>
-                    </>
+                    ) : (
+                      <>
+                        <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-400/35 dark:bg-amber-500/20 dark:text-amber-200">
+                          手動調整中
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleResetStockCostToAuto}
+                          className="inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#C4B5FD] dark:hover:border-[#8B5CF6] dark:hover:bg-[#30264A]"
+                        >
+                          <RotateCcw className="h-2.5 w-2.5" aria-hidden="true" />
+                          <span>自動に戻す</span>
+                        </button>
+                      </>
+                    ))}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from(
+                    { length: stockMeta.maxCount + 1 },
+                    (_, i) => i
+                  ).map((val) => (
+                    <button
+                      key={`cost-${val}`}
+                      type="button"
+                      onClick={() => handleManualStockCostChange(val)}
+                      className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                        stockCost === val
+                          ? "border-pink-600 bg-pink-600 text-white dark:border-pink-500 dark:bg-pink-500"
+                          : "border-slate-200 bg-white text-slate-700 hover:bg-pink-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-pink-500/20"
+                      }`}
+                    >
+                      {val === 0
+                        ? "0（なし）"
+                        : selectedCharacterId === "jamie"
+                          ? val === stockMeta.maxCount
+                            ? `最大(Lv${val})`
+                            : `Lv${val}`
+                          : val === stockMeta.maxCount
+                            ? `最大(${val})`
+                            : `${val}`}
+                    </button>
                   ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {Array.from(
-                  { length: stockMeta.maxCount + 1 },
-                  (_, i) => i
-                ).map((val) => (
-                  <button
-                    key={`cost-${val}`}
-                    type="button"
-                    onClick={() => handleManualStockCostChange(val)}
-                    className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
-                      stockCost === val
-                        ? "border-pink-600 bg-pink-600 text-white dark:border-pink-500 dark:bg-pink-500"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-pink-50 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-pink-500/20"
-                    }`}
-                  >
-                    {val === 0
-                      ? "0（なし）"
-                      : val === stockMeta.maxCount
-                        ? `最大(${val})`
-                        : `${val}`}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
             <div className="flex flex-col gap-1.5 text-xs font-bold text-slate-700 dark:text-[#CFC6E8]">
               <div className="flex flex-wrap items-center gap-1.5">

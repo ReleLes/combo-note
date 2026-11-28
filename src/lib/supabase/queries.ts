@@ -101,7 +101,9 @@ function mapCharacter(row: CharacterRow): Character {
           gainOptions: seedStockMeta?.gainOptions,
           gainHint: seedStockMeta?.gainHint,
         }
-      : undefined;
+      : seedStockMeta
+        ? { ...seedStockMeta }
+        : undefined;
 
   return {
     id: row.id,

@@ -37,6 +37,10 @@ import {
 import { useAuth } from "@/components/AuthProvider";
 import { useComboLikes } from "@/hooks/useComboLikes";
 import {
+  CHARACTER_STOCK_RULES,
+  hasStockCostConcept,
+} from "@/lib/stockCalculator";
+import {
   type MyNoteImportMode,
   type ParsedMyNoteBackup,
   applyMyNoteBackup,
@@ -952,33 +956,53 @@ export function MyNoteClient({
                   </div>
                 )}
 
-                {(groupedCurrentSituations.characterUnique.length > 0 ||
-                  activeCharacter?.stockMeta) && (
-                  <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
-                    <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
-                      固有
-                    </span>
-                    {groupedCurrentSituations.characterUnique.map((sit) => {
-                      const isSelected = selectedSituations.includes(sit.key);
-                      return (
-                        <button
-                          key={sit.key}
-                          type="button"
-                          onClick={() => toggleSituation(sit.key)}
-                          aria-pressed={isSelected}
-                          className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
-                            isSelected
-                              ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
-                              : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
-                          }`}
-                        >
-                          {sit.label}
-                        </button>
-                      );
-                    })}
+                {(() => {
+                  const stockRule = activeCharacter
+                    ? CHARACTER_STOCK_RULES[activeCharacter.id]
+                    : undefined;
+                  const showStockGainFilter =
+                    Boolean(activeCharacter?.stockMeta) &&
+                    !stockRule?.gainSituationKey;
+                  const showStockCostFilters =
+                    Boolean(activeCharacter?.stockMeta) &&
+                    Boolean(activeCharacter) &&
+                    hasStockCostConcept(activeCharacter!.id) &&
+                    !stockRule?.resolveRequiredSituationKey &&
+                    (activeCharacter?.stockMeta?.maxCount ?? 0) > 1;
 
-                    {activeCharacter?.stockMeta && (
-                      <>
+                  if (
+                    groupedCurrentSituations.characterUnique.length === 0 &&
+                    !showStockGainFilter &&
+                    !showStockCostFilters
+                  ) {
+                    return null;
+                  }
+
+                  return (
+                    <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
+                      <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                        固有
+                      </span>
+                      {groupedCurrentSituations.characterUnique.map((sit) => {
+                        const isSelected = selectedSituations.includes(sit.key);
+                        return (
+                          <button
+                            key={sit.key}
+                            type="button"
+                            onClick={() => toggleSituation(sit.key)}
+                            aria-pressed={isSelected}
+                            className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                              isSelected
+                                ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                                : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#3A2E58] dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"
+                            }`}
+                          >
+                            {sit.label}
+                          </button>
+                        );
+                      })}
+
+                      {showStockGainFilter && activeCharacter?.stockMeta && (
                         <button
                           type="button"
                           onClick={() => setOnlyStockGain((prev) => !prev)}
@@ -991,8 +1015,11 @@ export function MyNoteClient({
                         >
                           {activeCharacter.stockMeta.shortLabel}獲得
                         </button>
+                      )}
 
-                        {Array.from(
+                      {showStockCostFilters &&
+                        activeCharacter?.stockMeta &&
+                        Array.from(
                           { length: activeCharacter.stockMeta.maxCount },
                           (_, i) => i + 1
                         ).map((count) => {
@@ -1017,10 +1044,9 @@ export function MyNoteClient({
                             </button>
                           );
                         })}
-                      </>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}

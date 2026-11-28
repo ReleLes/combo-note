@@ -24,6 +24,13 @@ export const SEED_CHARACTERS: Character[] = [
     nameEn: "Jamie",
     sortOrder: 2,
     isActive: true,
+    stockMeta: {
+      label: "酔いレベル",
+      shortLabel: "酔い",
+      maxCount: 4,
+      gainOptions: [0, 1, 2, 3, 4],
+      gainHint: "飲み技（魔身・流酔脚3段目・幻酔舞3段目・円月脚3段目・SA1飲み・前投げ飲み）で +1 上昇",
+    },
   },
   {
     id: "manon",
@@ -32,6 +39,13 @@ export const SEED_CHARACTERS: Character[] = [
     nameEn: "Manon",
     sortOrder: 3,
     isActive: true,
+    stockMeta: {
+      label: "メダル",
+      shortLabel: "メダル",
+      maxCount: 5,
+      gainOptions: [0, 1, 2],
+      gainHint: "マネージュ・ドレ／ランヴェルセで +1 獲得",
+    },
   },
   {
     id: "kimberly",
@@ -485,13 +499,33 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
     sortOrder: 101,
   },
   {
+    key: "juri_fuha_stock",
+    label: "風破ストック",
+    badgeClassName:
+      "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-500/25 dark:text-fuchsia-200 dark:border dark:border-fuchsia-400/35",
+    characterId: "juri",
+    group: "character",
+    description: "風破ストックを消費する強化技を使用",
+    sortOrder: 102,
+  },
+  {
+    key: "juri_fuha_gain",
+    label: "風破溜め",
+    badgeClassName:
+      "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-200 dark:border dark:border-purple-400/35",
+    characterId: "juri",
+    group: "character",
+    description: "風破刃で風破ストックを獲得",
+    sortOrder: 103,
+  },
+  {
     key: "c_viper_feint",
     label: "フェイントキャンセル",
     badgeClassName:
       "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-200 dark:border dark:border-pink-400/30",
     characterId: "c-viper",
     group: "character",
-    sortOrder: 103,
+    sortOrder: 104,
   },
   {
     key: "ingrid_sun_install",
@@ -500,7 +534,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-200 dark:border dark:border-pink-400/30",
     characterId: "ingrid",
     group: "character",
-    sortOrder: 104,
+    sortOrder: 105,
   },
   {
     key: "ingrid_sun_symbol",
@@ -509,7 +543,18 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-200 dark:border dark:border-cyan-400/30",
     characterId: "ingrid",
     group: "character",
+    description: "サンシンボルを消費する強化技を使用",
     sortOrder: 106,
+  },
+  {
+    key: "ingrid_sun_symbol_gain",
+    label: "サンシンボル獲得",
+    badgeClassName:
+      "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-200 dark:border dark:border-sky-400/35",
+    characterId: "ingrid",
+    group: "character",
+    description: "弱サンフレア等でサンシンボルを獲得",
+    sortOrder: 107,
   },
   {
     key: "mai_flame_stock",
@@ -518,7 +563,18 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/30",
     characterId: "mai",
     group: "character",
-    sortOrder: 105,
+    description: "焔ストックを消費する強化技を使用",
+    sortOrder: 108,
+  },
+  {
+    key: "mai_flame_gain",
+    label: "焔獲得",
+    badgeClassName:
+      "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200 dark:border dark:border-amber-400/35",
+    characterId: "mai",
+    group: "character",
+    description: "SA1 陽炎の舞で焔ストックを獲得",
+    sortOrder: 109,
   },
   {
     key: "ryu_denjin",
@@ -527,7 +583,18 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200 dark:border dark:border-sky-400/30",
     characterId: "ryu",
     group: "character",
-    sortOrder: 107,
+    description: "電刃練気ストックを消費する強化技を使用",
+    sortOrder: 110,
+  },
+  {
+    key: "ryu_denjin_gain",
+    label: "電刃溜め",
+    badgeClassName:
+      "bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-200 dark:border dark:border-cyan-400/35",
+    characterId: "ryu",
+    group: "character",
+    description: "電刃錬気で電刃ストックを獲得",
+    sortOrder: 111,
   },
   {
     key: "guile_solid_puncher",
@@ -536,34 +603,67 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-lime-100 text-lime-800 dark:bg-lime-500/20 dark:text-lime-200 dark:border dark:border-lime-400/30",
     characterId: "guile",
     group: "character",
-    sortOrder: 108,
+    sortOrder: 112,
   },
   {
-    key: "vega_psycho_mine",
-    label: "サイコマイン",
+    key: "vega_mine_plant",
+    label: "マイン設置",
+    badgeClassName:
+      "bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-200 dark:border dark:border-indigo-400/35",
+    characterId: "vega",
+    group: "character",
+    description: "バックフィストコンボでサイコマインを設置",
+    sortOrder: 113,
+  },
+  {
+    key: "vega_mine_detonate",
+    label: "マイン起爆",
     badgeClassName:
       "bg-purple-100 text-purple-800 dark:bg-purple-500/25 dark:text-purple-200 dark:border dark:border-fuchsia-400/35",
     characterId: "vega",
     group: "character",
-    sortOrder: 109,
+    description: "サイコマイン起爆を伴うコンボ",
+    sortOrder: 114,
   },
   {
-    key: "rashid_air_current",
-    label: "気流",
+    key: "rashid_air_set",
+    label: "気流設置",
+    badgeClassName:
+      "bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-200 dark:border dark:border-cyan-400/35",
+    characterId: "rashid",
+    group: "character",
+    description: "溜めワールウインド・ショットやイウサールで気流を設置",
+    sortOrder: 115,
+  },
+  {
+    key: "rashid_air_boost",
+    label: "気流強化",
     badgeClassName:
       "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-200 dark:border dark:border-teal-400/35",
     characterId: "rashid",
     group: "character",
-    sortOrder: 110,
+    description: "気流強化版の必殺技・派生を使用",
+    sortOrder: 116,
   },
   {
-    key: "aki_poison",
-    label: "毒状態",
+    key: "aki_poison_inflict",
+    label: "毒付与",
+    badgeClassName:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200 dark:border dark:border-emerald-400/35",
+    characterId: "aki",
+    group: "character",
+    description: "相手を毒状態にする技を含むコンボ",
+    sortOrder: 117,
+  },
+  {
+    key: "aki_poison_state",
+    label: "毒状態限定",
     badgeClassName:
       "bg-violet-100 text-violet-800 dark:bg-violet-500/25 dark:text-lime-200 dark:border dark:border-lime-400/35",
     characterId: "aki",
     group: "character",
-    sortOrder: 111,
+    description: "相手の毒状態・毒破裂を前提とするコンボ",
+    sortOrder: 118,
   },
   {
     key: "alex_back_turned",
@@ -572,7 +672,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-red-100 text-red-800 dark:bg-red-500/25 dark:text-lime-200 dark:border dark:border-red-400/35",
     characterId: "alex",
     group: "character",
-    sortOrder: 112,
+    sortOrder: 119,
   },
   {
     key: "yasmine_bayani",
@@ -581,7 +681,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-amber-200 dark:border dark:border-sky-400/35",
     characterId: "yasmine",
     group: "character",
-    sortOrder: 113,
+    sortOrder: 120,
   },
   {
     key: "yasmine_nakatagong_lakas",
@@ -590,7 +690,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-yellow-200 dark:border dark:border-amber-400/35",
     characterId: "yasmine",
     group: "character",
-    sortOrder: 114,
+    sortOrder: 121,
   },
   {
     key: "arjun_giant_rock",
@@ -599,34 +699,87 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/35",
     characterId: "arjun",
     group: "character",
-    sortOrder: 115,
+    sortOrder: 122,
   },
   {
-    key: "jamie_drink_level",
-    label: "酔いレベル",
+    key: "jamie_drink_lv1",
+    label: "酔いLv1+",
     badgeClassName:
       "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200 dark:border dark:border-amber-400/35",
     characterId: "jamie",
     group: "character",
-    sortOrder: 116,
+    description: "酔いレベル1以上で解禁される技を使用",
+    sortOrder: 123,
+  },
+  {
+    key: "jamie_drink_lv2",
+    label: "酔いLv2+",
+    badgeClassName:
+      "bg-amber-100 text-amber-900 dark:bg-amber-500/25 dark:text-amber-100 dark:border dark:border-amber-400/45",
+    characterId: "jamie",
+    group: "character",
+    description: "酔いレベル2以上で解禁される技を使用",
+    sortOrder: 124,
+  },
+  {
+    key: "jamie_drink_lv3",
+    label: "酔いLv3+",
+    badgeClassName:
+      "bg-orange-100 text-orange-800 dark:bg-orange-500/25 dark:text-orange-200 dark:border dark:border-orange-400/45",
+    characterId: "jamie",
+    group: "character",
+    description: "酔いレベル3以上で解禁される技を使用",
+    sortOrder: 125,
+  },
+  {
+    key: "jamie_drink_lv4",
+    label: "酔いLv4",
+    badgeClassName:
+      "bg-red-100 text-red-800 dark:bg-red-500/25 dark:text-red-200 dark:border dark:border-red-400/45",
+    characterId: "jamie",
+    group: "character",
+    description: "酔いレベル4で解禁・強化される技を使用",
+    sortOrder: 126,
+  },
+  {
+    key: "jamie_drink_gain",
+    label: "酔いLv上昇",
+    badgeClassName:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-200 dark:border dark:border-yellow-400/35",
+    characterId: "jamie",
+    group: "character",
+    description: "飲み技で酔いレベルを上昇させるコンボ",
+    sortOrder: 127,
   },
   {
     key: "kimberly_shuriken",
-    label: "細工手裏剣",
+    label: "細工手裏剣（消費）",
     badgeClassName:
       "bg-pink-100 text-pink-800 dark:bg-fuchsia-500/20 dark:text-pink-200 dark:border dark:border-pink-400/35",
     characterId: "kimberly",
     group: "character",
-    sortOrder: 117,
+    description: "細工手裏剣の消費・起爆を伴うコンボ",
+    sortOrder: 128,
   },
   {
-    key: "manon_medal",
-    label: "メダル",
+    key: "kimberly_shuriken_gain",
+    label: "細工手裏剣（溜め）",
     badgeClassName:
-      "bg-rose-100 text-rose-800 dark:bg-indigo-500/25 dark:text-rose-200 dark:border dark:border-rose-400/35",
+      "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-500/20 dark:text-fuchsia-200 dark:border dark:border-fuchsia-400/35",
+    characterId: "kimberly",
+    group: "character",
+    description: "召雷細工で細工手裏剣を補充",
+    sortOrder: 129,
+  },
+  {
+    key: "manon_medal_gain",
+    label: "メダル獲得",
+    badgeClassName:
+      "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 dark:border dark:border-rose-400/35",
     characterId: "manon",
     group: "character",
-    sortOrder: 118,
+    description: "マネージュ・ドレ／ランヴェルセでメダルを獲得",
+    sortOrder: 130,
   },
   {
     key: "blanka_lightning_beast",
@@ -635,7 +788,7 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-yellow-200 dark:border dark:border-emerald-400/35",
     characterId: "blanka",
     group: "character",
-    sortOrder: 119,
+    sortOrder: 131,
   },
   {
     key: "ehonda_sumo_spirit",
@@ -644,7 +797,18 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 dark:border dark:border-rose-400/35",
     characterId: "ehonda",
     group: "character",
-    sortOrder: 120,
+    description: "相撲魂を消費する強化張り手を使用",
+    sortOrder: 132,
+  },
+  {
+    key: "ehonda_sumo_spirit_gain",
+    label: "相撲魂獲得",
+    badgeClassName:
+      "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-200 dark:border dark:border-orange-400/35",
+    characterId: "ehonda",
+    group: "character",
+    description: "肩屋入りで相撲魂を獲得",
+    sortOrder: 133,
   },
   {
     key: "lily_windclad",
@@ -653,9 +817,79 @@ export const SEED_SITUATIONS: SituationDefinition[] = [
       "bg-emerald-100 text-emerald-800 dark:bg-sky-500/20 dark:text-emerald-200 dark:border dark:border-emerald-400/35",
     characterId: "lily",
     group: "character",
-    sortOrder: 121,
+    description: "風纏いストックを消費する強化技を使用",
+    sortOrder: 134,
+  },
+  {
+    key: "lily_windclad_gain",
+    label: "風纏い獲得",
+    badgeClassName:
+      "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-200 dark:border dark:border-teal-400/35",
+    characterId: "lily",
+    group: "character",
+    description: "コンドルウィンドで風纏いストックを獲得",
+    sortOrder: 135,
   },
 ];
+
+/**
+ * 廃止された旧キャラ固有状況キーの表示フォールバック定義。
+ * DB や LocalStorage に旧キーが残っている既存コンボの描画時に使用する。
+ */
+export const LEGACY_SITUATION_FALLBACKS: Readonly<
+  Record<string, SituationDefinition>
+> = {
+  jamie_drink_level: {
+    key: "jamie_drink_level",
+    label: "酔いレベル",
+    badgeClassName:
+      "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200 dark:border dark:border-amber-400/35",
+    characterId: "jamie",
+    group: "character",
+    description: "旧タグ（酔いレベル関連）",
+    sortOrder: 901,
+  },
+  manon_medal: {
+    key: "manon_medal",
+    label: "メダル",
+    badgeClassName:
+      "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200 dark:border dark:border-rose-400/35",
+    characterId: "manon",
+    group: "character",
+    description: "旧タグ（メダル関連）",
+    sortOrder: 902,
+  },
+  aki_poison: {
+    key: "aki_poison",
+    label: "毒状態",
+    badgeClassName:
+      "bg-violet-100 text-violet-800 dark:bg-violet-500/25 dark:text-lime-200 dark:border dark:border-lime-400/35",
+    characterId: "aki",
+    group: "character",
+    description: "旧タグ（毒状態関連）",
+    sortOrder: 903,
+  },
+  vega_psycho_mine: {
+    key: "vega_psycho_mine",
+    label: "サイコマイン",
+    badgeClassName:
+      "bg-purple-100 text-purple-800 dark:bg-purple-500/25 dark:text-purple-200 dark:border dark:border-fuchsia-400/35",
+    characterId: "vega",
+    group: "character",
+    description: "旧タグ（サイコマイン関連）",
+    sortOrder: 904,
+  },
+  rashid_air_current: {
+    key: "rashid_air_current",
+    label: "気流",
+    badgeClassName:
+      "bg-teal-100 text-teal-800 dark:bg-teal-500/20 dark:text-teal-200 dark:border dark:border-teal-400/35",
+    characterId: "rashid",
+    group: "character",
+    description: "旧タグ（気流関連）",
+    sortOrder: 905,
+  },
+};
 
 /** 全キャラ共通のシステムパーツ（characterId: null） */
 export const SYSTEM_MOVES: Move[] = [

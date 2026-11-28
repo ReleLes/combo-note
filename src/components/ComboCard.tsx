@@ -26,6 +26,7 @@ import type {
   NotationMode,
   SituationDefinition,
 } from "@/types/combo";
+import { getSituationByKey } from "@/data/seed";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
 import { getCharacterTheme } from "@/lib/characterThemes";
 import {
@@ -239,7 +240,7 @@ export function ComboCard({
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
           {combo.situations.map((sitKey) => {
-            const def = situationMap[sitKey];
+            const def = situationMap[sitKey] ?? getSituationByKey(sitKey);
             const label = def?.label ?? sitKey;
             const badgeStyle =
               def?.badgeClassName ??

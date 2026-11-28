@@ -36,9 +36,9 @@ export const SKIP_VALIDATION_SITUATIONS: ReadonlySet<string> = new Set([
   "guile_solid_puncher", // ガイル: ソリッドパンチャー
   "blanka_lightning_beast", // ブランカ: ライトニングビースト
   "yasmine_nakatagong_lakas", // ヤスミン: ナカタゴン・ラカス
-  "rashid_air_current", // ラシード: 気流
-  "aki_poison", // A.K.I.: 毒状態（毒破裂による大幅追撃猶予変化）
-  "vega_psycho_mine", // ベガ: サイコマイン起爆
+  "rashid_air_boost", // ラシード: 気流強化
+  "aki_poison_state", // A.K.I.: 毒状態限定（毒破裂による大幅追撃猶予変化）
+  "vega_mine_detonate", // ベガ: サイコマイン起爆
   "alex_back_turned", // アレックス: 背面やられ
   // 地上ヒット硬直差がそのまま当てはまらない共通状況
   "anti_air", // 対空（空中ヒット）

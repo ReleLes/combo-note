@@ -26,6 +26,7 @@ import type {
   NotationMode,
   SituationDefinition,
 } from "@/types/combo";
+import { getSituationByKey } from "@/data/seed";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
 import {
   copyTextToClipboard,
@@ -154,7 +155,7 @@ export function ComboDetailModal({
         <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3.5 sm:px-6 dark:border-[#2E2447] dark:bg-[#1B152B]">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
             {combo.situations.map((sitKey) => {
-              const def = situationMap[sitKey];
+              const def = situationMap[sitKey] ?? getSituationByKey(sitKey);
               return (
                 <span
                   key={sitKey}
@@ -389,9 +390,11 @@ export function ComboDetailModal({
                     {autoStock.summaryLabel}
                   </span>
                   <span className="text-[11px] text-slate-500 dark:text-[#A99EC4]">
-                    （必要 {autoStock.requiredStart} / 消費{" "}
-                    {autoStock.consumedTotal} / 獲得 +{autoStock.gainedTotal} /
-                    終了時 {autoStock.endStock}）
+                    {autoStock.characterId === "jamie"
+                      ? `（開始Lv ${autoStock.requiredStart} / 上昇 +${autoStock.gainedTotal} / 終了Lv ${autoStock.endStock}）`
+                      : autoStock.characterId === "manon"
+                        ? `（獲得 +${autoStock.gainedTotal}）`
+                        : `（必要 ${autoStock.requiredStart} / 消費 ${autoStock.consumedTotal} / 獲得 +${autoStock.gainedTotal} / 終了時 ${autoStock.endStock}）`}
                   </span>
                 </>
               ) : (

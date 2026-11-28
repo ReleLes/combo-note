@@ -21,6 +21,10 @@ import type {
 } from "@/types/combo";
 import { COMBO_CATEGORIES } from "@/data/seed/common";
 import { formatMoveText, getStarterMoveId } from "@/lib/comboUtils";
+import {
+  CHARACTER_STOCK_RULES,
+  hasStockCostConcept,
+} from "@/lib/stockCalculator";
 import { deleteCombo } from "@/lib/supabase/clientQueries";
 import { useAuth } from "@/components/AuthProvider";
 import { usePreferences, useSavedCombos } from "@/hooks/useComboNoteStorage";
@@ -547,33 +551,49 @@ export function CharacterComboListClient({
             )}
 
             {/* キャラ固有状況＆固有ストック絞り込み */}
-            {(groupedSituations.characterUnique.length > 0 ||
-              character.stockMeta) && (
-              <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
-                <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
-                  固有
-                </span>
-                {groupedSituations.characterUnique.map((sit) => {
-                  const isSelected = selectedSituations.includes(sit.key);
-                  return (
-                    <button
-                      key={sit.key}
-                      type="button"
-                      onClick={() => toggleSituation(sit.key)}
-                      aria-pressed={isSelected}
-                      className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
-                        isSelected
-                          ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
-                          : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
-                      }`}
-                    >
-                      {sit.label}
-                    </button>
-                  );
-                })}
+            {(() => {
+              const stockRule = CHARACTER_STOCK_RULES[character.id];
+              const showStockGainFilter =
+                Boolean(character.stockMeta) && !stockRule?.gainSituationKey;
+              const showStockCostFilters =
+                Boolean(character.stockMeta) &&
+                hasStockCostConcept(character.id) &&
+                !stockRule?.resolveRequiredSituationKey &&
+                (character.stockMeta?.maxCount ?? 0) > 1;
 
-                {character.stockMeta && (
-                  <>
+              if (
+                groupedSituations.characterUnique.length === 0 &&
+                !showStockGainFilter &&
+                !showStockCostFilters
+              ) {
+                return null;
+              }
+
+              return (
+                <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-[#2A2042]">
+                  <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-[#8E82B3]">
+                    固有
+                  </span>
+                  {groupedSituations.characterUnique.map((sit) => {
+                    const isSelected = selectedSituations.includes(sit.key);
+                    return (
+                      <button
+                        key={sit.key}
+                        type="button"
+                        onClick={() => toggleSituation(sit.key)}
+                        aria-pressed={isSelected}
+                        className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                          isSelected
+                            ? `${sit.badgeClassName} ring-2 ring-blue-600 ring-offset-1 dark:ring-[#8B5CF6] dark:ring-offset-[#1B152B]`
+                            : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-[#2E2447] dark:bg-[#251D3A] dark:text-[#A99EC4] dark:hover:bg-[#30264A] dark:hover:text-[#F4F1FF]"
+                        }`}
+                      >
+                        {sit.label}
+                      </button>
+                    );
+                  })}
+
+                  {showStockGainFilter && character.stockMeta && (
                     <button
                       type="button"
                       onClick={() => setOnlyStockGain((prev) => !prev)}
@@ -586,8 +606,11 @@ export function CharacterComboListClient({
                     >
                       {character.stockMeta.shortLabel}獲得
                     </button>
+                  )}
 
-                    {Array.from(
+                  {showStockCostFilters &&
+                    character.stockMeta &&
+                    Array.from(
                       { length: character.stockMeta.maxCount },
                       (_, i) => i + 1
                     ).map((count) => {
@@ -612,10 +635,9 @@ export function CharacterComboListClient({
                         </button>
                       );
                     })}
-                  </>
-                )}
-              </div>
-            )}
+                </div>
+              );
+            })()}
           </div>
         </div>
 

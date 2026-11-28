@@ -259,6 +259,11 @@ export const MOVE_DRIVE_COST_OVERRIDES: Readonly<Record<string, number>> = {
   // リリー: 風纏いコンドルダイブ後の OD コンドルダイブ（派生）は公式仕様どおり Dゲージ 10000（1本）消費
   lily_dive_followup_od: 1,
   lily_m_dive_followup_od: 1,
+  // モダン・アシストコンボ出し切り（*_m_assist_{l|m|h}_full）のキャラ別例外上書き枠
+  // ※共通デフォルト（l_full: D0 / m_full: D2 / h_full: D0）より本マップが優先される。
+  //   OD必殺技の有無が共通デフォルトと異なるキャラが確定した場合、以下のように1行ずつ追記する：
+  //   例: 強アシスト出し切りでOD必殺技を挟むキャラ → <prefix>_m_assist_h_full: 2,
+  //   例: 中アシスト出し切りでOD必殺技を挟まないキャラ → <prefix>_m_assist_m_full: 0,
 };
 
 /**
@@ -286,7 +291,34 @@ export const MOVE_SA_COST_OVERRIDES: Readonly<Record<string, number>> = {
   deejay_sa2_encore: 0,
   deejay_m_sa2_climax: 0,
   deejay_m_sa2_encore: 0,
+  // モダン・アシストコンボ出し切り（*_m_assist_{l|m|h}_full）のキャラ別SA消費例外上書き枠
+  // ※共通デフォルト（l_full: SA1 / m_full: SA2 / h_full: SA3）より本マップが優先される。
+  //   例: <prefix>_m_assist_m_full: 0,
 };
+
+const MODERN_ASSIST_FULL_ID_PATTERN = /_m_assist_(l|m|h)_full$/i;
+
+/**
+ * モダン・アシストコンボ出し切り（*_m_assist_{l|m|h}_full）のフルゲージ時デフォルト消費を返す。
+ * 1段目（_1）・2段止め（_2）は消費なしのため null を返す。
+ */
+function getModernAssistFullDefaultGauge(
+  move: Move
+): { drive: number; sa: number } | null {
+  const match = MODERN_ASSIST_FULL_ID_PATTERN.exec(move.id);
+  if (!match) return null;
+
+  switch (match[1].toLowerCase()) {
+    case "l":
+      return { drive: 0, sa: 1 };
+    case "m":
+      return { drive: 2, sa: 2 };
+    case "h":
+      return { drive: 0, sa: 3 };
+    default:
+      return null;
+  }
+}
 
 /**
  * 技1つが OD 必殺技（消費Dゲージ +2）かどうかを判定する。
@@ -332,6 +364,12 @@ export function getMoveDriveCost(move: Move): number {
     return override;
   }
 
+  // モダン・アシストコンボ出し切り（*_m_assist_{l|m|h}_full）の共通デフォルト消費
+  const assistDefault = getModernAssistFullDefaultGauge(move);
+  if (assistDefault !== null) {
+    return assistDefault.drive;
+  }
+
   // システムパーツのフォールバック判定（キャンセルDR を 生DR より先に判定）
   if (move.category === "system") {
     const numpad = move.notationNumpad.trim().toUpperCase();
@@ -370,6 +408,12 @@ export function getMoveSaCost(move: Move): number {
   const override = MOVE_SA_COST_OVERRIDES[move.id];
   if (override !== undefined) {
     return override;
+  }
+
+  // モダン・アシストコンボ出し切り（*_m_assist_{l|m|h}_full）の共通デフォルト消費
+  const assistDefault = getModernAssistFullDefaultGauge(move);
+  if (assistDefault !== null) {
+    return assistDefault.sa;
   }
 
   if (move.category !== "super") {

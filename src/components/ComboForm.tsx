@@ -28,10 +28,15 @@ import type {
   ControlType,
   GameVersion,
   Move,
-  MoveCategory,
   NotationMode,
   SituationDefinition,
 } from "@/types/combo";
+import {
+  type MoveBuilderTabKey,
+  getMoveBuilderCategoryTabs,
+  isDeprecatedAssistMove,
+  isModernAssistTabMove,
+} from "@/lib/comboUtils";
 import {
   COMBO_CATEGORIES,
   buildRecipeSignature,
@@ -122,15 +127,6 @@ interface DuplicateComboRow {
   created_at: string;
   updated_at: string;
 }
-
-const MOVE_CATEGORY_TABS: { key: MoveCategory; label: string }[] = [
-  { key: "normal", label: "通常技" },
-  { key: "unique", label: "特殊技" },
-  { key: "special", label: "必殺技" },
-  { key: "super", label: "SA" },
-  { key: "throw", label: "投げ" },
-  { key: "system", label: "システム" },
-];
 
 const NOTATION_TABS: { mode: NotationMode; label: string }[] = [
   { mode: "numpad", label: "テンキー" },
@@ -308,7 +304,7 @@ export function ComboForm({
     initialCombo?.controlType ?? preferredControlType
   );
   const [activeMoveCategory, setActiveMoveCategory] =
-    useState<MoveCategory>("normal");
+    useState<MoveBuilderTabKey>("normal");
   const [recipeMoveIds, setRecipeMoveIds] = useState<string[]>(
     initialCombo?.moveIds ?? []
   );
@@ -443,9 +439,15 @@ export function ComboForm({
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }, [activeMoves, selectedCharacterId, controlType]);
 
+  const moveCategoryTabs = useMemo(
+    () => getMoveBuilderCategoryTabs(controlType),
+    [controlType]
+  );
+
   const movesByCategory = useMemo(() => {
-    const grouped: Record<MoveCategory, Move[]> = {
+    const grouped: Record<MoveBuilderTabKey, Move[]> = {
       normal: [],
+      assist: [],
       unique: [],
       special: [],
       super: [],
@@ -453,10 +455,17 @@ export function ComboForm({
       system: [],
     };
     for (const move of availableMoves) {
-      grouped[move.category].push(move);
+      if (isDeprecatedAssistMove(move)) {
+        continue;
+      }
+      if (controlType === "modern" && isModernAssistTabMove(move)) {
+        grouped.assist.push(move);
+      } else {
+        grouped[move.category].push(move);
+      }
     }
     return grouped;
-  }, [availableMoves]);
+  }, [availableMoves, controlType]);
 
   const recipeMoves = useMemo(
     () =>
@@ -1065,9 +1074,9 @@ export function ComboForm({
         <div
           role="tablist"
           aria-label="技カテゴリ切替"
-          className="mb-2.5 grid grid-cols-3 gap-1.5 border-b border-slate-100 pb-2.5 sm:flex sm:flex-wrap dark:border-[#2D2346]"
+          className="mb-2.5 flex flex-wrap gap-1.5 border-b border-slate-100 pb-2.5 dark:border-[#2D2346]"
         >
-          {MOVE_CATEGORY_TABS.map((tab) => {
+          {moveCategoryTabs.map((tab) => {
             const count = movesByCategory[tab.key].length;
             const isActive = activeMoveCategory === tab.key;
             return (
@@ -1077,7 +1086,7 @@ export function ComboForm({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setActiveMoveCategory(tab.key)}
-                className={`inline-flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors sm:px-3 ${
+                className={`inline-flex items-center justify-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors sm:px-3 ${
                   isActive
                     ? "bg-blue-600 text-white shadow-xs dark:bg-[#7C3AED]"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-[#251D3A] dark:text-[#CFC6E8] dark:hover:bg-[#30264A]"

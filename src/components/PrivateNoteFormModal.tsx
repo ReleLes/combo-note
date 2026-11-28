@@ -6,12 +6,17 @@ import type {
   Character,
   ControlType,
   Move,
-  MoveCategory,
   NotationMode,
   PrivateNote,
   SituationDefinition,
 } from "@/types/combo";
 import type { CreatePrivateNoteInput } from "@/hooks/useComboNoteStorage";
+import {
+  type MoveBuilderTabKey,
+  getMoveBuilderCategoryTabs,
+  isDeprecatedAssistMove,
+  isModernAssistTabMove,
+} from "@/lib/comboUtils";
 import { fetchClientMovesForCharacter } from "@/lib/supabase/clientQueries";
 import { MoveNotation } from "@/components/CommandNotation";
 
@@ -35,15 +40,6 @@ interface PrivateNoteFormModalProps {
   onSave: (data: CreatePrivateNoteInput, editingId?: string) => void;
   onClose: () => void;
 }
-
-const MOVE_CATEGORY_TABS: { key: MoveCategory; label: string }[] = [
-  { key: "normal", label: "通常技" },
-  { key: "unique", label: "特殊技" },
-  { key: "special", label: "必殺技" },
-  { key: "super", label: "SA" },
-  { key: "throw", label: "投げ" },
-  { key: "system", label: "システム" },
-];
 
 const NOTATION_TABS: { mode: NotationMode; label: string }[] = [
   { mode: "numpad", label: "テンキー" },
@@ -95,7 +91,7 @@ export function PrivateNoteFormModal({
     editingNote ? (initialHasMoveIds ? "builder" : "text") : "builder"
   );
   const [activeMoveCategory, setActiveMoveCategory] =
-    useState<MoveCategory>("normal");
+    useState<MoveBuilderTabKey>("normal");
   const [recipeMoveIds, setRecipeMoveIds] = useState<string[]>(
     editingNote?.moveIds ?? []
   );
@@ -217,9 +213,15 @@ export function PrivateNoteFormModal({
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }, [mergedMoves, characterId, controlType]);
 
+  const moveCategoryTabs = useMemo(
+    () => getMoveBuilderCategoryTabs(controlType),
+    [controlType]
+  );
+
   const movesByCategory = useMemo(() => {
-    const grouped: Record<MoveCategory, Move[]> = {
+    const grouped: Record<MoveBuilderTabKey, Move[]> = {
       normal: [],
+      assist: [],
       unique: [],
       special: [],
       super: [],
@@ -227,10 +229,17 @@ export function PrivateNoteFormModal({
       system: [],
     };
     for (const m of availableMoves) {
-      grouped[m.category].push(m);
+      if (isDeprecatedAssistMove(m)) {
+        continue;
+      }
+      if (controlType === "modern" && isModernAssistTabMove(m)) {
+        grouped.assist.push(m);
+      } else {
+        grouped[m.category].push(m);
+      }
     }
     return grouped;
-  }, [availableMoves]);
+  }, [availableMoves, controlType]);
 
   const recipeMoves = useMemo(
     () =>
@@ -252,6 +261,13 @@ export function PrivateNoteFormModal({
     }
     setCharacterId(nextCharId);
     setActiveMoveCategory("normal");
+  };
+
+  const handleChangeControlType = (nextControl: ControlType | "") => {
+    setControlType(nextControl);
+    if (nextControl !== "modern" && activeMoveCategory === "assist") {
+      setActiveMoveCategory("normal");
+    }
   };
 
   const handleSwitchRecipeMode = (nextMode: RecipeInputMode) => {
@@ -378,7 +394,7 @@ export function PrivateNoteFormModal({
                   <button
                     key={item.label}
                     type="button"
-                    onClick={() => setControlType(item.value)}
+                    onClick={() => handleChangeControlType(item.value)}
                     className={`rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
                       controlType === item.value
                         ? "bg-white text-blue-700 shadow-xs dark:bg-[#7C3AED] dark:text-white"
@@ -473,7 +489,7 @@ export function PrivateNoteFormModal({
                 {/* 表記切替 + カテゴリタブ */}
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap gap-1">
-                    {MOVE_CATEGORY_TABS.map((tab) => {
+                    {moveCategoryTabs.map((tab) => {
                       const count = movesByCategory[tab.key].length;
                       const isActive = activeMoveCategory === tab.key;
                       return (

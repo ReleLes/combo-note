@@ -160,8 +160,14 @@ function canCancelIntoMove(fromMove: Move, toMove: Move): boolean {
   return false;
 }
 
+const MODERN_ASSIST_COMBO_ID_PATTERN =
+  /(?:_auto_.*_combo|_m_assist_(?:l|m|h)_(?:1|2|full))$/i;
+
 function isModernAssistCombo(move: Move): boolean {
-  return /_auto_.*_combo$/i.test(move.id) || move.notationName.includes("アシストコンボ");
+  return (
+    MODERN_ASSIST_COMBO_ID_PATTERN.test(move.id) ||
+    move.notationName.includes("アシストコンボ")
+  );
 }
 
 function isFollowUpOrTargetComboContinuation(move: Move): boolean {
@@ -181,8 +187,12 @@ function isFollowUpOrTargetComboContinuation(move: Move): boolean {
 }
 
 function isLightChainableMove(move: Move): boolean {
-  if (move.startupFrames == null || move.startupFrames > 5) return false;
   if (move.category !== "normal" && move.category !== "unique") return false;
+  // モダン弱アシスト1段目（startupFrames 未設定時も含め弱攻撃チェーン対象として扱う）
+  if (/_m_assist_l_1$/i.test(move.id) || move.notationNumpad === "A弱(1段目)") {
+    return true;
+  }
+  if (move.startupFrames == null || move.startupFrames > 5) return false;
   // 立ち/しゃがみ弱攻撃（クラシック 弱P/2弱P/弱K/2弱K、モダン 弱/2弱/A弱単発 ※旧5表記も許容）
   const np = move.notationNumpad;
   if (/^J|空|垂直/.test(np)) return false;

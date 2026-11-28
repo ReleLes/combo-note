@@ -185,7 +185,7 @@ function ModernAnyAttackBadge({ count = 1 }: { count?: number }) {
 }
 
 const TOKEN_REGEX =
-  /(\[[^\]]+\]|(?:前|垂直|後)J中|アシスト弱|アシスト中|アシスト強|攻撃×3|攻撃×2|攻撃|弱P|中P|強P|弱K|中K|強K|PPP|PP|KKK|KK|CDR|DR|DI|DP|SP|空中|立|屈|(?<![一-龠A-Za-z])J(?=[弱中強])|(?<![A-Za-z])A(?=\+)|[↑↓←→↗↘↙↖]|[+>]|\b[PK]\b|(?<![ぁ-んァ-ヶ一-龠A-Za-z])[PK](?![A-Za-z])|(?<![一-龠A-Za-z])[弱中強](?![一-龠ぁ-んァ-ヶ]))/g;
+  /(\[[^\]]+\]|(?:前|垂直|後)J中|アシスト弱|アシスト中|アシスト強|攻撃×3|攻撃×2|攻撃|弱P|中P|強P|弱K|中K|強K|PPP|PP|KKK|KK|CDR|DR|DI|DP|SP|空中|立|屈|(?<![一-龠A-Za-z])J(?=[弱中強])|(?<![A-Za-z])(?:AUTO|A)(?=\+)|[↑↓←→↗↘↙↖]|[+>]|\b[PK]\b|(?<![ぁ-んァ-ヶ一-龠A-Za-z])[PK](?![A-Za-z])|(?<![一-龠A-Za-z])[弱中強](?=出し切り|(?![一-龠ぁ-んァ-ヶ])))/g;
 
 function renderToken(token: string, key: number): React.ReactNode {
   if (token in ARROW_ROTATION) {
@@ -250,6 +250,7 @@ function renderToken(token: string, key: number): React.ReactNode {
     case "攻撃×3":
       return <ModernAnyAttackBadge key={key} count={3} />;
     case "A":
+    case "AUTO":
       return <AssistBadge key={key} />;
     case "SP":
       return (

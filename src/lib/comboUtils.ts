@@ -1,4 +1,76 @@
-import type { Move, NotationMode } from "@/types/combo";
+import type {
+  ControlType,
+  Move,
+  MoveCategory,
+  NotationMode,
+} from "@/types/combo";
+
+/**
+ * コンボビルダーUI専用の技カテゴリタブキー。
+ * DBスキーマ上の MoveCategory は変更せず、モダン選択時のみ「アシスト」タブを切り出す。
+ */
+export type MoveBuilderTabKey = MoveCategory | "assist";
+
+const MODERN_ASSIST_TAB_MOVE_ID_PATTERN =
+  /_m_assist_(?:l|m|h)_(?:1|2|full)$/i;
+const DEPRECATED_ASSIST_COMBO_ID_PATTERN = /_m_auto_.*_combo$/i;
+const DEPRECATED_GROUND_AUTO_MOVE_ID_PATTERN = /_m_auto_(?:l|m|h)$/i;
+
+/**
+ * 新モダン・アシストコンボ（{prefix}_m_assist_{l|m|h}_{1|2|full}）かどうかを判定する。
+ */
+export function isModernAssistTabMove(move: Move): boolean {
+  return (
+    move.controlType === "modern" &&
+    move.category === "unique" &&
+    MODERN_ASSIST_TAB_MOVE_ID_PATTERN.test(move.id)
+  );
+}
+
+/**
+ * ビルダーの技選択パレットから非表示にする旧アシスト技IDかどうかを判定する。
+ * - 旧アシストコンボ（*_m_auto_*_combo）
+ * - 新1段目と役割が重複する地上単発アシスト（*_m_auto_{l|m|h}）
+ * ※空中アシスト（*_m_j_auto_* 等）は除外しない。
+ * ※既存コンボ・既存マイノート描画用の moveMap からは絶対に除外しないこと。
+ */
+export function isDeprecatedAssistMove(move: Move): boolean {
+  return (
+    DEPRECATED_ASSIST_COMBO_ID_PATTERN.test(move.id) ||
+    DEPRECATED_GROUND_AUTO_MOVE_ID_PATTERN.test(move.id)
+  );
+}
+
+const BASE_MOVE_BUILDER_TABS: { key: MoveBuilderTabKey; label: string }[] = [
+  { key: "normal", label: "通常技" },
+  { key: "unique", label: "特殊技" },
+  { key: "special", label: "必殺技" },
+  { key: "super", label: "SA" },
+  { key: "throw", label: "投げ" },
+  { key: "system", label: "システム" },
+];
+
+const MODERN_MOVE_BUILDER_TABS: { key: MoveBuilderTabKey; label: string }[] = [
+  { key: "normal", label: "通常技" },
+  { key: "assist", label: "アシスト" },
+  { key: "unique", label: "特殊技" },
+  { key: "special", label: "必殺技" },
+  { key: "super", label: "SA" },
+  { key: "throw", label: "投げ" },
+  { key: "system", label: "システム" },
+];
+
+/**
+ * 操作タイプに応じたコンボビルダー用カテゴリタブ定義を返す。
+ * モダン選択時のみ「アシスト」タブを含む7タブ、それ以外は従来の6タブを返す。
+ */
+export function getMoveBuilderCategoryTabs(
+  controlType: ControlType | ""
+): { key: MoveBuilderTabKey; label: string }[] {
+  return controlType === "modern"
+    ? MODERN_MOVE_BUILDER_TABS
+    : BASE_MOVE_BUILDER_TABS;
+}
 
 /**
  * 攻撃始動となり得るシステム技ID。

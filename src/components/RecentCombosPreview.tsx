@@ -10,6 +10,7 @@ import type {
   Move,
   SituationDefinition,
 } from "@/types/combo";
+import { getSituationByKey } from "@/data/seed";
 import { getCharacterTheme } from "@/lib/characterThemes";
 import {
   formatComboRecipeText,
@@ -159,7 +160,8 @@ export function RecentCombosPreview({
                       {/* 主要状況バッジ（1〜2個） */}
                       <div className="flex min-w-0 items-center gap-1 overflow-hidden">
                         {primarySituations.map((sitKey, idx) => {
-                          const def = situationMap[sitKey];
+                          const def =
+                            situationMap[sitKey] ?? getSituationByKey(sitKey);
                           return (
                             <span
                               key={sitKey}

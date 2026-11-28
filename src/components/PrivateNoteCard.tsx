@@ -8,6 +8,7 @@ import type {
   PrivateNote,
   SituationDefinition,
 } from "@/types/combo";
+import { getSituationByKey } from "@/data/seed";
 import { MoveNotation } from "@/components/CommandNotation";
 
 interface PrivateNoteCardProps {
@@ -19,17 +20,20 @@ interface PrivateNoteCardProps {
   onDelete: (id: string) => void;
 }
 
-function resolveSituationStyle(
-  situationLabel: string,
+function resolveSituationBadge(
+  situationValue: string,
   situations: SituationDefinition[]
-): string {
-  const matched = situations.find(
-    (s) => s.label === situationLabel || s.key === situationLabel
-  );
-  return (
-    matched?.badgeClassName ??
-    "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200 dark:border dark:border-indigo-400/30"
-  );
+): { label: string; badgeClassName: string } {
+  const matched =
+    situations.find(
+      (s) => s.label === situationValue || s.key === situationValue
+    ) ?? getSituationByKey(situationValue);
+  return {
+    label: matched?.label ?? situationValue,
+    badgeClassName:
+      matched?.badgeClassName ??
+      "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200 dark:border dark:border-indigo-400/30",
+  };
 }
 
 function getMoveChipStyle(move: Move): string {
@@ -66,7 +70,7 @@ export function PrivateNoteCard({
 }: PrivateNoteCardProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
-  const badgeStyle = resolveSituationStyle(note.situation, situations);
+  const situationBadge = resolveSituationBadge(note.situation, situations);
   const resolvedMoves = (note.moveIds ?? [])
     .map((id) => moveMap[id])
     .filter((m): m is Move => Boolean(m));
@@ -78,9 +82,9 @@ export function PrivateNoteCard({
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
           <span
-            className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold tracking-tight ${badgeStyle}`}
+            className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold tracking-tight ${situationBadge.badgeClassName}`}
           >
-            {note.situation}
+            {situationBadge.label}
           </span>
 
           {note.controlType && (

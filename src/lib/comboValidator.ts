@@ -183,10 +183,10 @@ function isFollowUpOrTargetComboContinuation(move: Move): boolean {
 function isLightChainableMove(move: Move): boolean {
   if (move.startupFrames == null || move.startupFrames > 5) return false;
   if (move.category !== "normal" && move.category !== "unique") return false;
-  // 立ち/しゃがみ弱攻撃（クラシック 5弱P/2弱P/5弱K/2弱K、モダン 5弱/2弱/A弱単発）
+  // 立ち/しゃがみ弱攻撃（クラシック 弱P/2弱P/弱K/2弱K、モダン 弱/2弱/A弱単発 ※旧5表記も許容）
   const np = move.notationNumpad;
   if (/^J|空|垂直/.test(np)) return false;
-  return /^(?:[12456]弱[PK]?|A弱\(単発\))$/.test(np);
+  return /^(?:[12456]?弱[PK]?|A弱\(単発\))$/.test(np);
 }
 
 function isNonHittingUtilityMove(move: Move): boolean {

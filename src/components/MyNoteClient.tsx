@@ -31,7 +31,6 @@ import {
 import {
   deleteCombo,
   fetchClientCombosByIds,
-  fetchClientMovesForCharacter,
   fetchClientMovesForCharacters,
 } from "@/lib/supabase/clientQueries";
 import { useAuth } from "@/components/AuthProvider";
@@ -87,13 +86,20 @@ export function MyNoteClient({
 
   // 保存済み公開コンボのみを必要最小限で取得（保存0件ならクエリ自体をスキップ）
   const [savedCombos, setSavedCombos] = useState<Combo[]>([]);
-  // 必要キャラ分の技マスタのみをキャラ単位でキャッシュ
+  // 必要キャラ分の技マスタのみをキャラ単位でキャッシュ（公開コンボ投稿画面と同じ Record<charId, Move[]> 方式）
   const [movesByCharCache, setMovesByCharCache] = useState<
     Record<string, Move[]>
   >({});
   const [systemMovesCache, setSystemMovesCache] = useState<Move[]>([]);
-  const loadedMoveCharIdsRef = useRef<Set<string>>(new Set());
-  const [isLoadingModalMoves, setIsLoadingModalMoves] = useState(false);
+  const inFlightMoveCharIdsRef = useRef<Set<string>>(new Set());
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const savedComboIdsKey = useMemo(
     () => [...savedComboIds].sort().join(","),
@@ -142,20 +148,20 @@ export function MyNoteClient({
 
   useEffect(() => {
     const missingIds = neededMoveCharIds.filter(
-      (id) => !loadedMoveCharIdsRef.current.has(id)
+      (id) =>
+        !(id in movesByCharCache) && !inFlightMoveCharIdsRef.current.has(id)
     );
     if (missingIds.length === 0) {
       return;
     }
 
     for (const id of missingIds) {
-      loadedMoveCharIdsRef.current.add(id);
+      inFlightMoveCharIdsRef.current.add(id);
     }
 
-    let cancelled = false;
     fetchClientMovesForCharacters(missingIds)
       .then((fetchedMoves) => {
-        if (cancelled) return;
+        if (!isMountedRef.current) return;
         const sys: Move[] = [];
         const grouped: Record<string, Move[]> = {};
         for (const id of missingIds) {
@@ -174,52 +180,30 @@ export function MyNoteClient({
         setMovesByCharCache((prev) => ({ ...prev, ...grouped }));
       })
       .catch((err) => {
-        // 失敗したキャラIDは再取得できるようマークを戻す
-        for (const id of missingIds) {
-          loadedMoveCharIdsRef.current.delete(id);
-        }
-        if (!cancelled) {
+        if (isMountedRef.current) {
           console.error("技マスタの読み込みに失敗しました:", err);
         }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [neededMoveCharIdsKey, neededMoveCharIds]);
-
-  // 非公開メモ作成・編集モーダル用：指定キャラの技が未取得なら遅延取得してキャッシュ
-  const handleRequestCharacterMoves = useCallback((charId: string) => {
-    if (!charId || loadedMoveCharIdsRef.current.has(charId)) {
-      return;
-    }
-    loadedMoveCharIdsRef.current.add(charId);
-    setIsLoadingModalMoves(true);
-
-    fetchClientMovesForCharacter(charId)
-      .then((fetchedMoves) => {
-        const sys: Move[] = [];
-        const charMoves: Move[] = [];
-        for (const m of fetchedMoves) {
-          if (m.characterId === null) {
-            sys.push(m);
-          } else if (m.characterId === charId) {
-            charMoves.push(m);
-          }
-        }
-        if (sys.length > 0) {
-          setSystemMovesCache(sys);
-        }
-        setMovesByCharCache((prev) => ({ ...prev, [charId]: charMoves }));
-      })
-      .catch((err) => {
-        loadedMoveCharIdsRef.current.delete(charId);
-        console.error("モーダル用技マスタの読み込みに失敗しました:", err);
       })
       .finally(() => {
-        setIsLoadingModalMoves(false);
+        for (const id of missingIds) {
+          inFlightMoveCharIdsRef.current.delete(id);
+        }
       });
-  }, []);
+  }, [neededMoveCharIdsKey, neededMoveCharIds, movesByCharCache]);
+
+  // 非公開メモ作成・編集モーダル側で遅延取得したキャラ技をマイノート全体のキャッシュへ反映
+  const handleCacheCharacterMoves = useCallback(
+    (charId: string, charMoves: Move[], sysMoves: Move[]) => {
+      if (sysMoves.length > 0) {
+        setSystemMovesCache(sysMoves);
+      }
+      setMovesByCharCache((prev) => ({
+        ...prev,
+        [charId]: charMoves,
+      }));
+    },
+    []
+  );
 
   const allMoves = useMemo(() => {
     const map = new Map<string, Move>();
@@ -1204,7 +1188,11 @@ export function MyNoteClient({
 
       {/* バックアップインポート確認モーダル */}
       <MyNoteImportModal
-        key={pendingImport ? `${pendingImport.fileName}-${pendingImport.backup.exportedAt ?? ""}` : "closed"}
+        key={
+          pendingImport
+            ? `import-modal-${pendingImport.fileName}-${pendingImport.backup.exportedAt ?? ""}`
+            : "import-modal-closed"
+        }
         pendingImport={pendingImport}
         currentSavedCount={savedComboIds.length}
         currentNotesCount={privateNotes.length}
@@ -1267,14 +1255,14 @@ export function MyNoteClient({
       <PrivateNoteFormModal
         key={
           isNoteModalOpen
-            ? editingNote?.id ?? `new-${selectedCharacterId}`
-            : "closed"
+            ? `note-modal-${editingNote?.id ?? `new-${selectedCharacterId}`}`
+            : "note-modal-closed"
         }
         isOpen={isNoteModalOpen}
         characters={characters}
         allMoves={allMoves}
-        isLoadingMoves={isLoadingModalMoves}
-        onRequestCharacterMoves={handleRequestCharacterMoves}
+        movesByCharacter={movesByCharCache}
+        onCacheCharacterMoves={handleCacheCharacterMoves}
         situationsByCharacter={situationsByCharacter}
         defaultCharacterId={selectedCharacterId}
         notationMode={notationMode}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Loader2, Trash2, Undo2, X } from "lucide-react";
+import { ChevronRight, Loader2, RotateCcw, Trash2, Undo2, X } from "lucide-react";
 import type {
   Character,
   ControlType,
@@ -12,6 +12,7 @@ import type {
   SituationDefinition,
 } from "@/types/combo";
 import type { CreatePrivateNoteInput } from "@/hooks/useComboNoteStorage";
+import { fetchClientMovesForCharacter } from "@/lib/supabase/clientQueries";
 import { MoveNotation } from "@/components/CommandNotation";
 
 type RecipeInputMode = "builder" | "text";
@@ -20,8 +21,12 @@ interface PrivateNoteFormModalProps {
   isOpen: boolean;
   characters: Character[];
   allMoves: Move[];
-  isLoadingMoves?: boolean;
-  onRequestCharacterMoves?: (characterId: string) => void;
+  movesByCharacter: Record<string, Move[]>;
+  onCacheCharacterMoves?: (
+    characterId: string,
+    charMoves: Move[],
+    sysMoves: Move[]
+  ) => void;
   situationsByCharacter: Record<string, SituationDefinition[]>;
   defaultCharacterId: string;
   notationMode: NotationMode;
@@ -65,8 +70,8 @@ export function PrivateNoteFormModal({
   isOpen,
   characters,
   allMoves,
-  isLoadingMoves = false,
-  onRequestCharacterMoves,
+  movesByCharacter,
+  onCacheCharacterMoves,
   situationsByCharacter,
   defaultCharacterId,
   notationMode,
@@ -98,6 +103,19 @@ export function PrivateNoteFormModal({
   const [note, setNote] = useState(editingNote?.note ?? "");
   const [error, setError] = useState<string | null>(null);
 
+  // モーダル内で遅延取得したキャラ技のローカルキャッシュ＆取得状態（公開コンボ投稿画面と同方式）
+  const [localMovesByChar, setLocalMovesByChar] = useState<
+    Record<string, Move[]>
+  >({});
+  const [localSystemMoves, setLocalSystemMoves] = useState<Move[]>([]);
+  const [isLoadingMoves, setIsLoadingMoves] = useState(false);
+  const [movesLoadError, setMovesLoadError] = useState<string | null>(null);
+  const [movesRetryNonce, setMovesRetryNonce] = useState(0);
+
+  const isCharMovesCached =
+    Object.prototype.hasOwnProperty.call(movesByCharacter, characterId) ||
+    Object.prototype.hasOwnProperty.call(localMovesByChar, characterId);
+
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -107,21 +125,88 @@ export function PrivateNoteFormModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  // 選択中キャラの技が未キャッシュのときのみ非同期取得してクライアント側キャッシュへ追加
   useEffect(() => {
     if (!isOpen || !characterId) return;
-    onRequestCharacterMoves?.(characterId);
-  }, [isOpen, characterId, onRequestCharacterMoves]);
+    if (isCharMovesCached) {
+      setIsLoadingMoves(false);
+      setMovesLoadError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingMoves(true);
+    setMovesLoadError(null);
+
+    fetchClientMovesForCharacter(characterId)
+      .then((fetchedMoves) => {
+        if (cancelled) return;
+        const sysMoves: Move[] = [];
+        const charMoves: Move[] = [];
+        for (const m of fetchedMoves) {
+          if (m.characterId === null) {
+            sysMoves.push(m);
+          } else if (m.characterId === characterId) {
+            charMoves.push(m);
+          }
+        }
+        if (sysMoves.length > 0) {
+          setLocalSystemMoves(sysMoves);
+        }
+        setLocalMovesByChar((prev) => ({
+          ...prev,
+          [characterId]: charMoves,
+        }));
+        onCacheCharacterMoves?.(characterId, charMoves, sysMoves);
+        setIsLoadingMoves(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setMovesLoadError(
+          err instanceof Error
+            ? err.message
+            : "技データの読み込みに失敗しました。"
+        );
+        setIsLoadingMoves(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isOpen,
+    characterId,
+    isCharMovesCached,
+    movesRetryNonce,
+    onCacheCharacterMoves,
+  ]);
+
+  const mergedMoves = useMemo(() => {
+    const map = new Map<string, Move>();
+    for (const m of allMoves) {
+      map.set(m.id, m);
+    }
+    for (const m of localSystemMoves) {
+      map.set(m.id, m);
+    }
+    for (const list of Object.values(localMovesByChar)) {
+      for (const m of list) {
+        map.set(m.id, m);
+      }
+    }
+    return Array.from(map.values());
+  }, [allMoves, localSystemMoves, localMovesByChar]);
 
   const moveMap = useMemo(() => {
     const map: Record<string, Move> = {};
-    for (const m of allMoves) {
+    for (const m of mergedMoves) {
       map[m.id] = m;
     }
     return map;
-  }, [allMoves]);
+  }, [mergedMoves]);
 
   const availableMoves = useMemo(() => {
-    return allMoves
+    return mergedMoves
       .filter((move) => {
         const matchChar =
           move.characterId === characterId || move.characterId === null;
@@ -130,7 +215,7 @@ export function PrivateNoteFormModal({
         return move.controlType === "both" || move.controlType === controlType;
       })
       .sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [allMoves, characterId, controlType]);
+  }, [mergedMoves, characterId, controlType]);
 
   const movesByCategory = useMemo(() => {
     const grouped: Record<MoveCategory, Move[]> = {
@@ -428,13 +513,28 @@ export function PrivateNoteFormModal({
                 </div>
 
                 {/* 技ボタングリッド */}
-                {isLoadingMoves && currentCategoryMoves.length === 0 ? (
+                {(isLoadingMoves ||
+                  (!isCharMovesCached && !movesLoadError)) &&
+                (activeMoveCategory !== "system" ||
+                  currentCategoryMoves.length === 0) ? (
                   <div className="flex items-center justify-center gap-2 py-6 text-xs text-slate-500 dark:text-[#A99EC4]">
                     <Loader2
                       className="h-4 w-4 animate-spin text-blue-600 dark:text-[#A78BFA]"
                       aria-hidden="true"
                     />
                     <span>技データを読み込み中...</span>
+                  </div>
+                ) : movesLoadError && activeMoveCategory !== "system" ? (
+                  <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-rose-200 bg-rose-50/70 px-3 py-5 text-center text-xs text-rose-700 dark:border-rose-500/35 dark:bg-rose-500/15 dark:text-rose-200">
+                    <p>{movesLoadError}</p>
+                    <button
+                      type="button"
+                      onClick={() => setMovesRetryNonce((n) => n + 1)}
+                      className="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>再読み込み</span>
+                    </button>
                   </div>
                 ) : currentCategoryMoves.length > 0 ? (
                   <div
